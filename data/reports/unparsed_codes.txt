@@ -1,0 +1,19 @@
+**All orange standards were moved to applying properties row MF
+**All red standards were moved to next row (word problems) MF
+*Added CA.K.CC.4 (MF)
+*Added CA.K.CC.4.c (MF)
+*Added FL.1.NSO.1.4 (MF)
+*Added K.CC.B.4 (MF)
+*Added K.CC.B.4.c (MF)
+*Added MD.1.NOS.B.6 (MF)
+*Added VA.2.NS.2.f (MF)
+Adding for Estimation node (MF):
+CCSS.4.NF.B.4 and 4b
+FL. K.NSO.1.2
+From +/- stem:
+NOTE: 1.G.A.3, CA.1.G.3, and TX.1.6G are going to be partial alignments here. Focus in this node is partitioning into equal shares. Using the language "halves", "fourths", etc. comes in the final node, so these same standards should be cited there, too. All other standards coded in red below should be cited in final node in ladder. (MF)
+PTKLF 1.4
+Partially tagged:
+Since the CA equivalent was assigned, I added the matching CCSSM standard: 1.NBT.A.1 (MF)
+TX4.2H
+The following standards are all  partially aligned becuase they focus on measurement estimation,  not estimating how many are in a set:

@@ -1,0 +1,662 @@
+kind,stem_id,other_stem,standard_id,concept_id,node_id,score,detail
+ladder_only,ADD,,1.NBT.C.4,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+ladder_only,ADD,,1.NBT.C.6,,,,"tagged to node: Subtract by using strategies based on place value concepts and properties of operations. 
+ 
+Take from ten (G1 M3)"
+ladder_only,ADD,,2.NBT.B.5,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,2.NBT.B.6,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+ladder_only,ADD,,2.OA.B.2,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,4.NBT.4,,,,"tagged to node: Add multi-digit whole numbers by using the standard algorithm.,Subtract multi-digit whole numbers by using the standard "
+ladder_only,ADD,,4.NF.B.3.b,,,,tagged to node: Decompose a fraction into a sum of fractions.
+ladder_only,ADD,,4.NF.B.3.c,,,,"tagged to node: Rename fractions greater than 1 as mixed numbers and mixed numbers as fractions.,Add fractions with like denominators.,S"
+ladder_only,ADD,,4.NF.B.3.d,,,,"tagged to node: Add fractions with like denominators.,Subtract fractions with like denominators."
+ladder_only,ADD,,6.NS.B.3,,,,"tagged to node: Add decimals by using the standard algorithm.
+(Currently no decimal computation in a G6+ stem.),Subtract decimals by usi"
+ladder_only,ADD,,CA.1.NBT.4,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+ladder_only,ADD,,CA.1.NBT.6,,,,"tagged to node: Subtract by using strategies based on place value concepts and properties of operations. 
+ 
+Take from ten (G1 M3)"
+ladder_only,ADD,,CA.2.NBT.5,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,CA.2.NBT.6,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+ladder_only,ADD,,CA.2.OA.2,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,CA.K.OA.5,,,,"tagged to node: Fluently add single-digit numbers with sums up to 5.,Fluently subtract numbers within 5."
+ladder_only,ADD,,FL.1.NOS.2.5,,,,"tagged to node: Subtract by using strategies based on place value concepts and properties of operations. 
+ 
+Take from ten (G1 M3)"
+ladder_only,ADD,,FL.1.NSO.2.4,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+ladder_only,ADD,,FL.2.NSO.2.1,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,FL.3.NSO.2.1,,,,"tagged to node: Add multi-digit whole numbers by using the standard algorithm.,Subtract multi-digit whole numbers by using the standard "
+ladder_only,ADD,,FL.4.FR.2.1,,,,tagged to node: Decompose a fraction into a sum of fractions.
+ladder_only,ADD,,FL.4.FR.2.2,,,,"tagged to node: Rename fractions greater than 1 as mixed numbers and mixed numbers as fractions.,Add fractions with like denominators.,S"
+ladder_only,ADD,,FL.4.FR.2.3,,,,tagged to node: Add fractions with unlike denominators.
+ladder_only,ADD,,FL.5.FR.2.1,,,,"tagged to node: Add fractions with unlike denominators.,Subtract fractions with unlike denominators."
+ladder_only,ADD,,K.OA.A.5,,,,"tagged to node: Fluently add single-digit numbers with sums up to 5.,Fluently subtract numbers within 5."
+ladder_only,ADD,,SD.PK.CD,,,,"tagged to node: Count all to add whole numbers.,Count all to subtract whole numbers."
+ladder_only,ADD,,TN.2.OA.B.2,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,TX.2.4A,,,,"tagged to node: Fluently add single-digit numbers with sums up to 18.,Fluently subtract numbers within 18."
+ladder_only,ADD,,TX.2.4B,,,,"tagged to node: Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3),Subtract by usin"
+ladder_only,ADD,,TX.4.3.E,,,,"tagged to node: Rename fractions greater than 1 as mixed numbers and mixed numbers as fractions.,Add fractions with like denominators.,S"
+ladder_only,ADD,,TX.4.3.F,,,,"tagged to node: Add fractions with like denominators.,Subtract fractions with like denominators."
+ladder_only,ADD,,TX.5.3.H,,,,"tagged to node: Add fractions with unlike denominators.,Subtract fractions with unlike denominators."
+ladder_only,ANG,,1.G.A.1,,,,"tagged to node: Identify square corners.,Compare corners and find same-size corners."
+ladder_only,ANG,,CA.1.G.1,,,,"tagged to node: Identify square corners.,Compare corners and find same-size corners."
+ladder_only,ANG,,GR.1.1,,,,tagged to node: Use right angles to identify and draw perpendicular lines.
+ladder_only,COM,,1.MD.A.1,,,,tagged to node: Order lengths marked into units.
+ladder_only,COM,,K.CC.B.4c,,,,tagged to node: Order sets/groups of objects according to the number of objects in each set/groups.
+ladder_only,COM,,PA.M03.A,,,,tagged to node: Compare and order multi-digit numbers.
+ladder_only,COM,,SD.PK.CD,,,,"tagged to node: Use the words first and second to describe objects’ positions in a sequence.,Use the ordinal numbers first through tenth"
+ladder_only,COU,,MN.PK.M1.1,,,,tagged to node: Say the numbers to 10 in the appropriate count sequence.
+ladder_only,COU,,SD.PK.CD,,,,"tagged to node: Count forward or backward from a given number.,Count forward and backward by 1s and 10s, from any number, to solve probl"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.1,,,,"tagged to node: Translate between expressions that use repeated multiplication and expressions that use exponential notation.,Evaluate n"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.2,,,,"tagged to node: Describe a given expression in words.,Write an expression with variables representing unknown numbers for a given descri"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.2.a,,,,tagged to node: Write an expression with variables representing unknown numbers for a given description of the expression.
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.2.b,,,,tagged to node: Identify the parts of an expression by using mathematical terminology.
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.2.c,,,,"tagged to node: Evaluate an expression without grouping symbols or exponents by substituting given numbers for the variables.,Evaluate a"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.2c,,,,"tagged to node: Evaluate numerical expressions with whole-number exponents.,Evaluate numerical expressions with whole-number exponents a"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.3,,,,"tagged to node: Use the distributive property to factor out the greatest common factor of two whole numbers, expressing their sum as a m"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.A.4,,,,"tagged to node: Determine whether numerical expressions are equivalent.,Identify equivalent expressions."
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EE.B.6,,,,"tagged to node: Write an expression with variables representing unknown numbers for a given description of the expression.,Write an expr"
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.EEA.3,,,,tagged to node: Justify whether two expressions are equivalent.
+ladder_only,EE_GENERAL_EXPRESSIONS,,6.NS.B.4,,,,"tagged to node: Determine the greatest common factor of two whole numbers.,Determine the least common multiple of two whole numbers.,Use"
+ladder_only,EE_GENERAL_EXPRESSIONS,,7.EE.A.1,,,,"tagged to node: Generate equivalent expressions.,Use the distributive property to write the product of two factors as a sum or differenc"
+ladder_only,EE_GENERAL_EXPRESSIONS,,7.EE.A.2,,,,"tagged to node: Generate equivalent expressions.,Use the distributive property to write the product of two factors as a sum or differenc"
+ladder_only,EE_GENERAL_EXPRESSIONS,,7.NS.A.1d,,,,tagged to node: Evaluate numerical expressions without exponents or grouping symbols.
+ladder_only,EE_GENERAL_EXPRESSIONS,,7.NS.A.2c,,,,tagged to node: Evaluate numerical expressions without exponents or grouping symbols.
+ladder_only,EE_GENERAL_EXPRESSIONS,,AK.8.NS.3,,,,tagged to node: Determine the prime factorization of a whole number.
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.5.AR.2.2,,,,tagged to node: Evaluate numerical expressions without exponents or grouping symbols.
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.AR.1.1,,,,"tagged to node: Describe a given expression in words.,Write an expression with variables representing unknown numbers for a given descri"
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.AR.1.3,,,,"tagged to node: Evaluate an expression without grouping symbols or exponents by substituting given numbers for the variables.,Evaluate a"
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.AR.1.4,,,,tagged to node: Generate equivalent expressions.
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.NSO.3.1,,,,"tagged to node: Determine the greatest common factor of two whole numbers.,Determine the least common multiple of two whole numbers."
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.NSO.3.2,,,,"tagged to node: Use the distributive property to factor out the greatest common factor of two whole numbers, expressing their sum as a m"
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.NSO.3.3,,,,tagged to node: Translate between expressions that use repeated multiplication and expressions that use exponential notation.
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.6.NSO.3.4,,,,tagged to node: Determine the prime factorization of a whole number.
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.7.AR.1.1,,,,"tagged to node: Generate equivalent expressions.,Use the distributive property to write the product of two factors as a sum or differenc"
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.7.AR.1.2,,,,"tagged to node: Determine whether numerical expressions are equivalent.,Identify equivalent expressions."
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.7.NSO.2.1,,,,"tagged to node: Evaluate numerical expressions with whole-number exponents.,Evaluate numerical expressions with whole-number exponents a"
+ladder_only,EE_GENERAL_EXPRESSIONS,,FL.7.NSO.2.2,,,,tagged to node: Evaluate numerical expressions without exponents or grouping symbols.
+ladder_only,EE_GENERAL_EXPRESSIONS,,HSA.SSE.A.2,,,,tagged to node: Justify whether two expressions are equivalent.
+ladder_only,EE_GENERAL_EXPRESSIONS,,IN.7.NS.5,,,,tagged to node: Determine the prime factorization of a whole number.
+ladder_only,EE_GENERAL_EXPRESSIONS,,MN.7.3.6.3,,,,tagged to node: Evaluate numerical expressions with whole-number exponents.
+ladder_only,EE_GENERAL_EXPRESSIONS,,MN.8.3.6.1,,,,tagged to node: Generate equivalent expressions.
+ladder_only,EE_GENERAL_EXPRESSIONS,,MN.8.3.6.2,,,,tagged to node: Evaluate numerical expressions with whole-number exponents.
+ladder_only,EE_GENERAL_EXPRESSIONS,,OK.7.A.4.2,,,,tagged to node: Evaluate numerical expressions with grouping symbols.
+ladder_only,EE_GENERAL_EXPRESSIONS,,OK.PA.A.3.2,,,,"tagged to node: Generate equivalent expressions.,Use the distributive property to write the product of two factors as a sum or differenc"
+ladder_only,EE_GENERAL_EXPRESSIONS,,SC.7.PAFR.3.4,,,,"tagged to node: Generate equivalent expressions.,Use the distributive property to write the product of two factors as a sum or differenc"
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.5.4F,,,,"tagged to node: Evaluate numerical expressions without exponents or grouping symbols.,Evaluate numerical expressions with grouping symbo"
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.6.7.A,,,,"tagged to node: Translate between expressions that use repeated multiplication and expressions that use exponential notation.,Evaluate n"
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.6.7.B,,,,"tagged to node: Describe a given expression in words.,Write an expression with variables representing unknown numbers for a given descri"
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.6.7.C,,,,"tagged to node: Determine whether numerical expressions are equivalent.,Identify equivalent expressions."
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.6.7A,,,,tagged to node: Determine the prime factorization of a whole number.
+ladder_only,EE_GENERAL_EXPRESSIONS,,TX.6.7D,,,,tagged to node: Generate equivalent expressions.
+ladder_only,EE_GENERAL_EXPRESSIONS,,VA.7,,,,tagged to node: Evaluate numerical expressions with whole-number exponents.
+ladder_only,EE_GENERAL_EXPRESSIONS,,VA.7.PFA.2.b,,,,"tagged to node: Determine whether numerical expressions are equivalent.,Identify equivalent expressions."
+ladder_only,EE_GENERAL_EXPRESSIONS,,VA.8.PFA.1.b,,,,tagged to node: Generate equivalent expressions.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,6.EE.A.2.c,,,,"tagged to node: Solve simple equations in one variable by inspection.,Use substitution to determine whether a given number is a solution"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,6.EE.B.5,,,,"tagged to node: Write equations in one variable from a description.,Use mathematical language to describe an equation in one variable.,S"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,6.EE.B.7,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Use properties of equality to produce "
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,6.EE.C.7,,,,"tagged to node: Write equations in one variable from a description.,Use mathematical language to describe an equation in one variable.,S"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,7.EE.B.4,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Interpret the solution to a linear equ"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,7.EE.B.4.a,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,7.G.B.5,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,7.RP.A.2.c,,,,tagged to node: Solve single variable equations in the form ab=cd with the unknown in any position.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,8.EE.C.7,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,8.EE.C.7.a,,,,"tagged to node: Solve linear equations in one variable with one solution, infinitely many solutions, or no solutions."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,8.EE.C.7.b,,,,tagged to node: Solve equations that result in the form ax+b=d after combining like terms or using the distributive property on one side
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,CA.9-12.A,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.6.AR.2.2,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.6.AR.2.3,,,,"tagged to node: Write equations in one variable from a description.,Use mathematical language to describe an equation in one variable.,S"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.6.AR.2.4,,,,"tagged to node: Write equations in one variable from a description.,Use mathematical language to describe an equation in one variable.,S"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.7.AR.2.2,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.8.AR.2.1,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.912.AR.1.2,,,,tagged to node: Rearrange linear formulas to isolate a specific variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.912.AR.2.1,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=cx+d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,FL.912.AR.4.1,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,GA.8.PAR,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,GA.8.PAR.3.5,,,,tagged to node: Rearrange linear formulas to isolate a specific variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,GA.8.PAR.3.6,,,,tagged to node: Rearrange linear formulas to isolate a specific variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,KS.8.EE.7b,,,,"tagged to node: Solve equations of the form a(bx + c) =d.,Solve equations that result in the form ax+b=d after combining like terms or u"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,KS.8.G.3,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form x+b=d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,KS.8.G.4,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,MD.8.GR.A.1,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,MN.8.3.6.3,,,,"tagged to node: Identify equivalent linear equations in one variable. Justify why the equations are equivalent.,Solve equations that res"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,MN.8.3.6.8,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,MO.7.EE1.B.4.a,,,,"tagged to node: Solve simple equations in one variable by inspection.,Use substitution to determine whether a given number is a solution"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,MO.8.EEI.C.7.b,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,ND.8.AR.EE.6,,,,tagged to node: Solve absolute value equations of the form ∣x∣=d.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,ND.9-10.AR.9,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,OK.5.A.2.2,,,,"tagged to node: Solve simple equations in one variable by inspection.,Use substitution to determine whether a given number is a solution"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,OK.A1.A.1.2,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,OK.PA.A.4.3,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,SC.8.PAFR.2.1,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.10A,,,,"tagged to node: Write equations in one variable from a description.,Use mathematical language to describe an equation in one variable.,S"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.10B,,,,"tagged to node: Solve simple equations in one variable by inspection.,Use substitution to determine whether a given number is a solution"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.7.B,,,,tagged to node: Write equations in one variable from a description.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.9A,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Identify constraints within mathematic"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.9B,,,,tagged to node: Classify equations as linear or nonlinear.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.6.9C,,,,tagged to node: Write situations that can be represented by a given equation.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.10A,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Identify constraints within mathematic"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.10C,,,,tagged to node: Write situations that can be represented by a given equation.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.11.A,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.11A,,,,tagged to node: Solve equations of the form ax+b=d.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.11B,,,,"tagged to node: Solve simple equations in one variable by inspection.,Use substitution to determine whether a given number is a solution"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.7.11C,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.8.8A,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.8.8B,,,,tagged to node: Write situations that can be represented by a given equation.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.8.8C,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Solve equations of the form ax+b=cx+d."
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.A1.12E,,,,tagged to node: Rearrange linear formulas to isolate a specific variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.A1.5A,,,,"tagged to node: Use properties of equality to produce and identify equivalent linear equations in one variable.,Identify equivalent line"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.A2.6D,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,TX.A2.6E,,,,"tagged to node: Solve absolute value equations of the form ∣x∣=d.,Solve absolute value equations of the form ∣ax+b∣=d.,Solve absolute va"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.5.PFA.2.b,,,,tagged to node: Model mathematical and real-world contexts with linear equations in one variable.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.5.PFA.2.d,,,,tagged to node: Write situations that can be represented by a given equation.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.6.PFA.3.b,,,,"tagged to node: Use models to represent and solve equations of the form ax=d. (LEAF),Use models to represent and solve equations of the "
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.6.PFA.3.d,,,,tagged to node: Use models to represent and solve equations of the form x+b=d.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.7.PFA.3.a,,,,tagged to node: Use models to represent and solve one variable linear equations.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.8.PFA.4.a,,,,tagged to node: Use models to represent and solve one variable linear equations.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,VA.8.PFA.4.d,,,,tagged to node: Write situations that can be represented by a given equation.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,WI.7.EE.B.4.a,,,,"tagged to node: Model mathematical and real-world contexts with linear equations in one variable.,Identify equivalent linear equations i"
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,WY.7.EE.4D,,,,tagged to node: Identify equivalent linear equations in one variable. Justify why the equations are equivalent.
+ladder_only,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,WY.8.EE.7A,,,,tagged to node: Solve equations of the form ax+b=cx+d.
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,6.EE.B.5,,,,"tagged to node: Write inequalities in one variable from a description.,Use mathematical language to describe an inequality in one variab"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,6.EE.B.8,,,,"tagged to node: Match a graph to its inequality.,Write an inequality to represent a solution set graphed on a number line.,Interpret the"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,6.NS.C.7.a,,,,"tagged to node: Determine whether an inequality is true or false.,Write inequalities in one variable from a description.,Use mathematica"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,7.EE.B.4,,,,"tagged to node: Write inequalities in one variable from a description.,Use mathematical language to describe an inequality in one variab"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,7.EE.B.4.b,,,,"tagged to node: Represent the solution set of an inequality on a number line.,Use the addition property of inequality to generate and id"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,CA.7-12.A,,,,"tagged to node: Solve inequalities of the forms ∣x∣<d and ∣x∣≤d.,Solve inequalities of the forms ∣x∣>b and ∣x∣≥b.,Solve inequalities of "
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.6.AR.1.2,,,,"tagged to node: Match a graph to its inequality.,Write an inequality to represent a solution set graphed on a number line.,Interpret the"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.6.AR.2.1,,,,tagged to node: Use substitution to determine whether a given number is a solution to an inequality in one variable.
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.7.AR.2.1,,,,"tagged to node: Use the addition property of inequality to generate and identify equivalent inequalities.,Use the multiplication propert"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.8.AR.2.1,,,,"tagged to node: Solve real-world problems by writing and solving inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d, and inter"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.8.AR.2.2,,,,"tagged to node: Use the addition property of inequality to generate and identify equivalent inequalities.,Use the multiplication propert"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.912.AR.2.6,,,,"tagged to node: Solve inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d.,Solve real-world problems by writing and solving ine"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,FL.912.AR.4.2,,,,"tagged to node: Solve inequalities of the forms ∣x∣<d and ∣x∣≤d.,Solve inequalities of the forms ∣x∣>b and ∣x∣≥b.,Solve inequalities of "
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.6.10A,,,,tagged to node: Interpret the meaning of an inequality that represents a constraint or condition in a mathematical or real-world context
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.6.10B,,,,"tagged to node: Determine solutions to simple inequalities in one variable by inspection.,Use substitution to determine whether a given "
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.6.9A,,,,tagged to node: Interpret the meaning of an inequality that represents a constraint or condition in a mathematical or real-world context
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.6.9B,,,,"tagged to node: Match a graph to its inequality.,Write an inequality to represent a solution set graphed on a number line.,Represent the"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.6.9C,,,,"tagged to node: Create a real-world context to represent a given inequality.,Create a real-world context for given inequalities of the f"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.7.10A,,,,"tagged to node: Solve real-world problems by writing and solving inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d, and inter"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.7.10B,,,,"tagged to node: Represent the solution set of an inequality on a number line.,Solve inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, an"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.7.10C,,,,"tagged to node: Create a real-world context for given inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d."
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.7.11A,,,,"tagged to node: Solve inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d.,Solve inequalities of the forms a(bx+c)<d, a(bx+c)≤d"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.7.11B,,,,tagged to node: Use substitution to determine whether a given number is a solution to an inequality in one variable.
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.8.8A,,,,"tagged to node: Solve real-world problems by writing and solving linear inequalities in one variable, and interpret the solution set in "
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.8.8B,,,,tagged to node: Create a real-world context for a given inequality with variables on both sides of the inequality symbol.
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.8.8C,,,,"tagged to node: Use the addition property of inequality to generate and identify equivalent inequalities.,Use the multiplication propert"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.A1.5B,,,,"tagged to node: Use the addition property of inequality to generate and identify equivalent inequalities.,Use the multiplication propert"
+ladder_only,EE_ONE_VARIABLE_INEQUALITIES_DE,,TX.A2.6F,,,,"tagged to node: Solve inequalities of the forms ∣x∣<d and ∣x∣≤d.,Solve inequalities of the forms ∣x∣>b and ∣x∣≥b.,Solve inequalities of "
+ladder_only,EST,,1.NBT.A.1,,,,tagged to node: Determine the relative size and position of numbers up to 100 by using mental number lines and knowledge of number relat
+ladder_only,EST,,CA.K.CC.4.c,,,,tagged to node: Determine the relative size and position of numbers to up 5 by using mental number paths and knowledge of number relatio
+ladder_only,EST,,FL.1.NSO.1.4,,,,tagged to node: Determine the relative size and position of numbers up to 100 by using mental number lines and knowledge of number relat
+ladder_only,EST,,FL.K.NSO.2.3,,,,tagged to node: Determine the relative size and position of numbers up to 10 by using mental number paths and knowledge of number relati
+ladder_only,EST,,GA.PK.CD,,,,tagged to node: Make a thoughtful guess about the number of objects in a group.
+ladder_only,EST,,K.CC.B.4.c,,,,tagged to node: Determine the relative size and position of numbers to up 5 by using mental number paths and knowledge of number relatio
+ladder_only,EST,,TX.1.2F,,,,tagged to node: Determine the relative size and position of numbers up to 100 by using mental number lines and knowledge of number relat
+ladder_only,EST,,TX.K.2A,,,,tagged to node: Determine the relative size and position of numbers up to 10 by using mental number paths and knowledge of number relati
+ladder_only,EST,,VA.2.NS.2.f,,,,tagged to node: Determine the relative size and position of numbers up to 100 by using mental number lines and knowledge of number relat
+ladder_only,FRA,,3.NF.A.3a,,,,tagged to node: Identify and generate equivalent fractions on number lines.
+ladder_only,FRA,,PA.M03.A,,,,tagged to node: Find a fraction of a set where the result is a whole number.
+ladder_only,FRA,,TX.3.3B,,,,"tagged to node: Given a unit fraction on a number line, name the fraction."
+ladder_only,FRA,,TX.3.3F,,,,"tagged to node: Identify and generate equivalent fractions by using concrete objects.,Identify and generate equivalent fractions by usin"
+ladder_only,FRA,,VA.5.NS.1.d,,,,"tagged to node: Compare and order fractions and decimals by using benchmarks, place value, or number lines."
+ladder_only,MUL,,2.OA.C.4,,,,tagged to node: Represent equal groups by using repeated addition to find the total.
+ladder_only,MUL,,3.OA.2,,,,"tagged to node: Represent and explain division as an unknown factor problem.,Divide by using the relationship between multiplication and"
+ladder_only,MUL,,4.OA.A.2,,,,tagged to node: Solve problems involving multiplicative comparisons.
+ladder_only,MUL,,4.OA.B.4,,,,"tagged to node: Generate factor pairs for a whole number.,Identify prime and composite numbers.,Determine whether a whole number is a mu"
+ladder_only,MUL,,6.NS.B.2,,,,tagged to node: Find mixed-number quotients and remainders with multi-digit dividends and divisors by using the standard algorithm.
+ladder_only,MUL,,AZ.5.OA.B.4,,,,"tagged to node: Generate factor pairs for a whole number.,Identify prime and composite numbers.,Express a composite number as the produc"
+ladder_only,MUL,,CA.5.OA.2.1,,,,tagged to node: Express a composite number as the product of its prime factors.
+ladder_only,MUL,,FL.2.AR.3.2,,,,tagged to node: Represent equal groups by using repeated addition to find the total.
+ladder_only,MUL,,FL.3.AR.3.2,,,,tagged to node: Determine whether a whole number is a multiple of a given one-digit number.
+ladder_only,MUL,,FL.3.NSO.2.2,,,,"tagged to node: Translate between models and addition and multiplication expressions to find a product.,Multiply by using repeated addit"
+ladder_only,MUL,,FL.4.AR.3.1,,,,"tagged to node: Generate factor pairs for a whole number.,Identify prime and composite numbers."
+ladder_only,MUL,,FL.4.NSO.2.5,,,,tagged to node: Multiply a multi-digit whole number by a single-digit whole number and record the partial products in vertical form.
+ladder_only,MUL,,MD.4.NOS.C.7.a,,,,"tagged to node: Fluently multiply within 100.,Fluently divide within 100."
+ladder_only,MUL,,ND.5.AR.OA.4,,,,"tagged to node: Generate factor pairs for a whole number.,Identify prime and composite numbers."
+ladder_only,MUL,,TX.2.6A,,,,tagged to node: Represent equal groups by using repeated addition to find the total.
+ladder_only,MUL,,TX.3.4E,,,,"tagged to node: Translate between models and addition and multiplication expressions to find a product.,Multiply by using repeated addit"
+ladder_only,MUL,,TX.3.4I,,,,"tagged to node: Divide by using the relationship between multiplication and division, making equal groups, and skip-counting."
+ladder_only,MUL,,TX.3.5B,,,,tagged to node: Solve problems involving multiplicative comparisons.
+ladder_only,MUL,,TX.3.5C,,,,"tagged to node: Describe a relationship between quantities by using a multiplicative comparison.,Solve problems involving multiplicative"
+ladder_only,MUL,,TX.4.4C,,,,tagged to node: Multiply a multi-digit whole number by a two-digit whole number by using strategies based on place value concepts and th
+ladder_only,MUL,,TX.5.4A,,,,"tagged to node: Generate factor pairs for a whole number.,Identify prime and composite numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.5,,,,tagged to node: Name the opposite of a rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.6,,,,"tagged to node: Classify numbers as whole numbers, integers, fractions, and rational numbers and describe the relationships between thes"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.6.a,,,,tagged to node: Name the opposite of a rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.6.c,,,,"tagged to node: Name the opposite of a rational number.,Plot integers on a number line.,Plot rational numbers on a number line."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.7.a,,,,"tagged to node: Compare and order integers.,Compare and order rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.7.b,,,,"tagged to node: Compare and order integers.,Compare and order rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.7.c,,,,"tagged to node: Find the absolute value of a rational number.,Plot rational numbers and their absolute values on a number line."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,6.NS.C.7.d,,,,tagged to node: Compare absolute values of rational Numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.EE.B.3,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NA.A.2,,,,tagged to node: Explain patterns in the division of integers and rational numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.1,,,,"tagged to node: Explain patterns in the addition of rational numbers.,Explain patterns in the subtraction of rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.1.a,,,,tagged to node: Add integers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.1.b,,,,"tagged to node: Add integers.,Add rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.1.c,,,,"tagged to node: Write subtraction expressions as unknown addend equations.,Subtract integers.,Subtract rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.1.d,,,,"tagged to node: Add integers.,Add rational numbers.,Write subtraction expressions as unknown addend equations.,Subtract integers.,Subtra"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.2,,,,"tagged to node: Multiply integers.,Multiply rational numbers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.2.a,,,,"tagged to node: Multiply integers.,Multiply rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.2.b,,,,tagged to node: Find quotients of integers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.2.c,,,,"tagged to node: Multiply integers.,Multiply rational numbers.,Find quotients of integers.,Use the order of operations and properties to "
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.2.d,,,,"tagged to node: Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.,Write"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.3,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,7.NS.A.A.1.b,,,,tagged to node: Add vectors.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,AR.7.NCC.9,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,AZ.8.NS.A.3,,,,tagged to node: Show that between any 2 rational numbers is another rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.1.1,,,,tagged to node: Name the opposite of a rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.1.3,,,,tagged to node: Find the absolute value of a rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.1.4,,,,tagged to node: Compare absolute values of rational Numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.3.5,,,,"tagged to node: Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.,Write"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.4.1,,,,"tagged to node: Add integers.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6.NSO.4.2,,,,"tagged to node: Multiply integers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.6NSO.1.2,,,,tagged to node: Name the opposite of a rational number.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.7.NSO.1.2,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.7.NSO.2.2,,,,"tagged to node: Add rational numbers.,Subtract rational numbers.,Multiply rational numbers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,FL.7.NSO.2.3,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,IN.8.NS.4,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,KY.6.NS.2.a,,,,"tagged to node: Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.,Write"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,KY.6.NS.2.b,,,,"tagged to node: Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.,Write"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,MS.6.NS.9b,,,,tagged to node: Add vectors.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,MS.6.NS.9c,,,,"tagged to node: Write subtraction expressions as unknown addend equations.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,MS.6.NS.9d,,,,"tagged to node: Add integers.,Write subtraction expressions as unknown addend equations.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,NA.A.2,,,,tagged to node: Explain patterns in the division of integers and rational numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,NC.6.NS.9,,,,"tagged to node: Add vectors.,Add integers.,Write subtraction expressions as unknown addend equations.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,ND.7.NO.NS.1,,,,"tagged to node: Find the absolute value of a rational number.,Plot rational numbers and their absolute values on a number line."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,ND.8.NO.O.2,,,,"tagged to node: Add rational numbers.,Subtract rational numbers.,Multiply rational numbers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,NE.6.N.1.e,,,,"tagged to node: Name the opposite of a rational number.,Find the absolute value of a rational number.,Plot rational numbers and their ab"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.6.N.1.2,,,,"tagged to node: Compare and order integers.,Compare and order rational numbers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.6.N.2.1,,,,"tagged to node: Add integers.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.6.N.2.2,,,,tagged to node: Write subtraction expressions as unknown addend equations.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.6.N.2.3,,,,"tagged to node: Add integers.,Write subtraction expressions as unknown addend equations.,Subtract integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.7.N.1.1,,,,tagged to node: Compare absolute values of rational Numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.7.N.1.3,,,,"tagged to node: Find the absolute value of a rational number.,Plot rational numbers and their absolute values on a number line."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,OK.7.N.2.1,,,,tagged to node: Find quotients of integers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,SC.6.NR.2.1,,,,tagged to node: Compare and order rational numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,SC.6.NR.2.2,,,,tagged to node: Compare and order rational numbers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,SC.6.PAFR.3.3,,,,tagged to node: Add integers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,SC.6.PAFR.3.5,,,,"tagged to node: Add integers.,Write subtraction expressions as unknown addend equations.,Subtract integers.,Multiply integers.,Find quot"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,SC.8.NR.1.1,,,,"tagged to node: Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.,Write"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.6.2C,,,,"tagged to node: Name the opposite of a rational number.,Plot integers on a number line.,Plot rational numbers on a number line."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.6.3.D,,,,tagged to node: Add integers.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.6.3D,,,,"tagged to node: Subtract integers.,Multiply integers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.6.3E,,,,"tagged to node: Multiply rational numbers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.7.3A,,,,"tagged to node: Add rational numbers.,Subtract rational numbers.,Multiply rational numbers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,TX.7.3B,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_INTEGERS_AND_RATIONALS,,VA.6.CE.2.a,,,,"tagged to node: Write subtraction expressions as unknown addend equations.,Multiply integers.,Find quotients of integers."
+ladder_only,NS_INTEGERS_AND_RATIONALS,,VA.6.CE.2.b,,,,"tagged to node: Add integers.,Write subtraction expressions as unknown addend equations.,Subtract integers.,Multiply integers.,Find quot"
+ladder_only,NS_INTEGERS_AND_RATIONALS,,VA.6.CE.2.d,,,,tagged to node: Use the order of operations and properties to evaluate numerical expressions containing rational numbers and exponents.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,8.NS.A.1,,,,"tagged to node: Classify real numbers as rational or irrational.,Classify a number as rational or irrational by using its decimal repres"
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,8.NS.A.2,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,FL.8.NSO.1.1,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,FL.8.NSO.1.2,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,IN.8.NS.1,,,,tagged to node: Classify a number as rational or irrational by using its decimal representation.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,NE.8.N.1.a,,,,"tagged to node: Classify real numbers as rational or irrational.,Classify a number as rational or irrational by using its decimal repres"
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,NJ.8.NS.A.3,,,,"tagged to node: Explain why the sum or product of two rational numbers is rational.,Explain why the sum of a rational number and an irra"
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,RN.B.3,,,,"tagged to node: Explain why the sum or product of two rational numbers is rational.,Explain why the sum of a rational number and an irra"
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,SC.8.NR.2.1,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,SC.8.NR.2.2,,,,tagged to node: Classify real numbers as rational or irrational.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,TX.8.2A,,,,tagged to node: Classify real numbers as rational or irrational.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,TX.8.2B,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,VA.8.NS.1.c,,,,"tagged to node: Determine rational approximations of irrational numbers.,[Plot/Locate] rational approximations of irrational numbers on "
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,VA.8.NS.2.a,,,,tagged to node: Classify real numbers as rational or irrational.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,VA.8.NS.2.b,,,,tagged to node: Classify a number as rational or irrational by using its decimal representation.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,VA.8.NS.2.c,,,,tagged to node: Classify real numbers as rational or irrational.
+ladder_only,NS_IRRATIONAL_REAL_NUMBERS,,WY.8.NS.1C,,,,tagged to node: Classify real numbers as rational or irrational.
+ladder_only,PS_PROBABILITY,,7.SP.C.5,,,,tagged to node: Understand that probability is a number between 0 and 1 and informally describe the probability of an event by using ter
+ladder_only,PS_PROBABILITY,,7.SP.C.7,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,7.SP.C.7.a,,,,"tagged to node: For a single-stage chance experiment, determine the sample space and assign probabilities to outcomes to develop a proba"
+ladder_only,PS_PROBABILITY,,7.SP.C.7.b,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,PS_PROBABILITY,,7.SP.C.8,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,7.SP.C.8.a,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,7.SP.C.8.b,,,,"tagged to node: Represent the sample space of a multi-stage chance experiment using an organized list, table, or tree diagram.,Calculate"
+ladder_only,PS_PROBABILITY,,7.SP.C.8.c,,,,tagged to node: Infer the probability of an event by using relative frequencies from a simulation of a multi-stage chance experiment.
+ladder_only,PS_PROBABILITY,,AK.6.SP.7,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AR.8.SP.4,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AR.8.SP.5,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AR.8.SP.6,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AZ.8.SP.B.5a,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AZ.8.SP.B.5b,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,AZ.8.SP.B.5c,,,,tagged to node: Infer the probability of an event by using relative frequencies from a simulation of a multi-stage chance experiment.
+ladder_only,PS_PROBABILITY,,FL.7.DP.2.1,,,,"tagged to node: For a single-stage chance experiment, determine the sample space and assign probabilities to outcomes to develop a proba"
+ladder_only,PS_PROBABILITY,,FL.7.DP.2.3,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,FL.7.DP.2.4,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,FL.8.DP.2.1,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,FL.8.DP.2.2,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,FL.8.DP.2.3,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,IN.8.DSP.3,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,IN.8.DSP.4,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,MD.6.DS.A.2,,,,tagged to node: Understand that probability is a number between 0 and 1 and informally describe the probability of an event by using ter
+ladder_only,PS_PROBABILITY,,MD.8.DS.C.6.a,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,MD.8.DS.C.6.b,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,MN.6.1.2.1,,,,"tagged to node: For a single-stage chance experiment, determine the sample space and assign probabilities to outcomes to develop a proba"
+ladder_only,PS_PROBABILITY,,MN.6.1.2.2,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,MN.6.1.2.3,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,PS_PROBABILITY,,NE.6.D.3.a,,,,"tagged to node: For a single-stage chance experiment, determine the sample space and assign probabilities to outcomes to develop a proba"
+ladder_only,PS_PROBABILITY,,NE.6.D.3.c,,,,tagged to node: Understand that probability is a number between 0 and 1 and informally describe the probability of an event by using ter
+ladder_only,PS_PROBABILITY,,NE.6.D.3.d,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,PS_PROBABILITY,,NE.6.d.3.b,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,NE.7.D.3.a,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,NY.6.SP.7,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,PS_PROBABILITY,,NY.6.SP.8,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,NY.6.SP.8b,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,OK.6.D.2.1,,,,tagged to node: Understand that probability is a number between 0 and 1 and informally describe the probability of an event by using ter
+ladder_only,PS_PROBABILITY,,OK.6.D.2.2,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,OK.6.D.2.3,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,PS_PROBABILITY,,OK.A1.D.2.3,,,,tagged to node: Infer the probability of an event by using relative frequencies from a simulation of a multi-stage chance experiment.
+ladder_only,PS_PROBABILITY,,OK.PA.D.2.1,,,,"tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.,Use a probability estimate or "
+ladder_only,PS_PROBABILITY,,PA.CC.2.4.HS.B.7,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,SC.6.DPSR.2.2,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,SC.6.DPSR.2.3,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,SC.6.DSPR.2.1,,,,tagged to node: Understand that probability is a number between 0 and 1 and informally describe the probability of an event by using ter
+ladder_only,PS_PROBABILITY,,SC.8.DPSR.2.1,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,TN.8.SP.B.4,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,TN.8.SP.B.4a,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,TN.8.SP.B.4b,,,,tagged to node: Calculate the probability of an event by using the results of a multi-stage chance experiments.
+ladder_only,PS_PROBABILITY,,TX.7.6.E,,,,tagged to node: Use a probability model to calculate the probabilities of events for a chance experiment.
+ladder_only,PS_PROBABILITY,,TX.7.6A,,,,"tagged to node: For a single-stage chance experiment, determine the sample space and assign probabilities to outcomes to develop a proba"
+ladder_only,PS_PROBABILITY,,TX.7.6B,,,,tagged to node: Infer the probability of an event by using relative frequencies from a simulation of a multi-stage chance experiment.
+ladder_only,PS_PROBABILITY,,TX.7.6C,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,TX.7.6D,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,TX.7.6H,,,,"tagged to node: Use a probability estimate or probability model to predict approximate long-run frequencies, and explain why actual freq"
+ladder_only,PS_PROBABILITY,,TX.7.6I,,,,tagged to node: Infer the probabilities of events and develop a probability model by using relative frequencies from a chance experiment
+ladder_only,RP_COORDINATE_SYSTEM,,5.G.A.1,,,,"tagged to node: Construct quadrant I of a coordinate system in the plane.,Write an ordered pair to describe the exact location of a poin"
+ladder_only,RP_COORDINATE_SYSTEM,,5.G.A.2,,,,"tagged to node: Write an ordered pair to describe the exact location of a point plotted in quadrant I of the coordinate plane.,Plot the "
+ladder_only,RP_COORDINATE_SYSTEM,,6.G.A.3,,,,"tagged to node: Find the distance between two points that lie on a vertical or horizontal line by counting units (unit intervals).,Use t"
+ladder_only,RP_COORDINATE_SYSTEM,,6.NS.C.6,,,,"tagged to node: Construct and name the 4 quadrants of the coordinate plane.,Write an ordered pair to describe the location of a point wi"
+ladder_only,RP_COORDINATE_SYSTEM,,6.NS.C.6.b,,,,"tagged to node: Construct and name the 4 quadrants of the coordinate plane.,Determine the signs of the x- and y-coordinates of a point i"
+ladder_only,RP_COORDINATE_SYSTEM,,6.NS.C.6.c,,,,tagged to node: Write an ordered pair to describe the location of a point with integer coordinates plotted in any quadrant of the coordi
+ladder_only,RP_COORDINATE_SYSTEM,,6.NS.C.8,,,,"tagged to node: Plot points with integer coordinates in any quadrant of the coordinate plane.,Solve problems involving all 4 quadrants o"
+ladder_only,RP_COORDINATE_SYSTEM,,8.G.B.8,,,,tagged to node: Use the Pythagorean Theorem to find the distance between two points in the coordinate plane that do not lie on a horizon
+ladder_only,RP_COORDINATE_SYSTEM,,FL.5.GR.4.1,,,,tagged to node: Construct quadrant I of a coordinate system in the plane.
+ladder_only,RP_COORDINATE_SYSTEM,,FL.5.GR.4.2,,,,"tagged to node: Write an ordered pair to describe the exact location of a point plotted in quadrant I of the coordinate plane.,Plot the "
+ladder_only,RP_COORDINATE_SYSTEM,,FL.6.GR.1.1,,,,"tagged to node: Construct and name the 4 quadrants of the coordinate plane.,Write an ordered pair to describe the location of a point wi"
+ladder_only,RP_COORDINATE_SYSTEM,,FL.6.GR.1.2,,,,"tagged to node: Find the distance between two points that lie on a vertical or horizontal line by counting units (unit intervals).,Use t"
+ladder_only,RP_COORDINATE_SYSTEM,,FL.6.GR.1.3,,,,"tagged to node: Solve problems involving all 4 quadrants of the coordinate plane.,Solve problems involving the distance between two poin"
+ladder_only,RP_COORDINATE_SYSTEM,,FL.8.GR.1.2,,,,tagged to node: Use the Pythagorean Theorem to find the distance between two points in the coordinate plane that do not lie on a horizon
+ladder_only,RP_COORDINATE_SYSTEM,,FL.912.GR.3.2,,,,"tagged to node: Use the Pythagorean theorem to derive the distance formula: (x2-x1)2+(y2-y1)2.,Use the distance formula to determine the"
+ladder_only,RP_COORDINATE_SYSTEM,,FL.912.GR.3.3,,,,"tagged to node: Use the Pythagorean theorem to derive the distance formula: (x2-x1)2+(y2-y1)2.,Use the distance formula to determine the"
+ladder_only,RP_COORDINATE_SYSTEM,,FL.912.GR.3.4,,,,"tagged to node: Use the Pythagorean theorem to derive the distance formula: (x2-x1)2+(y2-y1)2.,Use the distance formula to determine the"
+ladder_only,RP_COORDINATE_SYSTEM,,NE.7.G.2.b,,,,"tagged to node: Find the distance between two points that lie on a vertical or horizontal line by counting units (unit intervals).,Use t"
+ladder_only,RP_COORDINATE_SYSTEM,,SC.7.MGSR.3.1,,,,"tagged to node: Find the distance between two points that lie on a vertical or horizontal line by counting units (unit intervals).,Use t"
+ladder_only,RP_COORDINATE_SYSTEM,,TX.5.8A,,,,tagged to node: Construct quadrant I of a coordinate system in the plane.
+ladder_only,RP_COORDINATE_SYSTEM,,TX.5.8B,,,,"tagged to node: Write an ordered pair to describe the exact location of a point plotted in quadrant I of the coordinate plane.,Plot the "
+ladder_only,RP_COORDINATE_SYSTEM,,TX.5.8C,,,,"tagged to node: Write an ordered pair to describe the exact location of a point plotted in quadrant I of the coordinate plane.,Plot the "
+ladder_only,RP_COORDINATE_SYSTEM,,TX.6.11,,,,"tagged to node: Construct and name the 4 quadrants of the coordinate plane.,Write an ordered pair to describe the location of a point wi"
+ladder_only,RP_COORDINATE_SYSTEM,,TX.8.7D,,,,tagged to node: Use the Pythagorean Theorem to find the distance between two points in the coordinate plane that do not lie on a horizon
+ladder_only,RP_COORDINATE_SYSTEM,,TX.G.2B,,,,"tagged to node: Use the Pythagorean theorem to derive the distance formula: (x2-x1)2+(y2-y1)2.,Use the distance formula to determine the"
+ladder_only,RP_COORDINATE_SYSTEM,,VA.6.MG.3.a,,,,tagged to node: Construct and name the 4 quadrants of the coordinate plane.
+ladder_only,RP_COORDINATE_SYSTEM,,VA.6.MG.3.b,,,,"tagged to node: Determine the signs of the x- and y-coordinates of a point in a given quadrant.,Determine a point’s quadrant by using th"
+ladder_only,RP_COORDINATE_SYSTEM,,VA.6.MG.3.c,,,,tagged to node: Plot points with integer coordinates in any quadrant of the coordinate plane.
+ladder_only,RP_COORDINATE_SYSTEM,,VA.6.MG.3.d,,,,tagged to node: Write an ordered pair to describe the location of a point with integer coordinates plotted in any quadrant of the coordi
+ladder_only,RP_COORDINATE_SYSTEM,,VA.6.MG.3.e,,,,tagged to node: Write an ordered pair to describe the location of a point with integer coordinates plotted in any quadrant of the coordi
+ladder_only,TIM,,AL.PK.MAT4aOP,,,,tagged to node: Classify times as moments in time or durations of time.
+ladder_only,TIM,,GA.PK.CD,,,,tagged to node: Classify times as moments in time or durations of time.
+ladder_only,TIM,,PA.M04.D,,,,tagged to node: Tell and write time to the nearest minute.
+ladder_only,TIM,,SC.PK.MTE,,,,"tagged to node: Describe and compare time intervals.,Order events in time and describe their positions."
+ladder_only,WHO,,1.NBT.B.2,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,1.NBT.B.2.a,,,,tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.
+ladder_only,WHO,,1.NBT.B.2.b,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,1.NBT.B.2.c,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,2.NBT.A.1,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,2.NBT.A.1.a,,,,tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.
+ladder_only,WHO,,2.NBT.A.1.b,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,4.NBT.B.5,,,,tagged to node: Multiply and divide by powers of 10 and their multiples by using the multiplicative relationships between place value un
+ladder_only,WHO,,5.NBT.A.3a,,,,tagged to node: Read and write numbers in word form.
+ladder_only,WHO,,IN.4.NS.4,,,,tagged to node: Read and write numbers in word form.
+ladder_only,WHO,,OK.3.N.2.4,,,,tagged to node: Round numbers by using place value.
+ladder_only,WHO,,PA.M03.A,,,,"tagged to node: Compare whole numbers by using place value.,Order whole numbers by using place value."
+ladder_only,WHO,,PA.M03.D,,,,tagged to node: Round numbers by using place value.
+ladder_only,WHO,,PA.M03.D-M.1.3.3,,,,tagged to node: Round numbers by using place value.
+ladder_only,WHO,,TX.1.2E,,,,"tagged to node: Compare whole numbers by using place value.,Order whole numbers by using place value."
+ladder_only,WHO,,TX.4.4B,,,,tagged to node: Multiply and divide by powers of 10 and their multiples by using the multiplicative relationships between place value un
+ladder_only,WHO,,VA.2.CE.1.a,,,,tagged to node: Round numbers by using place value.
+ladder_only,WHO,,VA.3.NS.1.b,,,,"tagged to node: Identify place value units and understand that each one is composed of ten of the next smaller unit.,Determine the value"
+ladder_only,WHO,,VA.4.NS.1.a,,,,tagged to node: Read and write numbers in word form.
+ladder_only,WHO,,VA.4.NS.1.b,,,,tagged to node: Read and write numbers in word form.
+ladder_only,WHO,,VS.2.NS.1.g,,,,tagged to node: Round numbers by using place value.
+workbook_only,ADD,,1.OA.B.4,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,1.OA.D.7,,,,tagged to concept: introduce properties of operations to add and subtract whole numbers
+workbook_only,ADD,,2.OA.A.1,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,AK.3.OA.8,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,CA.1.OA.4,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,CA.1.OA.7,,,,tagged to concept: introduce properties of operations to add and subtract whole numbers
+workbook_only,ADD,,CA.2.OA.1,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,CA.3.OA.1,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,CA.3.OA.3,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,CA.5.NBT.7,,,,tagged to concept: Add and subtract fractions
+workbook_only,ADD,,CA.K.NBT.1,,,,tagged to concept: Compose and decompose whole numbers
+workbook_only,ADD,,CA.K.OA.3,,,,tagged to concept: Compose and decompose whole numbers
+workbook_only,ADD,,CA.K.OA.4,,,,tagged to concept: Compose and decompose whole numbers
+workbook_only,ADD,,FL.1.AR.2.1,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,FL.2.AR.1.1,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,FL.3.AR.1.1,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,FL.3.AR.1.2,,,,"tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3,Add and subtract decimals"
+workbook_only,ADD,,FL.3.NSO.2.2,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,FL.4.NSO.2.2,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,FL.5.AR.1.1,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,K.NBT.A.1,,,,tagged to concept: Compose and decompose whole numbers
+workbook_only,ADD,,OK.4.A.2.3,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,TX.1.5F,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,TX.2.4.B,,,,tagged to concept: Add and subtract multi-digit whole numbers (full algorithms)
+workbook_only,ADD,,TX.2.4C,,,,tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3
+workbook_only,ADD,,TX.2.4D,,,,tagged to concept: Add and subtract multi-digit whole numbers (full algorithms)
+workbook_only,ADD,,TX.2.6A,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,TX.2.7C,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ADD,,TX.3.4K,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,TX.3.5A,,,,"tagged to concept: Moved to Expressions and Equations (word problems concept). MF 6/3,Add and subtract decimals"
+workbook_only,ADD,,TX.4.4D,,,,tagged to concept: Add and subtract decimals
+workbook_only,ADD,,VA.2.CE.1.g,,,,tagged to concept: Count on to add and subtract whole numbers
+workbook_only,ANG,,VA.4.MG.5.e,,,,"tagged to concept: Identify square corners (right angles) and compare other corners as larger/smaller than a square corner
+
+Square corner a"
+workbook_only,ANG,,VA.5.MG.3.g,,,,"tagged to concept: Recognize angle measure as additive; compose and decompose; solve unknown angles
+
+Angle measure is additive when an angl"
+workbook_only,COM,,1.NBT.A.1,,,,"tagged to concept: Compare by counting,Compare numbers by using their order on the number path/line,Order quantities, numerals, and length "
+workbook_only,COM,,1.OA.C.5,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,2.NBT.A.2,,,,tagged to concept: Compare numbers by using their order on the number path/line
+workbook_only,COM,,AK.1.CC.3,,,,"tagged to concept: Order quantities, numerals, and lengths to 6 and beyond"
+workbook_only,COM,,AK.1.CC.5,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,AL.K.FC.7,,,,tagged to concept: Compare written numerals to 10
+workbook_only,COM,,AL.PK.MAT2cOP-4,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,AR.2.NPV.4,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,CA.1.NBT.1,,,,"tagged to concept: Compare by counting,Compare numbers by using their order on the number path/line"
+workbook_only,COM,,CA.1.OA.1z,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,CA.1.OA.5,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,CA.2.NBT.2,,,,tagged to concept: Compare numbers by using their order on the number path/line
+workbook_only,COM,,CA.2.OA.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,CA.K.CC.1,,,,"tagged to concept: Compare small sets by matching,Compare numbers by using their order on the number path/line,Order quantities, numerals, "
+workbook_only,COM,,CA.K.CC.2,,,,tagged to concept: Compare small sets by matching
+workbook_only,COM,,CA.K.CC.4,,,,"tagged to concept: Compare small sets by matching,Compare by counting,Identify and use ordinal numbers from ""first"" to ""tenth"""
+workbook_only,COM,,CA.K.CC.4.a,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,CA.K.CC.4.b,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,CA.K.CC.4.c,,,,"tagged to concept: Compare numbers by using their order on the number path/line,Order quantities, numerals, and length  to 5,Order quantiti"
+workbook_only,COM,,CA.K.CC.5,,,,"tagged to concept: Compare small sets by matching,Compare by counting"
+workbook_only,COM,,CA.K.OA.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,FL.1.AR.1.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,FL.1.NSO.1.2,,,,tagged to concept: Compare numbers by using their order on the number path/line
+workbook_only,COM,,FL.1.NSO.1.3,,,,tagged to concept: Compare written numerals to 10
+workbook_only,COM,,FL.2.AR.1.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,FL.2.NSO.1.2,,,,tagged to concept: Compare numbers by using their order on the number path/line
+workbook_only,COM,,FL.K.AR.1.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,FL.K.NSO.1.1,,,,"tagged to concept: Compare small sets by matching,Compare by counting"
+workbook_only,COM,,FL.K.NSO.1.2,,,,"tagged to concept: Compare small sets by matching,Compare by counting,Compare written numerals to 10,Order quantities, numerals, and length"
+workbook_only,COM,,FL.K.NSO.2.3,,,,"tagged to concept: Compare numbers by using the number line place value,Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,K.CC.A.1,,,,"tagged to concept: Compare small sets by matching,Compare numbers by using their order on the number path/line,Order quantities, numerals, "
+workbook_only,COM,,K.CC.B.4,,,,"tagged to concept: Compare small sets by matching,Compare by counting,Identify and use ordinal numbers from ""first"" to ""tenth"""
+workbook_only,COM,,K.CC.B.4.a,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,K.CC.B.4.b,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence."
+workbook_only,COM,,K.CC.B.5,,,,"tagged to concept: Compare small sets by matching,Compare by counting"
+workbook_only,COM,,K.OA.A.1,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,KS.1.NBT.3,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,KS.2.NBT.4,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,KS.PK.M.CC.p4.8,,,,"tagged to concept: Compare written numerals to 10,Compare numbers by using the number line place value"
+workbook_only,COM,,MD.1.NOS.B.5,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,MD.2.NOS.A.4,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,MD.K.NOS.C.10,,,,"tagged to concept: Determine how many more or less,Compare numbers by using the number line place value"
+workbook_only,COM,,MN.2.3.6.1,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COM,,OR.PK.CC,,,,"tagged to concept: Identify the “first” and ""second"" objects in a sequence.,Order quantities, numerals, and lengths to 6 and beyond"
+workbook_only,COM,,TX.1.2A,,,,tagged to concept: Compare numbers by using their order on the number path/line
+workbook_only,COM,,TX.1.3A,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,TX.2.4A,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,TX.K.2A,,,,"tagged to concept: Compare small sets by matching,Compare numbers by using their order on the number path/line,Order quantities, numerals, "
+workbook_only,COM,,TX.K.2B,,,,tagged to concept: Compare small sets by matching
+workbook_only,COM,,TX.K.2C,,,,"tagged to concept: Compare small sets by matching,Compare by counting"
+workbook_only,COM,,TX.K.2D,,,,"tagged to concept: Compare by counting,Compare written numerals to 10,Determine how many more or less"
+workbook_only,COM,,TX.K.2E,,,,"tagged to concept: Compare small sets by matching,Compare written numerals to 10,Compare numbers by using their order on the number path/li"
+workbook_only,COM,,TX.K.2F,,,,tagged to concept: Compare small sets by matching
+workbook_only,COM,,TX.K.2H,,,,"tagged to concept: Compare written numerals to 10,Identify and use ordinal numbers from ""first"" to ""tenth"""
+workbook_only,COM,,TX.K.3A,,,,tagged to concept: Determine how many more or less
+workbook_only,COM,,VA.K.NS.2.g,,,,tagged to concept: Compare numbers by using the number line place value
+workbook_only,COU,,CA.1.OA.5,,,,"tagged to concept: Count on, keeping track by using spatial, auditory, or rhythmic patterns,Count by fives and twos"
+workbook_only,COU,,CA.1.OA.6,,,,"tagged to concept: Count on, keeping track by using spatial, auditory, or rhythmic patterns"
+workbook_only,COU,,CA.K.OA.A.1,,,,"tagged to concept: Count on, keeping track by using spatial, auditory, or rhythmic patterns"
+workbook_only,COU,,CA.NBT.A.1,,,,tagged to concept: Count by fives and twos
+workbook_only,COU,,K.OA.A.1,,,,"tagged to concept: Count on, keeping track by using spatial, auditory, or rhythmic patterns"
+workbook_only,COU,,NC.1.OA.6,,,,"tagged to concept: Count on, keeping track by using spatial, auditory, or rhythmic patterns"
+workbook_only,EST,,2.MD.A,,,,tagged to concept: Make a thoughtful guess about the number of objects in a group
+workbook_only,EST,,3.MD.A.2,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,AK.3.MD.3,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,AZ.PK.3.3.b,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,CA.3.MD.2,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,CA.3.OA.8,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,CA.4.NBT.3,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,CA.5.NBT.4,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.1.M.1.1,,,,"tagged to concept: Make a thoughtful guess about the number of objects in a group,Estimate by scanning a group of objects and relating the "
+workbook_only,EST,,FL.2.M.1.1,,,,"tagged to concept: Make a thoughtful guess about the number of objects in a group,Estimate by scanning a group of objects and relating the "
+workbook_only,EST,,FL.3.FR.2.1,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.4.FR.1.4,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.4.NSO.1.3,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.4.NSO.1.4,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.4.NSO.1.5,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.4.NSO.2.5,,,,tagged to concept: Estimate by decomposing or partitioning a set into subsets then recomposing the numerosity
+workbook_only,EST,,FL.5.NSO.1.4,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,FL.5.NSO.2.4,,,,tagged to concept: Estimate by decomposing or partitioning a set into subsets then recomposing the numerosity
+workbook_only,EST,,GA.3.MDR.5.5,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,ID.PK.40.a.12,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,IN.2.M.3,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,MD.1.GR.C.5,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,MD.2.GR.C.8,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,MD.4.NOS.E.13.a,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,MN.5.2.3.3,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,MT.PK.4.11.h,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,NC.3.MD.2,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,OK.3.N.2.4,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,OK.4.N.2.3,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,OK.5.GM.3.5,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,PA.M03.D-M.1.2.1,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,PA.M04.A-T.2.1.4,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,SC.3.MGSR.2.4,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,SC.5.MGSR.2.2,,,,"tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line,Estimate by using benchmarks"
+workbook_only,EST,,TX.2.9E,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,TX.3.2C,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,TX.3.2D,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.3.3A-B,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.3.4B,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.4.2C,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,TX.4.2D,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.4.3G,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.4.4G,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.5.2C,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,TX.5.3A,,,,tagged to concept: Estimate by decomposing or partitioning a set into subsets then recomposing the numerosity
+workbook_only,EST,,VA.2.CE.1.a,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,VA.3.MG.1.b,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,VA.3.MG.1.b.1,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,VA.4.CE.3.a-b,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,VA.4.MG.1.b,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,VA.4.MG.1.b.i-ii,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,VA.5.CE.2.b-c,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,VA.5.CE.3.c.ii,,,,"tagged to concept: Determine the relative size and position of numbers up to 1,000"
+workbook_only,EST,,VA.5.MG.1.b,,,,tagged to concept: Estimate by using benchmarks
+workbook_only,EST,,VA.5.MG.1.b.i-ii,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,EST,,VA.5.MG.2.b,,,,tagged to concept: Estimate by scanning a group of objects and relating the results to a mental number line
+workbook_only,FRA,,1.G.A.3,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,2.G.A.3,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,3.G.A.2,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,3.NF.A.3a-c,,,,tagged to concept: Identify and generate equivalent fractions
+workbook_only,FRA,,CA.1.G.3,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,CA.2.G.3,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,CA.3.G.2,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,CA.3.NF.3.d,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,CA.4.NF.2,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,FL.5.FR.1.1,,,,tagged to concept: Interpret a fraction as division
+workbook_only,FRA,,GA.4.NR.4.2,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,GA.5.NR.3.2,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,KS.3.NF.3d,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,KS.4.NF.2,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,MD.4.NOS.D.9.a,,,,tagged to concept: Identify and generate equivalent fractions
+workbook_only,FRA,,MN.3.3.5.11,,,,tagged to concept: Identify and generate equivalent fractions
+workbook_only,FRA,,MN.3.3.5.12,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,MO.3.NF.A.2.a,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,MO.5.NF.A.1,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,MO.5.NF.B.7.b,,,,tagged to concept: Determine “a fraction of something”
+workbook_only,FRA,,NE.4.N.2.b,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,OH.2.G.3,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,OK.3.N.3.2,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,SC.3.NR.2.2,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,SC.5.NR.2.1,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,TX.2.3A-D,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,TX.3.3H,,,,tagged to concept: Compare and order fractions by using the number line
+workbook_only,FRA,,TX.4.3D,,,,tagged to concept: Compare and order fractions by using the number line
+workbook_only,FRA,,VA.2.NS.3.a,,,,tagged to concept: Identify numbers between whole numbers on the number line
+workbook_only,FRA,,VA.4.NS.3.a-b,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,FRA,,VA.4.NS.3.d,,,,tagged to concept: Compare and order fractions by using equivalence
+workbook_only,MUL,,3.OA.A.3,,,,"tagged to concept: Define multiplication of whole numbers and multiply,Define division with unknown factor equations"
+workbook_only,MUL,,CA.3.NBT.3,,,,tagged to concept: Interpret a whole number multiplication equation as a comparison
+workbook_only,MUL,,CA.3.OA.2,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,CA.3.OA.3,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,CA.3.OA.5,,,,tagged to concept: Define division with unknown factor equations
+workbook_only,MUL,,CA.3.OA.7,,,,tagged to concept: Develop and apply properties of operations to multiply and divide
+workbook_only,MUL,,CA.4.NBT.5,,,,tagged to concept: Interpret a whole number multiplication equation as a comparison
+workbook_only,MUL,,CA.4.NBT.6,,,,"tagged to concept: Develop the standard algorithm for multi-digit multiplication,Divide multi-digit whole numbers by one-digit numbers (exa"
+workbook_only,MUL,,CA.4.NF.4.a,,,,tagged to concept: Divide multi-digit whole numbers by multi-digit whole numbers
+workbook_only,MUL,,CA.4.OA.3,,,,tagged to concept: Divide multi-digit whole numbers by one-digit numbers (exact division)
+workbook_only,MUL,,CA.5.NBT.5,,,,tagged to concept: Develop and apply properties of operations to multiply and divide
+workbook_only,MUL,,CA.5.NBT.6,,,,tagged to concept: Introduce division with remainders
+workbook_only,MUL,,FL.3.AR.2.3,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,FL.4.AR.2.2,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,FL.5.AR.2.4,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,MD.4.NOS.C.7.b,,,,tagged to concept: Develop and apply properties of operations to multiply and divide
+workbook_only,MUL,,MN.4.3.6.1,,,,tagged to concept: Develop and apply properties of operations to multiply and divide
+workbook_only,MUL,,MN.5.3.5.14,,,,tagged to concept: Develop the standard algorithm for multi-digit multiplication
+workbook_only,MUL,,NC.4.MD.4,,,,tagged to concept: Fluently multiply and divide (basic facts)
+workbook_only,MUL,,OK.3.N.2.8,,,,"tagged to concept: Define multiplication of whole numbers and multiply,Develop the standard algorithm for multi-digit multiplication"
+workbook_only,MUL,,OK.4.N.1.3,,,,tagged to concept: Develop and apply properties of operations to multiply and divide
+workbook_only,MUL,,OK.5.N.2.4,,,,tagged to concept: Develop the standard algorithm for multi-digit multiplication
+workbook_only,MUL,,TX.3.3C,,,,tagged to concept: Divide multi-digit whole numbers by multi-digit whole numbers
+workbook_only,MUL,,TX.3.3D,,,,tagged to concept: Divide multi-digit whole numbers by multi-digit whole numbers
+workbook_only,MUL,,TX.3.4H,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,TX.3.5D,,,,tagged to concept: Define multiplication of whole numbers and multiply
+workbook_only,MUL,,TX.4.3A,,,,tagged to concept: Divide multi-digit whole numbers by multi-digit whole numbers
+workbook_only,MUL,,TX.4.4E,,,,"tagged to concept: Interpret a whole number multiplication equation as a comparison,Develop the standard algorithm for multi-digit multipli"
+workbook_only,MUL,,TX.4.4F,,,,tagged to concept: Develop the standard algorithm for multi-digit multiplication
+workbook_only,TIM,,4.OA.A.3,,,,"tagged to concept: Solve multistep elapsed time problems,Estimate and check the reasonableness of durations"
+workbook_only,TIM,,CA.2.MD.7,,,,"tagged to concept: Read and write moments to the nearest 5 minutes
+Use a.m. and p.m."
+workbook_only,TIM,,CA.2.NBT.7.1,,,,tagged to concept: Estimate and check the reasonableness of durations
+workbook_only,TIM,,CA.4.OA.3,,,,"tagged to concept: Solve multistep elapsed time problems,Estimate and check the reasonableness of durations"
+workbook_only,TIM,,FL.2.M.2.1,,,,"tagged to concept: Read and write moments to the nearest 5 minutes
+Use a.m. and p.m."
+workbook_only,TIM,,OK.3.GM.3.1,,,,"tagged to concept: Read and write moments to the nearest 5 minutes
+Use a.m. and p.m."
+workbook_only,TIM,,TX.5.3A,,,,tagged to concept: Estimate and check the reasonableness of durations
+workbook_only,WHO,,1.NBT.B.2-2c,,,,"tagged to concept: •	Identify the place value unit
+•	Read numbers
+•	Understand the value of a digit according to the place of the digit wit"
+workbook_only,WHO,,2.NBT.A.1-1b,,,,"tagged to concept: •	Identify the place value unit
+•	Read numbers
+•	Understand the value of a digit according to the place of the digit wit"

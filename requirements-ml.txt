@@ -1,0 +1,12 @@
+# Embedding / LLM stack. Install ONLY if you are generating alignment
+# candidates. Pulls in PyTorch (~2GB) and pins numpy + transformers versions,
+# so keep it out of the environment everyone else uses.
+#
+#   pip install -r requirements.txt -r requirements-ml.txt
+#
+# Alternative, and probably the better one: run the embedding step inside the
+# environment your fine-tuned model already lives in, write the output to
+# data/source/predictions/, and let this project read that file. Then nothing
+# here ever needs torch.
+sentence-transformers>=2.5
+anthropic>=0.40

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MH2 Macro — reference layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFBF9;
+  --surface:#FFFFFF;
+  --sunk:#F4F4F1;
+  --ink:#1A1D21;
+  --ink-2:#5A6169;
+  --ink-3:#949AA0;
+  --rule:#E4E5E2;
+  --rule-2:#CFD1CD;
+  --accent:#24455C;
+  --accent-bg:#ECF1F4;
+  --judge:#8A6A2B;
+  --judge-bg:#FAF3E4;
+  --settled:#3E6B45;
+  --settled-bg:#EDF3EC;
+  --sans:'Inter',-apple-system,system-ui,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --mono:'JetBrains Mono','SF Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+.shell{max-width:1440px;margin:0 auto;background:var(--surface);min-height:100vh;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--rule)}
+.wordmark{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-2)}
+.who{font-size:12px;color:var(--ink-2)}
+.who b{font-weight:500;color:var(--ink)}
+
+.body{display:grid;grid-template-columns:224px minmax(0,1fr)}
+.rail{border-right:1px solid var(--rule);background:var(--paper);padding:16px 12px;min-height:900px}
+.navitem{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:5px;font-size:13px;color:var(--ink-2);margin-bottom:1px}
+.navitem.on{background:var(--surface);color:var(--ink);font-weight:500;box-shadow:inset 0 0 0 1px var(--rule)}
+.navitem .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+.domain{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:20px 0 8px 9px}
+.stem{display:flex;align-items:center;gap:6px;padding:5px 9px;font-size:13px;color:var(--ink-2);border-radius:5px}
+.stem .n{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.stem.open{background:var(--sunk);color:var(--ink);font-weight:500}
+.stem.none{color:var(--ink-3)}
+.stem.none .n{font-family:var(--sans);font-size:10.5px;font-style:italic}
+.cs{padding:4px 9px 4px 26px;font-size:12.5px;color:var(--ink-2);border-radius:5px}
+.cs.on{background:var(--accent-bg);color:var(--accent);font-weight:500}
+.caret{width:9px;color:var(--ink-3);font-size:10px}
+
+.main{padding:20px 26px 40px}
+.crumb{font-size:12px;color:var(--ink-3)}
+.h1row{display:flex;align-items:baseline;justify-content:space-between;margin-top:4px}
+h1{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.01em}
+.ruled{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:18px;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+.ncard{border:1px solid var(--rule);border-radius:6px;padding:9px 11px;background:var(--surface)}
+.ncard.cur{border:1px solid var(--accent);background:var(--accent-bg)}
+.ncard.anchorless{border:1px dashed var(--rule-2);background:var(--paper)}
+.nnum{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink-3)}
+.ngoal{font-family:var(--serif);font-size:13.5px;line-height:1.35;margin-top:3px}
+.ncard.cur .ngoal{font-weight:600}
+.nstat{margin-top:8px;font-size:11px;color:var(--ink-3)}
+.nstat.done{color:var(--settled)}
+.nstat.open{color:var(--ink-2)}
+.nstat.warn{color:var(--judge)}
+
+.nodehead{display:flex;gap:24px;align-items:flex-start;margin:18px 0}
+.nodehead .txt{flex:1;min-width:0}
+.nodehead h2{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.3}
+.spec{font-family:var(--serif);font-size:14px;line-height:1.55;color:var(--ink-2);margin-top:5px;max-width:70ch}
+.anchors{flex-shrink:0;text-align:right}
+.anchors .lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.code{font-family:var(--mono);font-size:11.5px;background:var(--sunk);border-radius:4px;padding:2px 7px;display:inline-block;margin-left:4px;color:var(--ink-2)}
+
+.panes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pane{border:1px solid var(--rule);border-radius:8px;background:var(--surface);display:flex;flex-direction:column}
+.phead{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--rule)}
+.pname{font-size:14px;font-weight:500}
+.tag{font-size:10.5px;padding:2px 8px;border-radius:4px;letter-spacing:.01em}
+.tag.det{background:var(--settled-bg);color:var(--settled)}
+.tag.mod{background:var(--judge-bg);color:var(--judge)}
+.psec{padding:11px 14px;border-bottom:1px solid var(--rule)}
+.psec:last-child{border-bottom:none}
+.slabel{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+.slabel .r{float:right;text-transform:none;letter-spacing:0;font-size:11px;color:var(--ink-3)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--mono);font-size:11px;background:var(--sunk);color:var(--ink-2);border-radius:4px;padding:3px 7px}
+.chipnote{font-size:11px;color:var(--ink-3);margin-top:7px;line-height:1.45}
+.chipnote code{font-family:var(--mono);font-size:10.5px}
+
+.row{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--rule)}
+.row:first-of-type{border-top:none;padding-top:2px}
+.box{width:14px;height:14px;border:1px solid var(--rule-2);border-radius:3px;flex-shrink:0;margin-top:3px;background:var(--surface)}
+.box.on{background:var(--settled);border-color:var(--settled);position:relative}
+.box.on:after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(42deg)}
+.rtext{flex:1;min-width:0;font-family:var(--serif);font-size:13.5px;line-height:1.5}
+.rid{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-right:7px}
+.why{font-size:11.5px;color:var(--ink-3);line-height:1.45;margin-top:5px;font-family:var(--sans)}
+.why .sc{font-family:var(--mono);margin-left:5px}
+.mv{flex-shrink:0;color:var(--ink-3);font-size:12px;margin-top:3px;letter-spacing:-.05em}
+.more{font-size:12px;color:var(--accent);margin-top:9px}
+.btn{font-size:12.5px;font-family:var(--sans);padding:6px 13px;border:1px solid var(--rule-2);background:var(--surface);border-radius:5px;color:var(--ink);margin-top:10px}
+.btn.wide{width:100%}
+.empty{font-size:11.5px;color:var(--ink-3);line-height:1.5}
+
+.lower{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:14px;margin-top:14px}
+.mets{display:flex;gap:9px;margin-top:9px}
+.met{flex:1;background:var(--sunk);border-radius:6px;padding:9px 11px}
+.met .k{font-size:11px;color:var(--ink-3)}
+.met .v{font-size:21px;font-weight:500;margin-top:1px}
+.grow{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--rule)}
+.gstate{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+.foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:13px;border-top:1px solid var(--rule)}
+.foot p{font-size:12px;color:var(--ink-3);max-width:62ch;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <span class="wordmark">MH2 · STANDARDS ALIGNMENT REVIEW</span>
+    <span class="who">Reviewing as <b>J. Whitfield</b></span>
+  </div>
+
+  <div class="body">
+
+    <aside class="rail">
+      <div class="navitem on">Review</div>
+      <div class="navitem">Gap pool <span class="n">886</span></div>
+      <div class="navitem">Search</div>
+      <div class="navitem">Leaves <span class="n">41</span></div>
+      <div class="navitem">Export</div>
+
+      <div class="domain">Number systems and structures</div>
+      <div class="stem"><span class="caret">›</span>Counting<span class="n">18/24</span></div>
+      <div class="stem"><span class="caret">›</span>Subitization<span class="n">9/9</span></div>
+      <div class="stem"><span class="caret">›</span>Whole numbers and base ten<span class="n">4/38</span></div>
+      <div class="stem open"><span class="caret">⌄</span>Fractions<span class="n">31/74</span></div>
+      <div class="cs">Unit fractions</div>
+      <div class="cs on">Partitioning a whole</div>
+      <div class="cs">Equivalence</div>
+      <div class="cs">Comparing fractions</div>
+      <div class="stem"><span class="caret">›</span>Comparing and ordering<span class="n">0/22</span></div>
+      <div class="stem"><span class="caret">›</span>Estimating<span class="n">6/14</span></div>
+      <div class="stem none"><span class="caret">·</span>Rounding<span class="n">no ladder</span></div>
+
+      <div class="domain">Measurement and data</div>
+      <div class="stem"><span class="caret">›</span>Angles<span class="n">12/12</span></div>
+      <div class="stem"><span class="caret">›</span>Time<span class="n">3/19</span></div>
+      <div class="stem none"><span class="caret">·</span>Length<span class="n">no ladder</span></div>
+      <div class="stem none"><span class="caret">·</span>Area<span class="n">no ladder</span></div>
+      <div class="stem none"><span class="caret">·</span>Volume<span class="n">no ladder</span></div>
+      <div class="stem none"><span class="caret">·</span>Data<span class="n">no ladder</span></div>
+
+      <div class="domain">Operations and equations</div>
+      <div class="stem"><span class="caret">›</span>Multiplication and division<span class="n">21/45</span></div>
+    </aside>
+
+    <main class="main">
+
+      <div class="crumb">Fractions › Partitioning a whole</div>
+      <div class="h1row">
+        <h1>Partitioning a whole</h1>
+        <span class="ruled">ruled 9 of 26 candidates</span>
+      </div>
+
+      <div class="strip">
+        <div class="ncard">
+          <div class="nnum">NODE 1</div>
+          <div class="ngoal">Recognize equal parts</div>
+          <div class="nstat done">6 ruled</div>
+        </div>
+        <div class="ncard">
+          <div class="nnum">NODE 2</div>
+          <div class="ngoal">Halves, thirds, fourths</div>
+          <div class="nstat done">3 ruled</div>
+        </div>
+        <div class="ncard cur">
+          <div class="nnum">NODE 3</div>
+          <div class="ngoal">Partition and name one part</div>
+          <div class="nstat open">17 open</div>
+        </div>
+        <div class="ncard">
+          <div class="nnum">NODE 4</div>
+          <div class="ngoal">Fractions greater than one</div>
+          <div class="nstat">not started</div>
+        </div>
+        <div class="ncard anchorless">
+          <div class="nnum">NODE 5</div>
+          <div class="ngoal">Set models</div>
+          <div class="nstat warn">no CCSS anchor</div>
+        </div>
+      </div>
+
+      <div class="nodehead">
+        <div class="txt">
+          <h2>Partition a whole into equal parts and name one part</h2>
+          <p class="spec">Given a whole partitioned into equal parts, name one part as a unit fraction. Limited to denominators 2, 3, 4, 6, and 8. Models include area, length, and number line; set models are handled in node 5.</p>
+        </div>
+        <div class="anchors">
+          <div class="lbl">CCSS anchors</div>
+          <span class="code">3.NF.A.1</span><span class="code">3.G.A.2</span>
+        </div>
+      </div>
+
+      <div class="panes">
+
+        <section class="pane">
+          <div class="phead"><span class="pname">California</span><span class="tag det">code match</span></div>
+
+          <div class="psec">
+            <div class="slabel">From the ladder</div>
+            <div class="chips"><span class="chip">CA.3.NF.1</span><span class="chip">CA.3.NF.2</span></div>
+            <p class="chipnote"><code>CA.3.NF.2</code> — no supporting evidence found</p>
+          </div>
+
+          <div class="psec">
+            <div class="slabel">Suggested <span class="r">2 code matches</span></div>
+            <div class="row">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">CA.3.NF.1a</span>Understand a fraction 1/b as the quantity formed by one part when a whole is partitioned into b equal parts.</span>
+            </div>
+            <div class="row">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">CA.3.G.2</span>Partition shapes into parts with equal areas; express the area of each part as a unit fraction of the whole.</span>
+            </div>
+            <button class="btn wide">Confirm both</button>
+          </div>
+
+          <div class="psec">
+            <div class="slabel">California additions</div>
+            <p class="empty">No standards outside CCSS exist at grade 3. Three exist statewide at PK–5, at grades 2 and 5.</p>
+          </div>
+        </section>
+
+        <section class="pane">
+          <div class="phead"><span class="pname">Texas</span><span class="tag mod">model only</span></div>
+
+          <div class="psec">
+            <div class="slabel">From the ladder</div>
+            <div class="chips"><span class="chip">TX.3.3A</span><span class="chip">TX.3.3B</span><span class="chip">TX.3.3G</span></div>
+          </div>
+
+          <div class="psec">
+            <div class="slabel">Suggested <span class="r">5 not already tagged</span></div>
+            <div class="row">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">TX.3.3C</span>Represent fractions greater than zero and less than or equal to one with denominators of 2, 3, 4, 6, and 8 using concrete objects and pictorial models.
+                <span class="why">Shares equal partitioning and the same denominator set. TEKS requires a representation the node does not specify.<span class="sc">0.81</span></span>
+              </span>
+              <span class="mv">↕</span>
+            </div>
+            <div class="row">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">TX.3.3E</span>Explain that the unit fraction 1/b represents the quantity formed by one part of a whole that has been partitioned into b equal parts.
+                <span class="why">Near-identical wording to the node goal. Adds an explanation requirement.<span class="sc">0.79</span></span>
+              </span>
+              <span class="mv">↕</span>
+            </div>
+            <div class="more">Show 3 more</div>
+          </div>
+        </section>
+
+        <section class="pane">
+          <div class="phead"><span class="pname">Florida</span><span class="tag mod">model only</span></div>
+
+          <div class="psec">
+            <div class="slabel">From the ladder</div>
+            <div class="chips"><span class="chip">FL.3.FR.1.1</span><span class="chip">FL.3.FR.1.3</span></div>
+          </div>
+
+          <div class="psec">
+            <div class="slabel">Suggested <span class="r">4 not already tagged</span></div>
+            <div class="row">
+              <span class="box on"></span>
+              <span class="rtext"><span class="rid">FL.3.FR.1.2</span>Represent and interpret unit fractions in the form 1/n as the quantity formed by one part when a whole is partitioned into n equal parts.
+                <span class="why">Close match on equal partitioning and naming one part. Denominator range is unrestricted where the node limits to 2, 3, 4, 6, 8.<span class="sc">0.88</span></span>
+              </span>
+              <span class="mv">↕</span>
+            </div>
+            <div class="row">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">FL.3.GR.2.1</span>Explore area as an attribute of a two-dimensional figure by covering the figure with unit squares without gaps or overlaps.
+                <span class="why">Shares partitioning language but the subject is area measurement, not fractions.<span class="sc">0.61</span></span>
+              </span>
+              <span class="mv">↕</span>
+            </div>
+            <div class="more">Show 2 more</div>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="lower">
+
+        <section class="pane">
+          <div class="phead"><span class="pname">Other states</span><span class="tag det">lesson overlap · crosswalk</span></div>
+          <div class="psec">
+            <p class="empty">31 candidates across 14 states.</p>
+            <div class="mets">
+              <div class="met"><div class="k">moderate or better</div><div class="v">24</div></div>
+              <div class="met"><div class="k">weak</div><div class="v">7</div></div>
+            </div>
+            <button class="btn wide">Accept 24, sample 5 to check</button>
+          </div>
+        </section>
+
+        <section class="pane">
+          <div class="phead"><span class="pname">Gap pool</span><span class="tag det">category match</span></div>
+          <div class="psec">
+            <p class="empty" style="margin-bottom:4px">Category <b>Fractions and Decimals: Concepts, Representations</b>, grades 2–4. 886 standards remain unhomed pool-wide.</p>
+            <div class="grow">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">VA.3.2.a</span>Name and write fractions and mixed numbers represented by a set, region, or length model.<span class="gstate">Virginia · grade 3</span></span>
+            </div>
+            <div class="grow">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">MN.3.1.3.1</span>Read and write fractions with words and symbols; recognize that fractions can be used to represent parts of a set.<span class="gstate">Minnesota · grade 3</span></span>
+            </div>
+            <div class="grow">
+              <span class="box"></span>
+              <span class="rtext"><span class="rid">OK.3.N.3.1</span>Construct fractions using length, set, and area models.<span class="gstate">Oklahoma · grade 3</span></span>
+            </div>
+            <div class="more">Show 5 more in this category</div>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="foot">
+        <p>Everything surfaced here has been ruled on. That is not the same as complete — nothing in this tool can confirm that a node has found every standard that belongs to it.</p>
+        <button class="btn" style="margin-top:0;white-space:nowrap">Run closure check</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+kind,stem_id,other_stem,standard_id,concept_id,node_id,score,detail
+concept_no_node,ADD,,,79,,,Apply properties of operations to convert to an easier problem
+concept_no_node,ADD,,,81,,,Moved to Expressions and Equations (word problems concept). MF 6/3
+concept_no_node,ANG,,,18,,,"Follow directions to turn self/objects; describe turns
+
+Angle-as-turn: noticing, making, and describing turns (big/small, left/right; quarte"
+concept_no_node,ANG,,,19,,,"Identify square corners (right angles) and compare other corners as larger/smaller than a square corner
+
+Square corner as a benchmark turn/c"
+concept_no_node,ANG,,,20,,,"Identify, draw, and name angles using points and rays
+
+Angle as a geometric object: two rays with a common endpoint (vertex); naming angles "
+concept_no_node,ANG,,,23,,,"Classify angles (and connect to perpendicular lines and shape classification)
+
+acute, right, obtuse, straight; recognize these in shapes and"
+concept_no_node,COM,,,54,,,"Order quantities, numerals, and length  to 5"
+concept_no_node,COU,,,27,,,Verbally recite the number words correctly to 10
+concept_no_node,COU,,,28,,,"Accurately count objects using one-to-one correspondence 
+
+Answer “how many” with the last number word counted, understanding this represent"
+concept_no_node,COU,,,31,,,"Count from a number other than one 
+
+Determine numbers just before or just after"
+concept_no_node,COU,,,39,,,Consistently conserve number
+concept_no_node,COU,,,40,,,Count forward and back (10s and 1s)
+concept_no_node,FRA,,,71,,,Determine “a fraction of something”
+concept_no_node,MUL,,,93,,,Introduce division with remainders
+concept_no_node,SUB,,,25,,,Perceptually subitize groups of objects
+concept_no_node,SUB,,,26,,,Conceptually subitize gorups of objects
+concept_no_node,TIM,,,3,,,"Determine if a prompt asks for a moment or a duration
+Place simple moments on a timeline"
+concept_no_node,TIM,,,9,,,Estimate and check the reasonableness of durations
+concept_no_node,TIM,,,11,,,Use the four operations to solve word problems involving durations
+concept_no_node,TIM,,,12,,,Convert time units and use these conversions to solve multi-step problems
+matched,ADD,,,75,ADD-0003,0.998,Count all in addition and subtraction situations with whole numbers  ||  Count all to subtract whole numbers.
+matched,ADD,,,77,ADD-0005,0.996,Count on to add and subtract whole numbers  ||  Count up/on to find the missing addend in subtraction situations.
+matched,ADD,,,76,ADD-0004,0.996,Count on to add and subtract whole numbers  ||  Count on to add whole numbers.
+matched,ADD,,,74,ADD-0001,0.996,Compose and decompose whole numbers  ||  Compose and decompose whole numbers in multiple ways.
+matched,ADD,,,85,ADD-0027,0.994,"Add and subtract decimals  ||  Subtract decimals by using the standard algorithm.
+(Currently no decim"
+matched,ADD,,,84,ADD-0023,0.994,Add and subtract fractions  ||  Subtract fractions with unlike denominators.
+matched,ADD,,,83,ADD-0017,0.662,Add and subtract multi-digit whole numbers (full algorithms)  ||  Subtract multi-digit whole numbers by using the standard algorithm.
+matched,ADD,,,80,ADD-0016,0.589,"Add and subtract two-digit whole numbers  ||  Subtract multi-digit whole numbers by 
+by using place-value representa"
+matched,ADD,,,78,ADD-0007,0.492,introduce properties of operations to add and subtract whole numbers  ||  Subtract by using strategies based on place value concepts and propert
+matched,ADD,,,82,ADD-0008,0.436,Fluently add and subtract single-digit facts (and teen differences)  ||  Fluently add single-digit numbers with sums up to 5.
+matched,ADD,,,73,ADD-0002,0.382,Compose and decompose whole numbers  ||  Count all to add whole numbers.
+matched,ANG,,,24,ANG-0012,0.414,Recognize angle measure as additive; compose and decompose; solve unkn  ||  Compose and decompose angles to find unknown angle measures.
+matched,ANG,,,22,ANG-0009,0.389,Measure turns by iterating degrees; use a protractor to measure and dr  ||  Draw angles with given measurements.
+matched,ANG,,,21,ANG-0007,0.37,Relate angles to fractional turns through a circle; define degree (inc  ||  Write angle measures with degrees and name benchmark angles.
+matched,COM,,,47,COM-0003,0.995,Compare small sets by matching  ||  Compare groups of objects by matching.
+matched,COM,,,50,COM-0009,0.753,Compare numbers by using their order on the number path/line  ||  Compare two numbers within 10 by using their positions on the number p
+matched,COM,,,55,COM-0002,0.636,"Identify and use ordinal numbers from ""first"" to ""tenth""  ||  Use the ordinal numbers first through tenth to describe the positions "
+matched,COM,,,53,COM-0001,0.555,"Identify the “first” and ""second"" objects in a sequence.  ||  Use the words first and second to describe objects’ positions in a seq"
+matched,COM,,,48,COM-0004,0.55,"Compare by counting  ||  Compare groups of objects by counting to determine which has more, few"
+matched,COM,,,52,COM-0014,0.508,Compare numbers by using the number line place value  ||  Compare and order decimals.
+matched,COM,,,51,COM-0010,0.488,Determine how many more or less  ||  Find how many more or less one group has compared to another.
+matched,COM,,,49,COM-0008,0.483,Compare written numerals to 10  ||  Compare two numerals between 1 and 10.
+matched,COM,,,56,COM-0007,0.419,"Order quantities, numerals, and lengths to 6 and beyond  ||  Orders numerals up to 10."
+matched,COU,,,33,COU-0016,0.993,Count to 100 by ones  ||  Count to 100 by ones.
+matched,COU,,,38,COU-0022,0.706,"Count accurately beyond 100, recognizing patterns of ones, tens, and h  ||  Count beyond 100 by applying patterns of ones, tens, and hundreds."
+matched,COU,,,32,COU-0015,0.704,Skip count by tens up to 100 or beyond  ||  Skip-count by tens.
+matched,COU,,,29,COU-0009,0.704,Count out objects to 5  ||  Count out a group of 11-20 objects.
+matched,COU,,,36,COU-0020,0.703,Count forward or back from a given number  ||  Count forward or backward from a given number.
+matched,COU,,,37,COU-0021,0.661,"Count in different units, switching during the same count (e.g., count  ||  Count by different units, such as tens and ones, by switching units wi"
+matched,COU,,,34,COU-0017,0.539,"Count on, keeping track by using spatial, auditory, or rhythmic patter  ||  Count on from a given number by using spatial, auditory, or rhythmic p"
+matched,COU,,,35,COU-0019,0.502,Count by fives and twos  ||  Count a collection of objects efficiently by grouping the objects and 
+matched,COU,,,30,COU-0006,0.469,Count and count out objects accurately beyond 10  ||  Count out a group of up to 10 objects.
+matched,EST,,,60,EST-0006,0.998,Make a thoughtful guess about the number of objects in a group  ||  Make a thoughtful guess about the number of objects in a group.
+matched,EST,,,62,EST-0007,0.654,Estimate by scanning a group of objects and relating the results to a   ||  Estimate the number of objects in a group by using a mental number lin
+matched,EST,,,57,EST-0001,0.653,Make a thoughtful guess which set has more or less objects  ||  Make thoughtful guesses about the sizes of sets and about which set ha
+matched,EST,,,61,EST-0004,0.543,Determine the relative size and position of numbers up to 100  ||  Determine the relative size and position of numbers up to 100 by using
+matched,EST,,,59,EST-0003,0.541,Determine the relative size and position of numbers up to 10  ||  Determine the relative size and position of numbers up to 10 by using 
+matched,EST,,,58,EST-0002,0.537,Determine the relative size and position of numbers up to 5  ||  Determine the relative size and position of numbers to up 5 by using m
+matched,EST,,,63,EST-0005,0.516,"Determine the relative size and position of numbers up to 1,000  ||  Determine the relative size and position of numbers up to 1,000 by usi"
+matched,EST,,,64,EST-0008,0.459,Estimate by using benchmarks  ||  Estimate a number of objects or a measurement by using benchmarks.
+matched,EST,,,65,EST-0009,0.408,Estimate by decomposing or partitioning a set into subsets then recomp  ||  Estimate a number of objects by decomposing and recomposing a set.
+matched,FRA,,,68,FRA-0009,0.996,"Identify and generate equivalent fractions  ||  Generate decimals that are equivalent to fractions, and generate fract"
+matched,FRA,,,69,FRA-0010,0.985,Compare and order fractions by using the number line  ||  Compare and order fractions by using a number line.
+matched,FRA,,,70,FRA-0013,0.738,"Compare and order fractions by using equivalence  ||  Compare and order fractions and decimals by using benchmarks, place va"
+matched,FRA,,,72,FRA-0019,0.61,Interpret a fraction as division  ||  Represent and explain that a fraction is equal to the division of the 
+matched,FRA,,,67,FRA-0004,0.461,Identify numbers between whole numbers on the number line  ||  Partition an interval and locate non-unit fractions on a number line.
+matched,FRA,,,66,FRA-0003,0.461,"Identify numbers between whole numbers on the number line  ||  Given a non-unit fraction on a number line, name the fraction."
+matched,MUL,,,87,MUL-0006,0.997,"Define division with unknown factor equations  ||  Divide by using the relationship between multiplication and division, "
+matched,MUL,,,90,MUL-0019,0.993,Interpret a whole number multiplication equation as a comparison  ||  Solve problems involving multiplicative comparisons.
+matched,MUL,,,88,MUL-0009,0.79,Develop and apply properties of operations to multiply and divide  ||  Multiply one-digit whole numbers by multiples of 10 less than 100.
+matched,MUL,,,91,MUL-0024,0.662,Develop the standard algorithm for multi-digit multiplication  ||  Multiply two multi-digit whole numbers by using the standard algorithm
+matched,MUL,,,94,MUL-0026,0.597,Divide multi-digit whole numbers by multi-digit whole numbers  ||  Divide multi-digit whole numbers by single-digit whole numbers by reco
+matched,MUL,,,89,MUL-0017,0.519,Fluently multiply and divide (basic facts)  ||  Express a composite number as the product of its prime factors.
+matched,MUL,,,92,MUL-0025,0.493,Divide multi-digit whole numbers by one-digit numbers (exact division)  ||  Divide multi-digit whole numbers by single-digit whole numbers in prob
+matched,MUL,,,86,MUL-0016,0.466,Define multiplication of whole numbers and multiply  ||  Determine whether a whole number is a multiple of a given one-digit nu
+matched,TIM,,,2,TIM-0003,1.0,Read and write moments to the hour and half-hour on analog and digital  ||  Tell and write times to the hour and half hour with analog and digital
+matched,TIM,,,7,TIM-0011,0.998,Represent and solve elapsed time problems by using the number line  ||  Represent and solve elapsed time problems by using the number line.
+matched,TIM,,,6,TIM-0010,0.996,Tell and write time to the nearest minute  ||  Tell and write time to the nearest minute.
+matched,TIM,,,4,TIM-0006,0.952,"Read and write moments to the nearest 5 minutes
+Use a.m. and p.m.  ||  Tell and write time to the nearest 5 minutes"
+matched,TIM,,,10,TIM-0012,0.744,Convert between equivalent units of time duration(from larger to small  ||  Convert larger units of time duration to smaller units.
+matched,TIM,,,1,TIM-0002,0.694,Describe and compare durations with everyday activities  ||  Order events in time and describe their positions.
+matched,TIM,,,5,TIM-0009,0.617,Measure and estimate durations with benchmarks  ||  Estimate durations by using time benchmarks and determine whether esti
+matched,TIM,,,8,TIM-0014,0.446,Solve multistep elapsed time problems  ||  Solve multistep problems by converting between units of time duration.
+matched,WHO,,,43,WHO-0009,0.989,"•	Represent, compose, and decompose numbers  ||  Represent, compose, and decompose decimal numbers flexibly by using pl"
+matched,WHO,,,45,WHO-0014,0.682,•	Round numbers to nearest place value unit  ||  Round numbers by using place value.
+matched,WHO,,,42,WHO-0007,0.654,•	Read and write numbers in different expanded forms  ||  Read and write whole numbers in expanded form by using multiplication 
+matched,WHO,,,44,WHO-0013,0.623,•	Compare and order numbers  ||  Order decimal numbers by using place value.
+matched,WHO,,,46,WHO-0015,0.446,•	Understand the 10 times relationship between adjacent place value un  ||  Describe the multiplicative relationships between adjacent place value
+matched,WHO,,,41,WHO-0001,0.361,"•	Identify the place value unit
+•	Read numbers
+•	Understand the value   ||  Identify place value units and understand that each one is composed of"
+node_no_concept,ADD,,,,ADD-0006,,"Add by using strategies based on place value concepts and properties of operations. 
+ 
+Make ten (G1 M3)"
+node_no_concept,ADD,,,,ADD-0009,,Fluently add single-digit numbers with sums up to 10.
+node_no_concept,ADD,,,,ADD-0010,,Fluently add single-digit numbers with sums up to 18.
+node_no_concept,ADD,,,,ADD-0011,,Fluently subtract numbers within 5.
+node_no_concept,ADD,,,,ADD-0012,,Fluently subtract numbers within 10.
+node_no_concept,ADD,,,,ADD-0013,,Fluently subtract numbers within 18.
+node_no_concept,ADD,,,,ADD-0014,,Add multi-digit whole numbers by using place-value representations.
+node_no_concept,ADD,,,,ADD-0015,,Add multi-digit whole numbers by using the standard algorithm.
+node_no_concept,ADD,,,,ADD-0018,,Decompose a fraction into a sum of fractions.
+node_no_concept,ADD,,,,ADD-0019,,Rename fractions greater than 1 as mixed numbers and mixed numbers as fractions.
+node_no_concept,ADD,,,,ADD-0020,,Add fractions with like denominators.
+node_no_concept,ADD,,,,ADD-0021,,Add fractions with unlike denominators.
+node_no_concept,ADD,,,,ADD-0022,,Subtract fractions with like denominators.
+node_no_concept,ADD,,,,ADD-0024,,Add decimals by using a number line.
+node_no_concept,ADD,,,,ADD-0025,,"Add decimals by using the standard algorithm.
+(Currently no decimal computation in a G6+ stem.)"
+node_no_concept,ADD,,,,ADD-0026,,Subtract decimals by using a number line.
+node_no_concept,ANG,,,,ANG-0001,,Make and describe turns.
+node_no_concept,ANG,,,,ANG-0002,,Identify square corners.
+node_no_concept,ANG,,,,ANG-0003,,Compare corners and find same-size corners.
+node_no_concept,ANG,,,,ANG-0004,,"Identify, draw, and name points, lines, line segments, and rays."
+node_no_concept,ANG,,,,ANG-0005,,"Identify, draw, and name angles."
+node_no_concept,ANG,,,,ANG-0006,,Relate an angle to a fractional turn through a circle.
+node_no_concept,ANG,,,,ANG-0008,,Measure angles.
+node_no_concept,ANG,,,,ANG-0010,,Classify angles by their degree measures.
+node_no_concept,ANG,,,,ANG-0011,,Use right angles to identify and draw perpendicular lines.
+node_no_concept,COM,,,,COM-0005,,Order sets/groups of objects according to the number of objects in each set/groups.
+node_no_concept,COM,,,,COM-0006,,Order lengths marked into units.
+node_no_concept,COM,,,,COM-0011,,Compare two-digit numbers using place value relationships.
+node_no_concept,COM,,,,COM-0012,,Compare multi-digit numbers using place value relationships.
+node_no_concept,COM,,,,COM-0013,,Compare and order multi-digit numbers.
+node_no_concept,COU,,,,COU-0001,,Say the numbers to 10 in the appropriate count sequence.
+node_no_concept,COU,,,,COU-0002,,Say one number name with each object when counting up to 10 objects.
+node_no_concept,COU,,,,COU-0003,,Say how many objects are in a group of up to 10 objects by using the last number of a count.
+node_no_concept,COU,,,,COU-0004,,Represent a group of up to 10 objects with a numeral.
+node_no_concept,COU,,,,COU-0005,,Represent a group of zero objects with the numeral 0.
+node_no_concept,COU,,,,COU-0007,,Count a group of 11-20 objects to tell how many objects are in the group.
+node_no_concept,COU,,,,COU-0008,,Represent a group of 11-20 objects with a numeral.
+node_no_concept,COU,,,,COU-0010,,Count a group of more than 20 objects to tell how many objects are in the group.
+node_no_concept,COU,,,,COU-0011,,Represent a group of more than 20 objects with a numeral.
+node_no_concept,COU,,,,COU-0012,,Count out a group of more than 20 objects.
+node_no_concept,COU,,,,COU-0013,,Count on from a given number.
+node_no_concept,COU,,,,COU-0014,,Determine the numbers that are 1 more and 1 less than a given number.
+node_no_concept,COU,,,,COU-0018,,Count a collection of objects efficiently by grouping the objects and skip-counting by twos.
+node_no_concept,COU,,,,COU-0023,,Understand that the number of objects in a group is not affected by how the objects are arranged or the order they are counted in.
+node_no_concept,COU,,,,COU-0024,,"Count forward and backward by 1s and 10s, from any number, to solve problems."
+node_no_concept,FRA,,,,FRA-0001,,"Given a unit fraction on a number line, name the fraction."
+node_no_concept,FRA,,,,FRA-0002,,Partition an interval and locate unit fractions on a number line.
+node_no_concept,FRA,,,,FRA-0005,,Identify and generate equivalent fractions on number lines.
+node_no_concept,FRA,,,,FRA-0006,,Generate equivalent fractions by using equations.
+node_no_concept,FRA,,,,FRA-0007,,Identify and generate equivalent fractions by using concrete objects.
+node_no_concept,FRA,,,,FRA-0008,,Identify and generate equivalent fractions by using area models.
+node_no_concept,FRA,,,,FRA-0011,,"Compare and order fractions by using the benchmarks 0, 1⁄2, and 1."
+node_no_concept,FRA,,,,FRA-0012,,Compare and order fractions.
+node_no_concept,FRA,,,,FRA-0014,,Find a fraction of a set where the result is a whole number.
+node_no_concept,FRA,,,,FRA-0015,,Find a fraction of a whole number by using the number line.
+node_no_concept,FRA,,,,FRA-0016,,Find a fraction of a set where the result is a fraction.
+node_no_concept,FRA,,,,FRA-0017,,Find and represent a fraction of a set by using concrete objects.
+node_no_concept,FRA,,,,FRA-0018,,Find and represent a fraction of a set by using a tape diagram.
+node_no_concept,MUL,,,,MUL-0001,,Represent equal groups by using repeated addition to find the total.
+node_no_concept,MUL,,,,MUL-0002,,Translate between models and addition and multiplication expressions to find a product.
+node_no_concept,MUL,,,,MUL-0003,,Multiply by using repeated addition strategies.
+node_no_concept,MUL,,,,MUL-0004,,Use repeated subtraction to find the number of equal groups when given the total and the size of each group.
+node_no_concept,MUL,,,,MUL-0005,,Represent and explain division as an unknown factor problem.
+node_no_concept,MUL,,,,MUL-0007,,Apply properties of operations as multiplication strategies.
+node_no_concept,MUL,,,,MUL-0008,,Apply properties of operations as division strategies.
+node_no_concept,MUL,,,,MUL-0010,,Fluently multiply within 100.
+node_no_concept,MUL,,,,MUL-0011,,Fluently divide within 100.
+node_no_concept,MUL,,,,MUL-0012,,Fluently multiply within 144.
+node_no_concept,MUL,,,,MUL-0013,,Fluently divide within 144.
+node_no_concept,MUL,,,,MUL-0014,,Generate factor pairs for a whole number.
+node_no_concept,MUL,,,,MUL-0015,,Identify prime and composite numbers.
+node_no_concept,MUL,,,,MUL-0018,,Describe a relationship between quantities by using a multiplicative comparison.
+node_no_concept,MUL,,,,MUL-0020,,Multiply a multi-digit whole number by a single-digit whole number by using strategies based on place value concepts and the properties of o
+node_no_concept,MUL,,,,MUL-0021,,Multiply a multi-digit whole number by a single-digit whole number and record the partial products in vertical form.
+node_no_concept,MUL,,,,MUL-0022,,Multiply a multi-digit whole number by a two-digit whole number by using strategies based on place value concepts and the properties of oper
+node_no_concept,MUL,,,,MUL-0023,,Multiply two multi-digit whole numbers and record in vertical form.
+node_no_concept,MUL,,,,MUL-0027,,Find whole-number quotients and remainders with multi-digit dividends and one-digit divisors by using strategies based on place value concep
+node_no_concept,MUL,,,,MUL-0028,,Find whole-number quotients and remainders with multi-digit dividends and one-digit divisors by recording the partial quotients in vertical 
+node_no_concept,MUL,,,,MUL-0029,,Interpret remainders in context.
+node_no_concept,MUL,,,,MUL-0030,,Find whole-number quotients and remainders with multi-digit dividends and two-digit divisors by using strategies based on place value concep
+node_no_concept,MUL,,,,MUL-0031,,Find whole-number quotients and remainders with multi-digit dividends and two-digit divisors by recording the partial quotients in vertical 
+node_no_concept,MUL,,,,MUL-0032,,Express the result of division with remainder as a mixed number.
+node_no_concept,MUL,,,,MUL-0033,,Find mixed-number quotients and remainders with multi-digit dividends and divisors by using the standard algorithm.
+node_no_concept,SUB,,,,SUB-0001,,Determine how many objects are in a group of up to 5 objects without counting.
+node_no_concept,SUB,,,,SUB-0002,,Determine how many objects are in a group without counting by recognizing and composing smaller groups.
+node_no_concept,TIM,,,,TIM-0001,,Describe and compare time intervals.
+node_no_concept,TIM,,,,TIM-0004,,Classify times as moments in time or durations of time.
+node_no_concept,TIM,,,,TIM-0005,,Label the events of a day on a timeline.
+node_no_concept,TIM,,,,TIM-0007,,Classify events by using a.m. or p.m.
+node_no_concept,TIM,,,,TIM-0008,,Measure the duration of an activity with a timing tool.
+node_no_concept,TIM,,,,TIM-0013,,Convert smaller units of time duration to larger units.
+node_no_concept,WHO,,,,WHO-0002,,Determine the value represented by each digit of a number.
+node_no_concept,WHO,,,,WHO-0003,,Read and write numbers in standard form.
+node_no_concept,WHO,,,,WHO-0004,,Read and write numbers in word form.
+node_no_concept,WHO,,,,WHO-0005,,Read and write numbers in expanded form by using addition.
+node_no_concept,WHO,,,,WHO-0006,,Read and write numbers in expanded form by using multiplication and addition.
+node_no_concept,WHO,,,,WHO-0008,,"Represent, compose, and decompose whole numbers flexibly by using place value units."
+node_no_concept,WHO,,,,WHO-0010,,Compare whole numbers by using place value.
+node_no_concept,WHO,,,,WHO-0011,,Order whole numbers by using place value.
+node_no_concept,WHO,,,,WHO-0012,,Compare decimal numbers by using place value.
+node_no_concept,WHO,,,,WHO-0016,,Describe the multiplicative relationships between non-adjacent place value units using standard form notation for whole-number powers of 10.
+node_no_concept,WHO,,,,WHO-0017,,Write powers of 10 by using whole-number exponents .
+node_no_concept,WHO,,,,WHO-0018,,Describe the multiplicative relationships between non-adjacent place value units by using exponent notation for whole number powers of 10.
+node_no_concept,WHO,,,,WHO-0019,,Multiply and divide by powers of 10 and their multiples by using the multiplicative relationships between place value units).

@@ -1,0 +1,72 @@
+concept_skill,node_text,n_codes,source_cell
+Identify and locate fractions on the number line.,"Given a unit fraction on a number line, name the fraction.",5,"CCSS.3.NF.A.1
+CCSS.3.NF.A.2a
+
+TX.3.3B (less than or equal to 1)
+FL.3.FR.1.1 
+FL.3.FR.2.1"
+Identify and locate fractions on the number line.,Partition an interval and locate unit fractions on a number line.,7,"CCSS.3.NF.A.1
+CCSS.3.NF.A.2a
+
+TX.3.3A (less than or equal to 1)
+FL.3.FR.1.1 
+FL.3.FR.2.1
+
+VA.2.NS.3.e.ii (halves, fourths, eighths, thirds, and sixths)
+VA.3.NS.3.a.11 (denominators of 2, 3, 4, 5, 6, 8, and 10)"
+Identify and locate fractions on the number line.,"Given a non-unit fraction on a number line, name the fraction.",10,"CCSS.3.NF.A.2b
+CCSS.4.NF.A.1
+
+TX.3.3A, B (less than or equal to 1)
+TX4.2H
+TX.4.3G
+FL.3.FR.2.1
+FL.4.FR.1.4
+
+IN.4.NS.2
+VA.3.NS.3.a.11 (denominators of 2, 3, 4, 5, 6, 8, and 10)"
+Identify and locate fractions on the number line.,Partition an interval and locate non-unit fractions on a number line.,10,"CCSS.3.NF.A.2b
+CCSS.4.NF.A.1
+
+TX.3.3A, B (less than or equal to 1)
+TX4.2H
+TX.4.3G
+FL.3.FR.2.1
+FL.4.FR.1.4
+
+IN.4.NS.2
+VA.3.NS.3.a.11 (denominators of 2, 3, 4, 5, 6, 8, and 10)"
+Identify and generate equivalent fractions.,Identify and generate equivalent fractions on number lines.,4,"CCSS.3.NF.A.3a-c
+IN.4.NS.2"
+Identify and generate equivalent fractions.,Generate equivalent fractions by using equations.,3,"CCSS.4.NF.A.1
+CCSS.4.NF.5 (just the equivalent fractions part)
+MN.5.3.5.5 requires by division"
+Identify and generate equivalent fractions.,Identify and generate equivalent fractions by using concrete objects.,2,"TX.3.3F
+(TX breakouts probably require additional models—I didn’t double check; VA.2.NS.3.f also required comparing unit fractions with region/area and length models)"
+Identify and generate equivalent fractions.,Identify and generate equivalent fractions by using area models.,4,"TX.4.3C
+TX.3.3F-G
+(TX breakouts probably require additional models—I didn’t double check; VA.2.NS.3.f also required comparing unit fractions with region/area and length models)"
+Identify and generate equivalent fractions.,"Generate decimals that are equivalent to fractions, and generate fractions that are equivalent to decimals (limited to fractions equivalent to fourths or tenths with denominators 2, 4, 5, 8, 10, and 100).",5,"MO.5.NF.A.3
+ND.5.NO.NF.1
+NE.5.N.2.b
+OK.4.N.3.9
+OK.5.N.1.4"
+Compare and order fractions.,Compare and order fractions by using a number line.,1,CCSS.3.NF.A.3.d
+Compare and order fractions.,"Compare and order fractions by using the benchmarks 0, 1⁄2, and 1.",2,"CCSS.4.NF.A.2
+VA.4.NS.3.c (all denominators less than 12)"
+Compare and order fractions.,Compare and order fractions.,1,CCSS.4.NF.A.2
+Compare and order fractions.,"Compare and order fractions and decimals by using benchmarks, place value, or number lines.",6,"IN.5.NS.1
+MO.5.NF.A.3
+OK.4.N.3.9, OK.5.N.1.3
+VA.4.NS.5.b, VA.5.NS.1.d
+Some states specify number line, some expect equations"
+"Find a fraction of a number, quantity, or set.",Find a fraction of a set where the result is a whole number.,4,"Precursor to CCSS.5.NF.B.4.a
+TX.3.3E (breakouts probably require arrays or similar)
+MD.3.NOS.F.11
+PA.M03.A-F.1.1.1"
+"Find a fraction of a number, quantity, or set.",Find a fraction of a whole number by using the number line.,1,Precursor to CCSS.5.NF.B.4.a
+"Find a fraction of a number, quantity, or set.",Find a fraction of a set where the result is a fraction.,1,Precursor to CCSS.5.NF.B.4.a
+"Find a fraction of a number, quantity, or set.",Find and represent a fraction of a set by using concrete objects.,1,TX.3.3A
+"Find a fraction of a number, quantity, or set.",Find and represent a fraction of a set by using a tape diagram.,1,TX.3.3A
+Interpret a fraction as division of the numerator by the denominator.,Represent and explain that a fraction is equal to the division of the numerator by the denominator.,2,"CCSS.5.NF.B.3
+SC.4.PAFR.2.4"

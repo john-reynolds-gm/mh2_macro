@@ -1,0 +1,8 @@
+# Core — everything needed to build the database and run the reports.
+# This is all most people need. Deliberately small and slow-moving.
+pandas>=2.0
+openpyxl>=3.1          # .xlsx / .xlsm reading
+python-docx>=1.1       # ladder .docx parsing
+
+# The review UI.
+streamlit>=1.30

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Disposable build artifacts (rm -rf data/build && rebuild.py is always safe)
+data/build/
+
+# OS junk
+.DS_Store
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Word lock files left in data/source/ladders
+data/source/**/~$*.docx
+
+# Env/secrets
+.env

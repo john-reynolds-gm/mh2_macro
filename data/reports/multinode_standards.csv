@@ -1,0 +1,260 @@
+stem_id,concept_skill,standard_code,n_nodes,node_ids
+ANG,"Classify angles, and draw angles made of perpendicular lines",4.G.A.1,2,ANG-0010; ANG-0011
+ANG,"Classify angles, and draw angles made of perpendicular lines",CA.4.G.1,2,ANG-0010; ANG-0011
+ANG,"Classify angles, and draw angles made of perpendicular lines",GA.3.GSR.6.1,2,ANG-0010; ANG-0011
+ANG,"Classify angles, and draw angles made of perpendicular lines",ND.3.GM.G.1,2,ANG-0010; ANG-0011
+ANG,"Classify angles, and draw angles made of perpendicular lines",OK.3.GM.1.3,2,ANG-0010; ANG-0011
+ANG,"Classify angles, and draw angles made of perpendicular lines",SC.3.MGSR.3.1,2,ANG-0010; ANG-0011
+ANG,Compare corners and identify square corners,1.G.A.1,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,2.G.A.1,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,CA.1.G.1,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,CA.2.G.1,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,CA.K.G.4,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,K.G.B.4,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,SC.1.MGSR.2.5,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,VA.2.MG.4.b,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,VA.2.MG.4.d,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,VA.3.MG.4.e,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,VA.4.MG.5.d.ii,2,ANG-0002; ANG-0003
+ANG,Compare corners and identify square corners,VA.4.MG.6.c,2,ANG-0002; ANG-0003
+ANG,"Identify, draw, and name angles, points, lines, line segments, and rays.",4.G.A.1,2,ANG-0004; ANG-0005
+ANG,"Identify, draw, and name angles, points, lines, line segments, and rays.",CA.4.G.A.1,2,ANG-0004; ANG-0005
+ANG,"Identify, draw, and name angles, points, lines, line segments, and rays.",TX.4.6A,2,ANG-0004; ANG-0005
+ANG,Measure and draw angles by using a protractor,4.MD.C.6,2,ANG-0008; ANG-0009
+ANG,Measure and draw angles by using a protractor,FL.4.GR.1.2,2,ANG-0008; ANG-0009
+ANG,Measure and draw angles by using a protractor,OK.5.GM.3.1,2,ANG-0008; ANG-0009
+ANG,Measure and draw angles by using a protractor,VA.5.MG.3.e,2,ANG-0008; ANG-0009
+ANG,Relate an angle to a fraction of a complete turn through a circle and write an angle measure using degrees,4.MD.C.5.a,2,ANG-0006; ANG-0007
+ANG,Relate an angle to a fraction of a complete turn through a circle and write an angle measure using degrees,NE.4.G.2.b,2,ANG-0006; ANG-0007
+COM,Identify and use ordinal numbers.,AK.1.CC.2,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,AR.K.NPV.3,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,CO.PK.CC.D.8,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,FL.K.NSO.1.3,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,IN.1.NS.3,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,NY.K.CC.4.d,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,SD.PK.CD-4.i,2,COM-0001; COM-0002
+COM,Identify and use ordinal numbers.,VA.1.MG.3.h,2,COM-0001; COM-0002
+COM,"Order and compare sets, lengths, and numerals.",K.CC.A.2,2,COM-0005; COM-0007
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),CA.K.CC.5,2,COU-0007; COU-0009
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),FL.K.NSO.1.1,2,COU-0007; COU-0008
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),K.CC.B.5,2,COU-0007; COU-0009
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),TX.K.2A,2,COU-0007; COU-0009
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),TX.K.2B,2,COU-0008; COU-0009
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),VA.K.NS.2.c,2,COU-0008; COU-0011
+COU,Count and count out groups of more than 10 objects. (Megan-DONE),VA.K.NS.2.b,2,COU-0009; COU-0012
+COU,Skip-count by twos and fives. (Stella- DONE),AK.1.CC.1,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),FL.1.NSO.1.1,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),ID.1.NBT.A.1,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),MD.2.NOS.A.2.a,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),MN.2.3.7.2,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),TX.1.5B,2,COU-0018; COU-0019
+COU,Skip-count by twos and fives. (Stella- DONE),VA.2.NS.1.c,2,COU-0018; COU-0019
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",CA.K.CC.4,3,COU-0002; COU-0003; COU-0004
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",FL.K.NSO.1.1,3,COU-0002; COU-0003; COU-0004
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",K.CC.B.4,4,COU-0002; COU-0003; COU-0004; COU-0005
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",NE.K.N.2.a,2,COU-0002; COU-0003
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",TX.K.2C,2,COU-0002; COU-0003
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",CA.K.CC.3,2,COU-0004; COU-0005
+COU,"Use cardinality and one-to-one correspondence to count groups of up to 10 objects, and represent the number of objects with a numeral. (Megan-DONE)",K.CC.A.3,2,COU-0004; COU-0005
+EST,Determine the relative size and position of numbers by using a mental number path or number line. (Megan—DONE),CA.K.CC.4,2,EST-0002; EST-0003
+EST,Determine the relative size and position of numbers by using a mental number path or number line. (Megan—DONE),CA.K.CC.4.c,2,EST-0002; EST-0003
+EST,Determine the relative size and position of numbers by using a mental number path or number line. (Megan—DONE),K.CC.B.4,2,EST-0002; EST-0003
+EST,Determine the relative size and position of numbers by using a mental number path or number line. (Megan—DONE),K.CC.B.4.c,2,EST-0002; EST-0003
+FRA,Compare and order fractions.,4.NF.A.2,2,FRA-0011; FRA-0012
+FRA,"Find a fraction of a number, quantity, or set.",5.NF.B.4.a,3,FRA-0014; FRA-0015; FRA-0016
+FRA,"Find a fraction of a number, quantity, or set.",TX.3.3A,2,FRA-0017; FRA-0018
+FRA,Identify and generate equivalent fractions.,TX.3.3F,2,FRA-0007; FRA-0008
+FRA,Identify and generate equivalent fractions.,VA.2.NS.3.f,2,FRA-0007; FRA-0008
+FRA,Identify and locate fractions on the number line.,3.NF.A.1,2,FRA-0001; FRA-0002
+FRA,Identify and locate fractions on the number line.,3.NF.A.2a,2,FRA-0001; FRA-0002
+FRA,Identify and locate fractions on the number line.,FL.3.FR.1.1,2,FRA-0001; FRA-0002
+FRA,Identify and locate fractions on the number line.,FL.3.FR.2.1,4,FRA-0001; FRA-0002; FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,TX.3.3B,3,FRA-0001; FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,TX.3.3A,3,FRA-0002; FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,VA.3.NS.3.a.11,3,FRA-0002; FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,3.NF.A.2b,2,FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,4.NF.A.1,2,FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,FL.4.FR.1.4,2,FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,IN.4.NS.2,2,FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,TX.4.2H,2,FRA-0003; FRA-0004
+FRA,Identify and locate fractions on the number line.,TX.4.3G,2,FRA-0003; FRA-0004
+MUL,Define division with unknown factor equations.,TX.2.6B,3,MUL-0004; MUL-0005; MUL-0006
+MUL,Define division with unknown factor equations.,3.OA.2,2,MUL-0005; MUL-0006
+MUL,Define division with unknown factor equations.,FL.3.AR.2.1,2,MUL-0005; MUL-0006
+MUL,Define division with unknown factor equations.,MD.4.NOS.C.7.d,2,MUL-0005; MUL-0006
+MUL,Define division with unknown factor equations.,TX.3.4J,2,MUL-0005; MUL-0006
+MUL,Develop and apply properties of operations to multiply and divide (exact division),3.OA.B.5,2,MUL-0007; MUL-0008
+MUL,Develop and apply properties of operations to multiply and divide (exact division),AK.3.OA.5,2,MUL-0007; MUL-0008
+MUL,Develop and apply properties of operations to multiply and divide (exact division),FL.3.AR.1.1,2,MUL-0007; MUL-0008
+MUL,Develop and apply properties of operations to multiply and divide (exact division),MD.4.NOS.C.7.c,2,MUL-0007; MUL-0008
+MUL,Develop and apply properties of operations to multiply and divide (exact division),TX.3.4G,2,MUL-0007; MUL-0008
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,4.NBT.B.5,5,MUL-0020; MUL-0021; MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,FL.4.NSO.2.2,5,MUL-0020; MUL-0021; MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,OK.4.N.2.3,5,MUL-0020; MUL-0021; MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,TX.4.4D,5,MUL-0020; MUL-0021; MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,FL.4.NSO.2.3,3,MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,FL.5.NSO.2.1,3,MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,TX.4.4C,3,MUL-0022; MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,5.NBT.B.5,2,MUL-0023; MUL-0024
+MUL,Develop the standard algorithm for multiplying multi-digit numbers.,TX.5.3B,2,MUL-0023; MUL-0024
+MUL,Divide multi-digit whole numbers by single-digit whole numbers in problems with whole-number quotients.,4.NBT.B.6,2,MUL-0025; MUL-0026
+MUL,Divide multi-digit whole numbers by single-digit whole numbers in problems with whole-number quotients.,FL.4.NSO.2.4,2,MUL-0025; MUL-0026
+MUL,Divide multi-digit whole numbers by single-digit whole numbers in problems with whole-number quotients.,OK.5.N.2.2,2,MUL-0025; MUL-0026
+MUL,Find whole-number quotients and remainders with multi-digit dividends and multi-digit divisors.,5.NBT.B.6,3,MUL-0030; MUL-0031; MUL-0032
+MUL,Find whole-number quotients and remainders with multi-digit dividends and multi-digit divisors.,FL.5.NSO.2.2,4,MUL-0030; MUL-0031; MUL-0032; MUL-0033
+MUL,Find whole-number quotients and remainders with multi-digit dividends and multi-digit divisors.,OK.5.N.2.2,3,MUL-0030; MUL-0031; MUL-0033
+MUL,Find whole-number quotients and remainders with multi-digit dividends and multi-digit divisors.,TX.5.3C,3,MUL-0030; MUL-0031; MUL-0033
+MUL,Find whole-number quotients and remainders with multi-digit dividends and one-digit divisors.,4.NBT.B.6,2,MUL-0027; MUL-0028
+MUL,Find whole-number quotients and remainders with multi-digit dividends and one-digit divisors.,FL.4.NSO.2.4,2,MUL-0027; MUL-0028
+MUL,Find whole-number quotients and remainders with multi-digit dividends and one-digit divisors.,OK.5.N.2.2,2,MUL-0027; MUL-0028
+MUL,Fluently multiply and divide whole numbers.,3.OA.C.7,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,MD.4.NOS.C.7.a,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,MD.4.NOS.C.7.b,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,MD.4.NOS.C.7.c,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,MD.4.NOS.C.7.d,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,ND.4.AR.OA.1,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,SD.4.OA.A.1.b,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,TX.3.4F,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,VA.3.CE.2,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,WI.4.OA.D.6,2,MUL-0010; MUL-0011
+MUL,Fluently multiply and divide whole numbers.,FL.4.NSO.2.1,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,MA.4.OA.A.3.a,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,MN.4.3.5.5,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,ND.5.AR.OA.1,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,OK.4.N.2.1,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,RI.4.OA.A.3.a,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,VA.4.CE.2.b,2,MUL-0012; MUL-0013
+MUL,Fluently multiply and divide whole numbers.,4.OA.B.4,3,MUL-0014; MUL-0015; MUL-0016
+MUL,Fluently multiply and divide whole numbers.,AZ.5.OA.B.4,3,MUL-0014; MUL-0015; MUL-0017
+MUL,Fluently multiply and divide whole numbers.,FL.4.AR.3.1,2,MUL-0014; MUL-0015
+MUL,Fluently multiply and divide whole numbers.,ND.5.AR.OA.4,2,MUL-0014; MUL-0015
+MUL,Fluently multiply and divide whole numbers.,TX.5.4A,2,MUL-0014; MUL-0015
+MUL,Interpret a whole-number multiplication equation as a comparison.,TX.3.5C,2,MUL-0018; MUL-0019
+MUL,"Write repeated addition as multiplication, and multiply whole numbers by using repeated addition strategies.",3.OA.A.1,2,MUL-0002; MUL-0003
+MUL,"Write repeated addition as multiplication, and multiply whole numbers by using repeated addition strategies.",FL.3.NSO.2.2,2,MUL-0002; MUL-0003
+MUL,"Write repeated addition as multiplication, and multiply whole numbers by using repeated addition strategies.",TX.3.4E,2,MUL-0002; MUL-0003
+TIM,Convert between time duration units.,FL.4.M.1.2,2,TIM-0012; TIM-0013
+TIM,Convert between time duration units.,FL.4.M.2.1,2,TIM-0012; TIM-0013
+TIM,Convert between time duration units.,GA.4.MDR.6.1,2,TIM-0012; TIM-0013
+TIM,Convert between time duration units.,OK.4.GM.3.2,2,TIM-0012; TIM-0013
+TIM,Convert between time duration units.,SC.5.MGSR.2.1,3,TIM-0012; TIM-0013; TIM-0014
+TIM,Convert between time duration units.,TX.4.8B,3,TIM-0012; TIM-0013; TIM-0014
+TIM,Convert between time duration units.,TX.4.8C,2,TIM-0012; TIM-0013
+TIM,Describe and compare the durations of commonplace activities.,IA.2.MD.C.IA.1,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,IA.PK.7.4.PS.6,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,IN.2.M.5,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,IN.K.M.2,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,KY.PK.1.4.4,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,KY.PK.1.4.5,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,SC.PK.MTE-5p,2,TIM-0001; TIM-0002
+TIM,Describe and compare the durations of commonplace activities.,WI.PK.B.EL.5,2,TIM-0001; TIM-0002
+TIM,Measure durations with a timing tool and estimate durations with time benchmarks.,2.MD.C.7,2,TIM-0008; TIM-0009
+TIM,Measure durations with a timing tool and estimate durations with time benchmarks.,MD.1.GR.C.5,2,TIM-0008; TIM-0009
+WHO,Compare and order numbers by using place value.,1.NBT.B.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,2.NBT.A.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,4.NBT.A.2,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,AK.1.CC.5,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,AL.K.FC.7,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,AR.2.NPV.5,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,AR.3.NPV.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.1.NSO.1.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.2.NSO.1.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.3.NSO.1.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.4.NSO.1.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.4.NSO.1.5,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.5.NSO.1.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.K.NSO.1.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,FL.K.NSO.2.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,GA.3.NR.1.2,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,K.CC.C.7,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,KS.1.NBT.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,KS.2.NBT.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,KS.4.NBT.2,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,KS.PK.M.CC.p4.8,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MD.1.NOS.B.5,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MD.2.NOS.A.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MD.3.NOS.A.1.d,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MD.K.NOS.C.10,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MN.2.3.6.1,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MN.3.3.5.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,MN.4.3.5.2,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,ND.3.NO.NBT.1,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,NE.3.N.1.b,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,OK.3.N.1.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,PA.M03.A-T.1.1.4,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,SC.3.NR.1.3,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.1.2E,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.1.2F,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.1.2G,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.2.2D,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.3.2D,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.4.2C,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.K.2G,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,TX.K.2H,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,VA.1.NS.2.f,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,VA.3.NS.2.a,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,VA.3.NS.2.b,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,VA.4.NS.2.a,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,VA.K.NS.2.g,2,WHO-0010; WHO-0011
+WHO,Compare and order numbers by using place value.,4.NF.C.7,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,5.NBT.A.3,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,5.NBT.A.3.b,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,KS.4.NF.7,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,KS.5.NBT.3b,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,MN.4.3.5.15,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,MN.5.3.5.9,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,MO.5.NBT.A.2,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,OK.5.N.1.3,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,TX.4.2F,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,TX.5.2B,2,WHO-0012; WHO-0013
+WHO,Compare and order numbers by using place value.,VA.5.NS.1.d,2,WHO-0012; WHO-0013
+WHO,Read and write numbers in expanded form.,4.NBT.A.2,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,5.NBT.A.3.a,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,AR.3.NPV.3,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,FL.4.NSO.1.2,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,FL.5.NSO.1.2,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,KS.4.NBT.2,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,MO.5.NBT.A.1,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,NE.4.N.1.a,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,NE.5.N.1.a,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,SC.4.NR.1.1,2,WHO-0005; WHO-0006
+WHO,Read and write numbers in expanded form.,TX.3.2A,2,WHO-0005; WHO-0006
+WHO,Recognize and describe the relationships between place value units.,4.NBT.A.1,3,WHO-0015; WHO-0016; WHO-0019
+WHO,Recognize and describe the relationships between place value units.,5.NBT.A.1,3,WHO-0015; WHO-0016; WHO-0018
+WHO,Recognize and describe the relationships between place value units.,FL.5.NSO.1.1,2,WHO-0015; WHO-0016
+WHO,Recognize and describe the relationships between place value units.,TX.3.2B,2,WHO-0015; WHO-0016
+WHO,Recognize and describe the relationships between place value units.,5.NBT.A.2,3,WHO-0017; WHO-0018; WHO-0019
+WHO,Use place value to read and write numbers.,1.NBT.B.2,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,1.NBT.B.2.b,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,1.NBT.B.2.c,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,2.NBT.A.1,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,2.NBT.A.1.b,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,AR.3.NPV.2,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,K.NBT.A.1,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,MD.K.NOS.C.9.b,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,NY.3.NBT.4a,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,OK.3.N.1.2,3,WHO-0001; WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,VA.3.NS.1.b,2,WHO-0001; WHO-0002
+WHO,Use place value to read and write numbers.,TX.4.2B,2,WHO-0002; WHO-0003
+WHO,Use place value to read and write numbers.,TX.5.2A,2,WHO-0002; WHO-0003
+WHO,Use place value to read and write numbers.,2.NBT.A.3,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,4.NBT.A.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,5.NBT.A.3a,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,AR.1.NPV.4,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,AR.3.NPV.3,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,FL.1.NSO.1.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,FL.2.NSO.1.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,FL.3.NSO.1.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,FL.4.NSO.1.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,FL.5.NSO.1.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,IN.3.NS.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,KS.4.NBT.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,MD.3.NOS.A.1.a,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,MO.3.NBT.A.2,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,MO.5.NBT.A.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,ND.3.NO.CC.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,NY.3.NBT.4b,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,SC.3.NR.1.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,SC.4.NR.1.1,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,TN.3.NBT.A.4,2,WHO-0003; WHO-0004
+WHO,Use place value to read and write numbers.,VA.3.NS.1.a,2,WHO-0003; WHO-0004
