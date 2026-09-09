@@ -30,6 +30,7 @@ def client(tmp_path, monkeypatch):
     _standard(mh2, "K.CC.A.1", "K")
     _node(mh2, "COM-0001", "COM::count more", grades=("K",), stem_id="COM")
     _tag(mh2, "COM-0001", "K.CC.A.1")
+    _standard(mh2, "K.MD.B.3", "K")  # zero tags -- Red, on purpose
     mh2.commit()
     mh2.close()
 
@@ -60,6 +61,26 @@ def test_standard_detail_carries_source_key_and_ladder_file(client):
     tag = body["tags"][0]
     assert tag["source_key"] == "COM::count more"
     assert tag["node_text"] == "COM::count more"
+
+
+def test_standard_detail_on_red_zero_tag_standard_does_not_404(client):
+    resp = client.get("/api/standards/K.MD.B.3")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["color"] == "Red"
+    assert body["tags"] == []
+    assert body["standard_review"] is None
+    assert body["override"] is None
+
+
+def test_review_write_works_on_red_zero_tag_standard(client):
+    resp = client.post("/api/standards/K.MD.B.3/review",
+                        json={"outcome": "insufficient", "reviewed_by": "jane"})
+    assert resp.status_code == 200
+    assert resp.json()["computed_color_at_review"] == "Red"
+
+    row = {r["standard_id"]: r for r in client.get("/api/audit").json()}["K.MD.B.3"]
+    assert row["review_state"] == "insufficient"
 
 
 def test_standard_review_write_then_read_back(client):
@@ -109,6 +130,32 @@ def test_tag_review_write_snapshots_ladder_file_server_side(client):
     assert review["outcome"] == "confirmed"
     assert review["reviewed_by"] == "jane"
     assert review["reviewed_at"]  # server-stamped, never accepted from client
+
+
+def test_nodes_for_stem_grouped_and_ordered(client):
+    # client fixture already seeded COM-0001/"COM::count more" with stem_id
+    # "COM" (see _node call above); add a second node in a different
+    # concept_skill, out of seq order, to check the grouped/ordered contract.
+    con = sqlite3.connect(config.DB)
+    con.execute("UPDATE nodes SET concept_skill = 'Counting to 10', seq = 2"
+                " WHERE node_id = 'COM-0001'")
+    con.execute(
+        "INSERT INTO nodes (node_id, stem_id, seq, source_key, node_text, concept_skill)"
+        " VALUES ('COM-0002', 'COM', 1, 'COM::count less', 'count less', 'Counting to 10')")
+    con.commit()
+    con.close()
+
+    resp = client.get("/api/nodes", params={"stem_id": "COM"})
+    assert resp.status_code == 200
+    nodes = resp.json()
+    assert [n["source_key"] for n in nodes] == ["COM::count less", "COM::count more"]
+    assert {n["concept_skill"] for n in nodes} == {"Counting to 10"}
+
+
+def test_nodes_for_stem_unknown_stem_returns_empty(client):
+    resp = client.get("/api/nodes", params={"stem_id": "NO-SUCH-STEM"})
+    assert resp.status_code == 200
+    assert resp.json() == []
 
 
 def test_proposal_create_and_withdraw(client):

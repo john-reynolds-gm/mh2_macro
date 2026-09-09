@@ -117,10 +117,14 @@ def standard_detail(standard_id: str):
     finally:
         mh2.close()
 
-    tags = tags_by_standard.get(standard_id)
-    if tags is None:
-        raise HTTPException(404, f"no tags found for {standard_id!r}"
-                                  " (unknown or zero-tag standard)")
+    # build_tags_by_standard only has a key for a standard_id that appears in
+    # node_standards -- a Red standard (zero tags) is never a key, so `.get()
+    # is None` does not mean "unknown standard_id," it means "no tags," which
+    # is the majority of rows (~2,200 of 2,987) and a completely valid state
+    # that still needs review/override controls. Treat the missing key as an
+    # empty tag list rather than 404ing; _color([]) already resolves that to
+    # "Red" correctly.
+    tags = tags_by_standard.get(standard_id, [])
 
     seq = _seq_con()
     try:
@@ -151,6 +155,22 @@ def standard_detail(standard_id: str):
         "standard_review": standard_review,
         "override": override,
     }
+
+
+# ------------------------------------------------------------------ node picker
+
+@app.get("/api/nodes")
+def nodes_for_stem(stem_id: str):
+    con = _mh2_con()
+    try:
+        nodes = node_lookup.nodes_for_stem(con, stem_id)
+    finally:
+        con.close()
+    return [
+        {"source_key": n.source_key, "node_text": n.node_text,
+         "concept_skill": n.concept_skill}
+        for n in nodes
+    ]
 
 
 # ------------------------------------------------------------- §6.2 worklist

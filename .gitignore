@@ -26,8 +26,8 @@ data/build/*
 # Word lock files left in data/source/ladders
 data/source/**/~$*.docx
 
-# Excel lock files left in data/sources/workbooks/
-data/sources/workbooks/**/~$*.xlsx
+# Office lock files (~$*) left anywhere under data/source by Word or Excel
+data/source/**/~$*
 
 # Env/secrets
 .env
@@ -43,4 +43,7 @@ tests/gap_overlap_by_state.py
 
 # Read by tests/gap_overlap_by_state.py, but no longer needed for actual app build
 data/source/standards/all_states_debug.csv
+
+# Notebooks and scripts for experimenting, don't need to be committed
+notebooks/
 

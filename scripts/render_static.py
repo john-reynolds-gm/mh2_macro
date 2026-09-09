@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
 
-from mh2 import coverage  # noqa: E402
+from mh2 import coverage, node_lookup  # noqa: E402
 from mh2.coverage import _collapse_ws  # noqa: E402
 
 # See module docstring. HS is included despite being "murkier" per the brief
@@ -324,6 +324,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 
 <script id="rows-data" type="application/json">__ROWS_JSON__</script>
 <script id="nodes-data" type="application/json">__NODES_JSON__</script>
+<script id="stem-names-data" type="application/json">__STEM_NAMES_JSON__</script>
 <script id="grade-order-data" type="application/json">__GRADE_ORDER_JSON__</script>
 <script id="summary-data" type="application/json">__SUMMARY_JSON__</script>
 <script id="tabs-data" type="application/json">__TABS_JSON__</script>
@@ -333,6 +334,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 (function () {
   var ROWS = JSON.parse(document.getElementById('rows-data').textContent);
   var NODES = JSON.parse(document.getElementById('nodes-data').textContent);
+  var STEM_NAMES = JSON.parse(document.getElementById('stem-names-data').textContent);
   var GRADE_ORDER = JSON.parse(document.getElementById('grade-order-data').textContent);
   var SUMMARY = JSON.parse(document.getElementById('summary-data').textContent);
   var TABS = JSON.parse(document.getElementById('tabs-data').textContent);
@@ -475,6 +477,10 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
     return s.length > n ? s.slice(0, n).trim() + '…' : s;
   }
 
+  function stemDisplayName(id) {
+    return STEM_NAMES[id] || id;
+  }
+
   function passesAllExcept(r, dim) {
     if (dim !== 'sheet' && r.sheet !== state.sheet) return false;
     if (dim !== 'grade' && !state.grades[r.grade]) return false;
@@ -599,7 +605,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 
     var html = '<div class="detail-section"><h4>Full text</h4><div>' + esc(r.text) + '</div></div>';
     html += '<div class="detail-section"><h4>Stem' + (r.stem_ids.length > 1 ? 's' : '') + '</h4><div>'
-      + (r.stem_ids.length ? esc(r.stem_ids.join(', ')) + (r.stem_name ? ' -- ' + esc(r.stem_name) : '') : '(none)')
+      + (r.stem_ids.length ? esc(r.stem_ids.map(stemDisplayName).join(', ')) : '(none)')
       + '</div></div>';
     html += '<div class="detail-section"><h4>Tags (' + tags.length + ')</h4>'
       + (tags.length ? tags.map(nodeExpansion).join('') : '<div class="meta">no tags in any ladder</div>')
@@ -763,14 +769,70 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
     mount.appendChild(row);
   }
 
+  var STEM_IDS_BY_NAME = Object.keys(STEM_NAMES).sort(function (a, b) {
+    return STEM_NAMES[a].localeCompare(STEM_NAMES[b]);
+  });
+
   function mountProposeControls(mount, r) {
     if (!mount) return;
     mount.innerHTML = '<h4>Propose a tag</h4>';
     var enabled = !!writerName();
     var row = document.createElement('div');
     row.className = 'write-row';
-    var skInput = document.createElement('input');
-    skInput.type = 'text'; skInput.placeholder = 'source_key from the ladder document';
+
+    var nodesByStem = {};
+
+    var stemSel = document.createElement('select');
+    stemSel.appendChild(new Option('-- stem --', ''));
+    STEM_IDS_BY_NAME.forEach(function (id) {
+      stemSel.appendChild(new Option(STEM_NAMES[id], id));
+    });
+
+    var nodeSel = document.createElement('select');
+    nodeSel.disabled = true;
+    nodeSel.appendChild(new Option('-- choose a stem first --', ''));
+
+    function populateNodeSelect(nodes) {
+      nodeSel.innerHTML = '';
+      nodeSel.appendChild(new Option('-- node --', ''));
+      var groupEl = null;
+      var lastSkill = null;
+      nodes.forEach(function (n) {
+        var skill = n.concept_skill || 'Ungrouped';
+        if (skill !== lastSkill) {
+          groupEl = document.createElement('optgroup');
+          groupEl.label = skill;
+          nodeSel.appendChild(groupEl);
+          lastSkill = skill;
+        }
+        groupEl.appendChild(new Option(n.node_text, n.source_key));
+      });
+      nodeSel.disabled = false;
+    }
+
+    stemSel.onchange = function () {
+      var stemId = stemSel.value;
+      nodeSel.innerHTML = '';
+      nodeSel.disabled = true;
+      if (!stemId) {
+        nodeSel.appendChild(new Option('-- choose a stem first --', ''));
+        return;
+      }
+      if (nodesByStem[stemId]) {
+        populateNodeSelect(nodesByStem[stemId]);
+        return;
+      }
+      nodeSel.appendChild(new Option('loading…', ''));
+      apiGet('/api/nodes?stem_id=' + encodeURIComponent(stemId)).then(function (nodes) {
+        nodesByStem[stemId] = nodes;
+        if (stemSel.value === stemId) populateNodeSelect(nodes);
+      }).catch(function (err) {
+        nodeSel.innerHTML = '';
+        nodeSel.appendChild(new Option('-- failed to load nodes --', ''));
+        apiStatus('node lookup failed: ' + err.message);
+      });
+    };
+
     var textInput = document.createElement('textarea');
     textInput.placeholder = 'node text you saw';
     var rationaleInput = document.createElement('textarea');
@@ -779,19 +841,25 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
     btn.textContent = 'Propose';
     btn.disabled = !enabled;
     btn.onclick = function () {
-      if (!skInput.value.trim() || !textInput.value.trim()) {
-        alert('source_key and node text are required.'); return;
+      var sourceKey = nodeSel.value;
+      if (!sourceKey || !textInput.value.trim()) {
+        alert('a node and node text are required.'); return;
       }
       apiSend('POST', '/api/proposals', {
-        standard_id: r.code, source_key: skInput.value.trim(),
+        standard_id: r.code, source_key: sourceKey,
         node_text_seen: textInput.value.trim(), proposed_by: writerName(),
         rationale: rationaleInput.value || null,
       }).then(function () {
         apiStatus('proposal recorded');
-        skInput.value = ''; textInput.value = ''; rationaleInput.value = '';
+        stemSel.value = '';
+        nodeSel.innerHTML = '';
+        nodeSel.appendChild(new Option('-- choose a stem first --', ''));
+        nodeSel.disabled = true;
+        textInput.value = ''; rationaleInput.value = '';
       }).catch(function (err) { alert('Propose failed: ' + err.message); });
     };
-    row.appendChild(skInput);
+    row.appendChild(stemSel);
+    row.appendChild(nodeSel);
     row.appendChild(textInput);
     row.appendChild(rationaleInput);
     row.appendChild(btn);
@@ -907,6 +975,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 def render(con: sqlite3.Connection, out_path: Path) -> list[coverage.StandardRow]:
     rows = coverage.build_rows(con, band=None)
     nodes = build_node_lookup(con, rows)
+    stem_names = node_lookup.build_stem_names(con)
     grade_order = dict(con.execute("SELECT grade, ord FROM grade_order"))
 
     data = [row_dict(r) for r in rows]
@@ -916,6 +985,7 @@ def render(con: sqlite3.Connection, out_path: Path) -> list[coverage.StandardRow
     html = _PAGE_TEMPLATE
     html = html.replace("__ROWS_JSON__", _json_for_script(data))
     html = html.replace("__NODES_JSON__", _json_for_script(nodes))
+    html = html.replace("__STEM_NAMES_JSON__", _json_for_script(stem_names))
     html = html.replace("__GRADE_ORDER_JSON__", _json_for_script(grade_order))
     html = html.replace("__TABS_JSON__", _json_for_script(list(coverage.TABS)))
     html = html.replace("__OUT_OF_SCOPE_JSON__", _json_for_script(list(OUT_OF_SCOPE_GRADES)))

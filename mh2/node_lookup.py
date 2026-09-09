@@ -16,6 +16,8 @@ from __future__ import annotations
 import sqlite3
 from typing import NamedTuple
 
+from mh2.coverage import _collapse_ws
+
 _QUERY = "SELECT node_id, source_key, node_text, source_file, stem_id, seq FROM nodes"
 
 
@@ -38,3 +40,38 @@ def build_source_key_lookup(con: sqlite3.Connection) -> dict[str, NodeInfo]:
     (schema.sql), so this is a one-to-one re-indexing of build_node_lookup's
     result, not a second query."""
     return {info.source_key: info for info in build_node_lookup(con).values()}
+
+
+def build_stem_names(con: sqlite3.Connection) -> dict[str, str]:
+    """stem_id -> stems.name, for resolving a stem code to its display name.
+    `stems` is the catalog table (schema.sql), not the hand-maintained
+    stems.csv mapping in `stem_map` -- the latter has data-quality wrinkles
+    (embedded newlines, many-to-many naming) that `stems.name` does not.
+    Names are whitespace-collapsed -- at least one (WHO) carries an embedded
+    newline, same wrinkle coverage.py already collapses for its own
+    stem_info (mh2/coverage.py:407)."""
+    return {stem_id: _collapse_ws(name)
+            for stem_id, name in con.execute("SELECT stem_id, name FROM stems")}
+
+
+class StemNode(NamedTuple):
+    source_key: str
+    node_text: str
+    concept_skill: str
+
+
+def nodes_for_stem(con: sqlite3.Connection, stem_id: str) -> list[StemNode]:
+    """Every node in stem_id, ordered by concept_skill then seq -- the shape
+    a grouped node picker needs. concept_skill is coalesced to 'Ungrouped'
+    defensively; current data has none, but nothing enforces that.
+    node_text/concept_skill are whitespace-collapsed for the same reason as
+    build_stem_names: this is display label text for an <option>, not a
+    stored value."""
+    cur = con.execute(
+        "SELECT source_key, node_text, COALESCE(concept_skill, 'Ungrouped') "
+        "AS concept_skill FROM nodes WHERE stem_id = ? "
+        "ORDER BY concept_skill, seq",
+        (stem_id,),
+    )
+    return [StemNode(source_key, _collapse_ws(node_text), _collapse_ws(concept_skill))
+            for source_key, node_text, concept_skill in cur.fetchall()]

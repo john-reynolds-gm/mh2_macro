@@ -57,3 +57,50 @@ def test_missing_node_is_absent_from_both_lookups():
     by_key = node_lookup.build_source_key_lookup(con)
     assert "no-such-node" not in by_id
     assert "no-such-key" not in by_key
+
+
+def test_build_stem_names_maps_id_to_name_and_collapses_whitespace():
+    con = fresh_db()
+    con.execute("INSERT INTO stems (stem_id, name) VALUES (?,?)", ("COU", "Counting"))
+    con.execute("INSERT INTO stems (stem_id, name) VALUES (?,?)",
+                ("WHO", "Whole Numbers and \nBase Ten Structure"))
+    names = node_lookup.build_stem_names(con)
+    assert names == {"COU": "Counting", "WHO": "Whole Numbers and Base Ten Structure"}
+
+
+def test_nodes_for_stem_orders_by_concept_skill_then_seq():
+    con = fresh_db()
+    con.execute("INSERT INTO stems (stem_id, name) VALUES ('COU', 'Counting')")
+    _add_node(con, "COU-0001", "COU::key-b", "second in skill A", stem_id="COU", seq=2)
+    _add_node(con, "COU-0002", "COU::key-a", "first in skill A", stem_id="COU", seq=1)
+    _add_node(con, "COU-0003", "COU::key-c", "only one in skill B", stem_id="COU", seq=3)
+    con.execute("UPDATE nodes SET concept_skill = 'Skill A' WHERE node_id IN ('COU-0001','COU-0002')")
+    con.execute("UPDATE nodes SET concept_skill = 'Skill B' WHERE node_id = 'COU-0003'")
+
+    nodes = node_lookup.nodes_for_stem(con, "COU")
+    assert [n.source_key for n in nodes] == ["COU::key-a", "COU::key-b", "COU::key-c"]
+    assert [n.concept_skill for n in nodes] == ["Skill A", "Skill A", "Skill B"]
+
+
+def test_nodes_for_stem_excludes_other_stems():
+    con = fresh_db()
+    _add_node(con, "COU-0001", "COU::a", "a", stem_id="COU", seq=1)
+    _add_node(con, "ORD-0001", "ORD::b", "b", stem_id="ORD", seq=1)
+    nodes = node_lookup.nodes_for_stem(con, "COU")
+    assert [n.source_key for n in nodes] == ["COU::a"]
+
+
+def test_nodes_for_stem_null_concept_skill_falls_back_to_ungrouped():
+    con = fresh_db()
+    _add_node(con, "SUB-0001", "SUB::a", "a", stem_id="SUB", seq=1)
+    nodes = node_lookup.nodes_for_stem(con, "SUB")
+    assert nodes[0].concept_skill == "Ungrouped"
+
+
+def test_nodes_for_stem_collapses_whitespace_in_text_and_skill():
+    con = fresh_db()
+    _add_node(con, "COU-0001", "COU::a", "  messy   text\nhere ", stem_id="COU", seq=1)
+    con.execute("UPDATE nodes SET concept_skill = ' Skill  A \n' WHERE node_id = 'COU-0001'")
+    nodes = node_lookup.nodes_for_stem(con, "COU")
+    assert nodes[0].node_text == "messy text here"
+    assert nodes[0].concept_skill == "Skill A"
