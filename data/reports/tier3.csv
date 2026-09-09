@@ -23,8 +23,56 @@ concept_no_node,COU,,,31,,,"Count from a number other than one
 Determine numbers just before or just after"
 concept_no_node,COU,,,39,,,Consistently conserve number
 concept_no_node,COU,,,40,,,Count forward and back (10s and 1s)
+concept_no_node,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,162,,,"•	Students read and write equations in one variable.
+•	Given a possible solution, students  check solution by substituting it for x in origi"
+concept_no_node,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,163,,,"•	Students read and write equations in one variable.
+•	Given a possible solution, students  check solution by substituting it for x in origi"
+concept_no_node,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,164,,,"•	Given a word problem, students can write an equation whose solution is the answer to the question in the problem. 
+•	Translate equation ba"
+concept_no_node,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,168,,,"- Solve equations of the form ax+b=cx+d
+- •	Students solve linear equations where gathering like terms and isolating the variable are useful"
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,171,,,State the meaning of an inequality and its solution.
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,172,,,Write an inequality to represent solutions graphed on a number line (and vice versa)
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,173,,,Write an inequality to represent solutions graphed on a number line (and vice versa)
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,179,,,Determine whether values are solutions to an inequality by using substitution.
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,180,,,Determine whether values are solutions to an inequality by using substitution.
+concept_no_node,EE_ONE_VARIABLE_INEQUALITIES_DE,,,182,,,Compare numerical expressions after applying operations.
 concept_no_node,FRA,,,71,,,Determine “a fraction of something”
 concept_no_node,MUL,,,93,,,Introduce division with remainders
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,454,,,•	Find the absolute value of integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,455,,,"•	Identify opposites of whole numbers (negative integers).
+•	Identify opposites of negative integers (opposites of opposites of whole number"
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,463,,,Add vectors
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,464,,,Add vectors
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,466,,,Add integers
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,467,,,Add integers
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,471,,,Subtract integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,472,,,Subtract integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,477,,,Multiply positive integers by negative integers and negative integers by positive integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,478,,,Multiply positive integers by negative integers and negative integers by positive integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,479,,,Multiply negative integers by negative integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,480,,,Multiply negative integers by negative integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,481,,,Multiply negative integers by negative integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,484,,,Divide integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,485,,,Divide integers.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,491,,,Evaluate expressions with rational numbers by using order of operations.
+concept_no_node,NS_INTEGERS_AND_RATIONALS,,,492,,,Evaluate expressions with rational numbers by using order of operations.
+concept_no_node,NS_IRRATIONAL_REAL_NUMBERS,,,494,,,·       Show there are numbers that are not rational numbers.
+concept_no_node,NS_IRRATIONAL_REAL_NUMBERS,,,497,,,"Show that every decimal expansion corresponds to a real number on the number line and that irrational numbers have non-terminating, non-repe"
+concept_no_node,NS_IRRATIONAL_REAL_NUMBERS,,,501,,,"·       Deduce and justify:
+o   rational + rational = rational
+o   rational + irrational =ir rational
+o   irrational + irrational = may be r"
+concept_no_node,PS_PROBABILITY,,,437,,,Define probability and determine the probability of events for single-stage experiments.
+concept_no_node,PS_PROBABILITY,,,438,,,Define probability and determine the probability of events for single-stage experiments.
+concept_no_node,PS_PROBABILITY,,,441,,,Collect data from a single-stage chance experiment in order to calculate probability using long run relative frequency.
+concept_no_node,PS_PROBABILITY,,,442,,,Collect data from a single-stage chance experiment in order to calculate probability using long run relative frequency.
+concept_no_node,PS_PROBABILITY,,,443,,,Collect data from a single-stage chance experiment in order to calculate probability using long run relative frequency.
+concept_no_node,PS_PROBABILITY,,,447,,,Probability of events from multi-stage experiment
+concept_no_node,PS_PROBABILITY,,,448,,,Probability of events from multi-stage experiment
+concept_no_node,PS_PROBABILITY,,,449,,,Probability of events from multi-stage experiment
+concept_no_node,PS_PROBABILITY,,,452,,,Use counting principles to find probabilities
+concept_no_node,RP_COORDINATE_SYSTEM,,,410,,,Extend the coordinate plane from the first quadrant to all 4 quadrants.
 concept_no_node,SUB,,,25,,,Perceptually subitize groups of objects
 concept_no_node,SUB,,,26,,,Conceptually subitize gorups of objects
 concept_no_node,TIM,,,3,,,"Determine if a prompt asks for a moment or a duration
@@ -66,6 +114,39 @@ matched,COU,,,37,COU-0021,0.661,"Count in different units, switching during the 
 matched,COU,,,34,COU-0017,0.539,"Count on, keeping track by using spatial, auditory, or rhythmic patter  ||  Count on from a given number by using spatial, auditory, or rhythmic p"
 matched,COU,,,35,COU-0019,0.502,Count by fives and twos  ||  Count a collection of objects efficiently by grouping the objects and 
 matched,COU,,,30,COU-0006,0.469,Count and count out objects accurately beyond 10  ||  Count out a group of up to 10 objects.
+matched,EE_GENERAL_EXPRESSIONS,,,141,EE_GENERAL_EXPRESSIONS-0029,1.0,Evaluate an expression by substituting given numbers for the variables  ||  Evaluate an expression with grouping symbols and exponents by substitu
+matched,EE_GENERAL_EXPRESSIONS,,,135,EE_GENERAL_EXPRESSIONS-0016,1.0,Use terminology related to expressions precisely.  ||  Write an expression with variables representing unknown numbers to mod
+matched,EE_GENERAL_EXPRESSIONS,,,140,EE_GENERAL_EXPRESSIONS-0025,0.997,"Identify and generate equivalent expressions, and use properties to ju  ||  Analyze an expression’s structure to determine ways to rewrite it."
+matched,EE_GENERAL_EXPRESSIONS,,,139,EE_GENERAL_EXPRESSIONS-0024,0.997,"Identify and generate equivalent expressions, and use properties to ju  ||  Justify whether two expressions are equivalent."
+matched,EE_GENERAL_EXPRESSIONS,,,138,EE_GENERAL_EXPRESSIONS-0023,0.997,"Identify and generate equivalent expressions, and use properties to ju  ||  Write equivalent expressions by using the properties of operations and"
+matched,EE_GENERAL_EXPRESSIONS,,,137,EE_GENERAL_EXPRESSIONS-0022,0.997,"Identify and generate equivalent expressions, and use properties to ju  ||  Add and subtract like terms by using the distributive property."
+matched,EE_GENERAL_EXPRESSIONS,,,136,EE_GENERAL_EXPRESSIONS-0021,0.997,"Identify and generate equivalent expressions, and use properties to ju  ||  Use the distributive property to write a sum or difference as the prod"
+matched,EE_GENERAL_EXPRESSIONS,,,134,EE_GENERAL_EXPRESSIONS-0007,0.901,Evaluate numerical expressions with grouping symbols and whole number   ||  Justify whether two numerical expressions are equivalent.
+matched,EE_GENERAL_EXPRESSIONS,,,133,EE_GENERAL_EXPRESSIONS-0006,0.901,Evaluate numerical expressions with grouping symbols and whole number   ||  Determine whether numerical expressions are equivalent.
+matched,EE_GENERAL_EXPRESSIONS,,,132,EE_GENERAL_EXPRESSIONS-0005,0.901,Evaluate numerical expressions with grouping symbols and whole number   ||  Evaluate numerical expressions with whole-number exponents and groupin
+matched,EE_GENERAL_EXPRESSIONS,,,131,EE_GENERAL_EXPRESSIONS-0004,0.901,Evaluate numerical expressions with grouping symbols and whole number   ||  Evaluate numerical expressions with whole-number exponents.
+matched,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,170,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0027,0.997,Rearrange linear formulas to isolate a specific variable  ||  Rearrange linear formulas to isolate a specific variable.
+matched,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,165,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0011,0.992,•	Use properties of equality to produce equivalent equations  ||  Identify equivalent linear equations in one variable. Justify why the 
+matched,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,167,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0013,0.982,Solve equations of the form a+x=b  ||  Solve equations of the form ax=d.
+matched,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,166,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0018,0.974,-Solve equations of the form ax=b  ||  Solve equations of the form ax+b=d.
+matched,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,169,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0023,0.612,•	Absolute Value Equations  ||  Solve absolute value equations of the form ∣x∣=d.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,191,EE_ONE_VARIABLE_INEQUALITIES_DE-0040,0.936,Solve absolute value inequalities and represent the solution set on th  ||  Solve greater-than inequalities of the forms a∣bx-c∣+ d>e and a∣bx-c∣+
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,190,EE_ONE_VARIABLE_INEQUALITIES_DE-0039,0.936,Solve absolute value inequalities and represent the solution set on th  ||  Solve less-than inequalities of the forms a∣bx+c∣+ d<e and a∣bx+c∣+ d≤
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,189,EE_ONE_VARIABLE_INEQUALITIES_DE-0032,0.928,Solve compound inequalities and represent the solution on the number l  ||  Create a real-world context for a given compound inequality.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,188,EE_ONE_VARIABLE_INEQUALITIES_DE-0026,0.709,Identify inequalities that have all real numbers or no solution.  ||  Classify inequalities that have a solution set of all real numbers or 
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,178,EE_ONE_VARIABLE_INEQUALITIES_DE-0013,0.686,Represent the solution of an inequality on a number line and in interv  ||  Represent the solution set of an inequality in interval notation.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,177,EE_ONE_VARIABLE_INEQUALITIES_DE-0011,0.677,Represent the solution of an inequality on a number line and in interv  ||  Represent the solution set of an inequality on a number line.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,176,EE_ONE_VARIABLE_INEQUALITIES_DE-0012,0.641,Represent the solution of an inequality on a number line and in interv  ||  Represent the solution set of an inequality in set-builder notation.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,175,EE_ONE_VARIABLE_INEQUALITIES_DE-0010,0.641,Represent the solution of an inequality on a number line and in interv  ||  Use substitution to determine whether a given number is a solution to 
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,174,EE_ONE_VARIABLE_INEQUALITIES_DE-0006,0.638,Write an inequality to represent solutions graphed on a number line (a  ||  Write an inequality to represent a solution set graphed on a number li
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,193,EE_ONE_VARIABLE_INEQUALITIES_DE-0042,0.534,Write and solve absolute value inequalities for situations and interpr  ||  Create a real-world context for a given one-variable absolute value in
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,192,EE_ONE_VARIABLE_INEQUALITIES_DE-0041,0.534,Write and solve absolute value inequalities for situations and interpr  ||  Solve real-world problems by writing and solving one-variable absolute
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,185,EE_ONE_VARIABLE_INEQUALITIES_DE-0031,0.461,"Solve inequalities of the form ax+b<c, ax+b<=c, ax+b>c, and ax+b>=c an  ||  Solve real-world problems by writing and solving compound inequalities"
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,184,EE_ONE_VARIABLE_INEQUALITIES_DE-0030,0.461,"Solve inequalities of the form ax+b<c, ax+b<=c, ax+b>c, and ax+b>=c an  ||  Solve compound inequalities."
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,183,EE_ONE_VARIABLE_INEQUALITIES_DE-0029,0.461,"Solve inequalities of the form ax+b<c, ax+b<=c, ax+b>c, and ax+b>=c an  ||  Represent the solution set of a compound inequality."
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,187,EE_ONE_VARIABLE_INEQUALITIES_DE-0025,0.446,"Solve inequalities of the form ax+b<cx+d, ax+b<=cx+d, ax+b>cx+d, and a  ||  Solve inequalities of the forms ax+b<cx+d, ax+b≤cx+d, ax+b>cx+d, and a"
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,181,EE_ONE_VARIABLE_INEQUALITIES_DE-0001,0.433,Determine whether values are solutions to an inequality by using subst  ||  Determine whether an inequality is true or false.
+matched,EE_ONE_VARIABLE_INEQUALITIES_DE,,,186,EE_ONE_VARIABLE_INEQUALITIES_DE-0020,0.422,"Solve inequalities of the form ax+b<cx+d, ax+b<=cx+d, ax+b>cx+d, and a  ||  Solve inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d."
 matched,EST,,,60,EST-0006,0.998,Make a thoughtful guess about the number of objects in a group  ||  Make a thoughtful guess about the number of objects in a group.
 matched,EST,,,62,EST-0007,0.654,Estimate by scanning a group of objects and relating the results to a   ||  Estimate the number of objects in a group by using a mental number lin
 matched,EST,,,57,EST-0001,0.653,Make a thoughtful guess which set has more or less objects  ||  Make thoughtful guesses about the sizes of sets and about which set ha
@@ -89,6 +170,60 @@ matched,MUL,,,94,MUL-0026,0.597,Divide multi-digit whole numbers by multi-digit 
 matched,MUL,,,89,MUL-0017,0.519,Fluently multiply and divide (basic facts)  ||  Express a composite number as the product of its prime factors.
 matched,MUL,,,92,MUL-0025,0.493,Divide multi-digit whole numbers by one-digit numbers (exact division)  ||  Divide multi-digit whole numbers by single-digit whole numbers in prob
 matched,MUL,,,86,MUL-0016,0.466,Define multiplication of whole numbers and multiply  ||  Determine whether a whole number is a multiple of a given one-digit nu
+matched,NS_INTEGERS_AND_RATIONALS,,,490,NS_INTEGERS_AND_RATIONALS-0028,1.0,Divide rational numbers.  ||  Find quotients of rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,488,NS_INTEGERS_AND_RATIONALS-0027,1.0,Divide rational numbers.  ||  Find quotients of integers.
+matched,NS_INTEGERS_AND_RATIONALS,,,483,NS_INTEGERS_AND_RATIONALS-0024,1.0,Multiply rational numbers.  ||  Multiply rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,482,NS_INTEGERS_AND_RATIONALS-0023,1.0,Multiply rational numbers.  ||  Multiply integers.
+matched,NS_INTEGERS_AND_RATIONALS,,,476,NS_INTEGERS_AND_RATIONALS-0021,1.0,Subtract rational numbers.  ||  Subtract rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,475,NS_INTEGERS_AND_RATIONALS-0020,1.0,Subtract rational numbers.  ||  Subtract integers.
+matched,NS_INTEGERS_AND_RATIONALS,,,468,NS_INTEGERS_AND_RATIONALS-0016,0.988,Add integers  ||  Add integers.
+matched,NS_INTEGERS_AND_RATIONALS,,,465,NS_INTEGERS_AND_RATIONALS-0014,0.987,Add vectors  ||  Add vectors.
+matched,NS_INTEGERS_AND_RATIONALS,,,470,NS_INTEGERS_AND_RATIONALS-0017,0.986,•	Add rational numbers.  ||  Add rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,469,NS_INTEGERS_AND_RATIONALS-0015,0.986,•	Add rational numbers.  ||  Explain patterns in the addition of rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,457,NS_INTEGERS_AND_RATIONALS-0005,0.75,•	Find the absolute value of rational numbers.  ||  Find the absolute value of a rational number.
+matched,NS_INTEGERS_AND_RATIONALS,,,493,NS_INTEGERS_AND_RATIONALS-0029,0.691,Evaluate expressions with rational numbers by using order of operation  ||  Use the order of operations and properties to evaluate numerical expre
+matched,NS_INTEGERS_AND_RATIONALS,,,462,NS_INTEGERS_AND_RATIONALS-0010,0.626,"•	Compare rational numbers, including equality of rational numbers.
+•	  ||  Compare absolute values of rational Numbers."
+matched,NS_INTEGERS_AND_RATIONALS,,,461,NS_INTEGERS_AND_RATIONALS-0009,0.626,"•	Compare rational numbers, including equality of rational numbers.
+•	  ||  Show that between any 2 rational numbers is another rational number."
+matched,NS_INTEGERS_AND_RATIONALS,,,460,NS_INTEGERS_AND_RATIONALS-0008,0.626,"•	Compare rational numbers, including equality of rational numbers.
+•	  ||  Compare and order rational numbers."
+matched,NS_INTEGERS_AND_RATIONALS,,,459,NS_INTEGERS_AND_RATIONALS-0007,0.626,"•	Compare rational numbers, including equality of rational numbers.
+•	  ||  Compare and order integers."
+matched,NS_INTEGERS_AND_RATIONALS,,,456,NS_INTEGERS_AND_RATIONALS-0006,0.462,"•	Identify opposites of fractions (negative rational numbers).
+•	Ident  ||  Plot rational numbers and their absolute values on a number line."
+matched,NS_INTEGERS_AND_RATIONALS,,,458,NS_INTEGERS_AND_RATIONALS-0004,0.418,"•	Identify opposites of fractions (negative rational numbers).
+•	Ident  ||  Classify numbers as whole numbers, integers, fractions, and rational n"
+matched,NS_INTEGERS_AND_RATIONALS,,,474,NS_INTEGERS_AND_RATIONALS-0019,0.38,Subtract integers.  ||  Explain patterns in the subtraction of rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,473,NS_INTEGERS_AND_RATIONALS-0018,0.38,Subtract integers.  ||  Write subtraction expressions as unknown addend equations.
+matched,NS_INTEGERS_AND_RATIONALS,,,487,NS_INTEGERS_AND_RATIONALS-0026,0.37,Divide integers.  ||  Explain patterns in the division of integers and rational numbers.
+matched,NS_INTEGERS_AND_RATIONALS,,,486,NS_INTEGERS_AND_RATIONALS-0025,0.37,Divide integers.  ||  Write division expressions as unknown factor multiplication equations.
+matched,NS_INTEGERS_AND_RATIONALS,,,453,NS_INTEGERS_AND_RATIONALS-0002,0.366,"•	Identify opposites of whole numbers (negative integers).
+•	Identify   ||  Plot integers on a number line."
+matched,NS_INTEGERS_AND_RATIONALS,,,489,NS_INTEGERS_AND_RATIONALS-0013,0.352,"•	Convert between rational numbers and decimals.
+•	Compare and order r  ||  Write decimals as fractions."
+matched,NS_IRRATIONAL_REAL_NUMBERS,,,496,NS_IRRATIONAL_REAL_NUMBERS-0001,0.581,•	Identify irrational numbers as real numbers that are not rational.  ||  Classify real numbers as rational or irrational.
+matched,NS_IRRATIONAL_REAL_NUMBERS,,,500,NS_IRRATIONAL_REAL_NUMBERS-0012,0.577,•	Perform operations with real numbers.  ||  Generate equivalent expressions containing irrational numbers and just
+matched,NS_IRRATIONAL_REAL_NUMBERS,,,499,NS_IRRATIONAL_REAL_NUMBERS-0011,0.577,•	Perform operations with real numbers.  ||  Find the sum or difference of expressions with radical terms.
+matched,NS_IRRATIONAL_REAL_NUMBERS,,,495,NS_IRRATIONAL_REAL_NUMBERS-0005,0.482,·       Plot real numbers on the number line.  ||  [Plot/Locate] rational approximations of irrational numbers on the num
+matched,NS_IRRATIONAL_REAL_NUMBERS,,,498,NS_IRRATIONAL_REAL_NUMBERS-0006,0.463,•	Use successive rational approximations (fractions or decimals) to lo  ||  Compare and order rational and irrational numbers.
+matched,PS_PROBABILITY,,,440,PS_PROBABILITY-0003,1.0,Define probability and determine the probability of events for single-  ||  Use a probability model to calculate the probabilities of events for a
+matched,PS_PROBABILITY,,,439,PS_PROBABILITY-0002,1.0,"Define probability and determine the probability of events for single-  ||  For a single-stage chance experiment, determine the sample space and a"
+matched,PS_PROBABILITY,,,446,PS_PROBABILITY-0006,0.934,Collect data from a single-stage chance experiment in order to calcula  ||  Use a probability estimate or probability model to predict approximate
+matched,PS_PROBABILITY,,,445,PS_PROBABILITY-0005,0.934,Collect data from a single-stage chance experiment in order to calcula  ||  Infer the probabilities of events and develop a probability model by u
+matched,PS_PROBABILITY,,,444,PS_PROBABILITY-0004,0.934,Collect data from a single-stage chance experiment in order to calcula  ||  Infer the probabilities of events and develop a probability model by u
+matched,PS_PROBABILITY,,,451,PS_PROBABILITY-0009,0.432,Probability of events from multi-stage experiment  ||  Infer the probability of an event by using relative frequencies from a
+matched,PS_PROBABILITY,,,436,PS_PROBABILITY-0001,0.415,Determine possible outcomes of a chance experiment. Describe probabili  ||  Understand that probability is a number between 0 and 1 and informally
+matched,PS_PROBABILITY,,,450,PS_PROBABILITY-0008,0.402,Probability of events from multi-stage experiment  ||  Calculate the probability of an event by using the results of a multi-
+matched,RP_COORDINATE_SYSTEM,,,418,RP_COORDINATE_SYSTEM-0027,1.0,Find the distance between any 2 points by using the distance formula.  ||  Solve problems by using the distance formula.
+matched,RP_COORDINATE_SYSTEM,,,417,RP_COORDINATE_SYSTEM-0024,1.0,Find the distance between any 2 points by using the Pythagorean Theore  ||  Solve problems by using the Pythagorean Theorem to find the distance b
+matched,RP_COORDINATE_SYSTEM,,,413,RP_COORDINATE_SYSTEM-0022,0.787,Find the distance between 2 points with same x- or same y-coordinate b  ||  Draw a line of symmetry for a figure in the coordinate plane.
+matched,RP_COORDINATE_SYSTEM,,,412,RP_COORDINATE_SYSTEM-0021,0.787,Find the distance between 2 points with same x- or same y-coordinate b  ||  Plot the reflection of a point about the x- or y-axis.
+matched,RP_COORDINATE_SYSTEM,,,416,RP_COORDINATE_SYSTEM-0020,0.583,Find the distance between 2 points with same x- or same y-coordinate b  ||  Use |x2 − x1| or |y2 − y1| to calculate the distance between any 2 poi
+matched,RP_COORDINATE_SYSTEM,,,415,RP_COORDINATE_SYSTEM-0019,0.481,Find the distance between 2 points with same x- or same y-coordinate b  ||  Summarize a proof that the distance between any 2 points on a horizont
+matched,RP_COORDINATE_SYSTEM,,,414,RP_COORDINATE_SYSTEM-0018,0.481,Find the distance between 2 points with same x- or same y-coordinate b  ||  Solve problems involving the distance between two points with the same
+matched,RP_COORDINATE_SYSTEM,,,411,RP_COORDINATE_SYSTEM-0014,0.386,Extend the coordinate plane from the first quadrant to all 4 quadrants  ||  Solve problems involving all 4 quadrants of the coordinate plane.
+matched,RP_COORDINATE_SYSTEM,,,409,RP_COORDINATE_SYSTEM-0001,0.371,Construct a coordinate system by using two perpendicular number lines   ||  Construct quadrant I of a coordinate system in the plane.
 matched,TIM,,,2,TIM-0003,1.0,Read and write moments to the hour and half-hour on analog and digital  ||  Tell and write times to the hour and half hour with analog and digital
 matched,TIM,,,7,TIM-0011,0.998,Represent and solve elapsed time problems by using the number line  ||  Represent and solve elapsed time problems by using the number line.
 matched,TIM,,,6,TIM-0010,0.996,Tell and write time to the nearest minute  ||  Tell and write time to the nearest minute.
@@ -154,6 +289,71 @@ node_no_concept,COU,,,,COU-0014,,Determine the numbers that are 1 more and 1 les
 node_no_concept,COU,,,,COU-0018,,Count a collection of objects efficiently by grouping the objects and skip-counting by twos.
 node_no_concept,COU,,,,COU-0023,,Understand that the number of objects in a group is not affected by how the objects are arranged or the order they are counted in.
 node_no_concept,COU,,,,COU-0024,,"Count forward and backward by 1s and 10s, from any number, to solve problems."
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0001,,Evaluate numerical expressions without exponents or grouping symbols.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0002,,Evaluate numerical expressions with grouping symbols.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0003,,Translate between expressions that use repeated multiplication and expressions that use exponential notation.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0008,,Determine the greatest common factor of two whole numbers.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0009,,Determine the least common multiple of two whole numbers.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0010,,"Use the distributive property to factor out the greatest common factor of two whole numbers, expressing their sum as a multiple of a sum of "
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0011,,Determine the prime factorization of a whole number.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0012,,Determine which whole numbers a given whole number is divisible by.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0013,,Identify the parts of an expression by using mathematical terminology.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0014,,Describe a given expression in words.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0015,,Write an expression with variables representing unknown numbers for a given description of the expression.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0017,,Match each number in a numerical example of a property of operations to the corresponding variable in the general statement of the property.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0018,,Identify equivalent expressions.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0019,,Generate equivalent expressions.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0020,,Use the distributive property to write the product of two factors as a sum or difference.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0026,,Evaluate an expression without grouping symbols or exponents by substituting given numbers for the variables.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0027,,Evaluate an expression with grouping symbols by substituting given numbers for the variables.
+node_no_concept,EE_GENERAL_EXPRESSIONS,,,,EE_GENERAL_EXPRESSIONS-0028,,Evaluate an expression with exponents by substituting given numbers for the variables.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0001,,Write equations in one variable from a description.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0002,,Use mathematical language to describe an equation in one variable.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0003,,Solve simple equations in one variable by inspection.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0004,,Use substitution to determine whether a given number is a solution to an equation in one variable.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0005,,Classify equations as linear or nonlinear.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0006,,Model mathematical and real-world contexts with linear equations in one variable.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0007,,Interpret the solution to a linear equation in one variable in context.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0008,,Identify constraints within mathematical and real-world contexts and apply them to a linear equation in one variable model.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0009,,Write situations that can be represented by a given equation.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0010,,Use properties of equality to produce and identify equivalent linear equations in one variable.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0012,,Use models to represent and solve equations of the form ax=d. (LEAF)
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0014,,Solve single variable equations in the form ab=cd with the unknown in any position.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0015,,Use models to represent and solve equations of the form x+b=d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0016,,Solve equations of the form x+b=d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0017,,Use models to represent and solve one variable linear equations.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0019,,Solve equations of the form a(bx + c) =d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0020,,Solve equations that result in the form ax+b=d after combining like terms or using the distributive property on one side of the equation.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0021,,Solve equations of the form ax+b=cx+d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0022,,"Solve linear equations in one variable with one solution, infinitely many solutions, or no solutions."
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0024,,Solve absolute value equations of the form ∣ax+b∣=d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0025,,Solve absolute value equations of the forms ∣x∣+b=d and a∣x∣=d.
+node_no_concept,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,,,EE_ONE_VARIABLE_EQUATIONS_DEG_1-0026,,Solve absolute value equations of the form a∣bx+c∣+ d=e
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0002,,Write inequalities in one variable from a description.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0003,,Use mathematical language to describe an inequality in one variable.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0004,,Determine solutions to simple inequalities in one variable by inspection.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0005,,Match a graph to its inequality.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0007,,Interpret the meaning of an inequality that represents a constraint or condition in a mathematical or real-world context.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0008,,Write an inequality that represents a constraint or condition in a mathematical or real-world context.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0009,,Create a real-world context to represent a given inequality.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0014,,Use the addition property of inequality to generate and identify equivalent inequalities.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0015,,Use the multiplication property of inequality to generate and identify equivalent inequalities when multiplying by a positive number.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0016,,Use the multiplication property of inequality to generate and identify equivalent inequalities when multiplying by a negative number.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0017,,Justify why inequalities are equivalent.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0018,,"Solve inequalities of the forms ax<d, ax≤d, ax>d, and ax≥d."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0019,,"Solve inequalities of the forms x+b<d, x+b≤d, x+b>d, and x+b≥d."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0021,,"Solve inequalities of the forms a(bx+c)<d, a(bx+c)≤d, a(bx+c)>d and a(bx+c)≥d."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0022,,Solve inequalities that require expanding expressions by using the distributive property and collecting like terms to obtain inequalities of
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0023,,"Solve real-world problems by writing and solving inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d, and interpret the solution se"
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0024,,"Create a real-world context for given inequalities of the forms ax+b<d, ax+b≤d, ax+b>d, and ax+b≥d."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0027,,"Solve real-world problems by writing and solving linear inequalities in one variable, and interpret the solution set in context."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0028,,Create a real-world context for a given inequality with variables on both sides of the inequality symbol.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0033,,Solve inequalities of the forms ∣x∣<d and ∣x∣≤d.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0034,,Solve inequalities of the forms ∣x∣>b and ∣x∣≥b.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0035,,Solve inequalities of the forms ∣ax+b∣<d and ∣ax+b∣≤d.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0036,,Solve inequalities of the forms ∣ax-b∣>c and ∣ax-b∣≥b.
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0037,,"Solve less-than inequalities of the forms ∣x∣+ b<d , ∣x∣+ b≤d, a∣x∣<d, and a∣x∣≤d."
+node_no_concept,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,EE_ONE_VARIABLE_INEQUALITIES_DE-0038,,"Solve greater-than inequalities of the forms ∣x∣+ b>d , ∣x∣+ b≥d, a∣x∣>d, and a∣x∣≥d."
 node_no_concept,FRA,,,,FRA-0001,,"Given a unit fraction on a number line, name the fraction."
 node_no_concept,FRA,,,,FRA-0002,,Partition an interval and locate unit fractions on a number line.
 node_no_concept,FRA,,,,FRA-0005,,Identify and generate equivalent fractions on number lines.
@@ -192,6 +392,42 @@ node_no_concept,MUL,,,,MUL-0030,,Find whole-number quotients and remainders with
 node_no_concept,MUL,,,,MUL-0031,,Find whole-number quotients and remainders with multi-digit dividends and two-digit divisors by recording the partial quotients in vertical 
 node_no_concept,MUL,,,,MUL-0032,,Express the result of division with remainder as a mixed number.
 node_no_concept,MUL,,,,MUL-0033,,Find mixed-number quotients and remainders with multi-digit dividends and divisors by using the standard algorithm.
+node_no_concept,NS_INTEGERS_AND_RATIONALS,,,,NS_INTEGERS_AND_RATIONALS-0001,,Name the opposite of a rational number.
+node_no_concept,NS_INTEGERS_AND_RATIONALS,,,,NS_INTEGERS_AND_RATIONALS-0003,,Plot rational numbers on a number line.
+node_no_concept,NS_INTEGERS_AND_RATIONALS,,,,NS_INTEGERS_AND_RATIONALS-0011,,Determine whether a rational number has a terminating or repeating decimal expansion by analyzing the denominator.
+node_no_concept,NS_INTEGERS_AND_RATIONALS,,,,NS_INTEGERS_AND_RATIONALS-0012,,Write fractions as decimals.
+node_no_concept,NS_INTEGERS_AND_RATIONALS,,,,NS_INTEGERS_AND_RATIONALS-0022,,Explain patterns in the multiplication of rational numbers.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0002,,Classify a number as rational or irrational by using its decimal representation.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0003,,Explain why irrational numbers have decimal representations that do not terminate or repeat
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0004,,Determine rational approximations of irrational numbers.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0007,,Approximate the values of expressions containing irrational numbers.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0008,,Compare and order expressions containing irrational numbers.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0009,,Find the product or quotient of expressions with radical terms.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0010,,Express radicals in simplest radical form.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0013,,Explain why the sum or product of two rational numbers is rational.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0014,,Explain why the sum of a rational number and an irrational number is irrational.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0015,,Explain why the product of a nonzero rational number and an irrational number is irrational.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0016,,Explain why the sum of two irrational numbers may be rational or irrational.
+node_no_concept,NS_IRRATIONAL_REAL_NUMBERS,,,,NS_IRRATIONAL_REAL_NUMBERS-0017,,Explain when the product of two irrational numbers may be rational or irrational.
+node_no_concept,PS_PROBABILITY,,,,PS_PROBABILITY-0007,,"Represent the sample space of a multi-stage chance experiment using an organized list, table, or tree diagram."
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0002,,Write an ordered pair to describe the exact location of a point plotted in quadrant I of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0003,,Plot the exact location of a point in quadrant I of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0004,,Write an ordered pair to describe the approximate location of a point plotted in quadrant I of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0005,,Plot the approximate location of a point in quadrant I of the coordinate plane with scaled axes.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0006,,Solve problems involving Quadrant I of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0007,,Construct and name the 4 quadrants of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0008,,Write an ordered pair to describe the location of a point with integer coordinates plotted in any quadrant of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0009,,Plot points with integer coordinates in any quadrant of the coordinate plane.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0010,,Determine the signs of the x- and y-coordinates of a point in a given quadrant.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0011,,Determine a point’s quadrant by using the signs of the x- and y-coordinates.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0012,,Write an ordered pair to describe the location of a point with rational coordinates plotted in any quadrant of the coordinate plane with sca
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0013,,Plot points with rational coordinates in any quadrant of the coordinate plane with scaled axes.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0015,,Find the distance between two points that lie on a vertical or horizontal line by counting units (unit intervals).
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0016,,"Use the difference of the absolute values of the coordinates (|x2| − |x1| or |y2| − |y1|, greater minus lesser) to calculate the distance be"
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0017,,Use |x1| + |x2| or |y1| + |y2|to calculate the distance between 2 points in different quadrants with the same x- or y-coordinate.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0023,,Use the Pythagorean Theorem to find the distance between two points in the coordinate plane that do not lie on a horizontal or vertical line
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0025,,Use the Pythagorean theorem to derive the distance formula: (x2-x1)2+(y2-y1)2.
+node_no_concept,RP_COORDINATE_SYSTEM,,,,RP_COORDINATE_SYSTEM-0026,,Use the distance formula to determine the distance between any two points in the coordinate plane.
 node_no_concept,SUB,,,,SUB-0001,,Determine how many objects are in a group of up to 5 objects without counting.
 node_no_concept,SUB,,,,SUB-0002,,Determine how many objects are in a group without counting by recognizing and composing smaller groups.
 node_no_concept,TIM,,,,TIM-0001,,Describe and compare time intervals.

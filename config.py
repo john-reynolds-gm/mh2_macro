@@ -27,6 +27,7 @@ STANDARDS = SOURCE / "standards"    # the big CSVs
 PREDICTIONS = SOURCE / "predictions"  # Path C, JSONL from the offline run
 
 STEM_WORKBOOK = WORKBOOKS / "H2_Stem_and_Leaf_Spreadsheet_K_to_G5.xlsm"
+STEM_WORKBOOK_G6 = WORKBOOKS / "H2 Stem and Leaf Spreadsheet G6 to Alg1.xlsm"
 TAGGING_WORKBOOK = WORKBOOKS / "Standards_for_Stems_Tagging.xlsx"
 ALL_STATES_CSV = STANDARDS / "all_states.csv"
 SCORED_ALIGNMENTS_CSV = STANDARDS / "scored_alignments.csv"
@@ -41,9 +42,24 @@ STEMS_CSV = WORKBOOKS / "stems.csv"
 CCSS_ALIGNMENT_GUIDE_CSV = WORKBOOKS / "CCSS_alignment_guide.csv"
 LEARNOSITY_COMBINED_CSV = WORKBOOKS / "learnosity_combined.csv"
 
+# First-pass, hand-maintained gap-pool category -> stem routing. John expects
+# to revise this; the app reads it live rather than hardcoding the mapping.
+CATEGORY_TO_STEMS_CSV = WORKBOOKS / "mh2_category_to_stems.csv"
+
+# Human ruling on the 96 distinct raw `grade_or_leaf` strings across the
+# ladders -- see mh2/load_grade_ruling.py.
+GRADE_WORKSHEET = WORKBOOKS / "mh2_grade_normalization_worksheet.xlsx"
+
 # --- generated ---------------------------------------------------------------
 DB = BUILD / "mh2.db"
 SCHEMA = ROOT / "mh2" / "schema.sql"
+
+# Review write-path state (Session C). A separate database on purpose: it
+# holds durable human review decisions that must survive `rebuild.py`
+# unlinking DB and rebuilding it from data/source -- see rebuild.py's
+# handling of SEQ_DB, which creates but never unlinks it.
+SEQ_DB = BUILD / "mh2_seq.db"
+SCHEMA_SEQ = ROOT / "mh2" / "schema_seq.sql"
 
 LADDER_GLOB = str(LADDERS / "*.docx")
 

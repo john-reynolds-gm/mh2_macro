@@ -4,8 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from mh2.normalize import (
-    expand_ranges, find_codes, grade_of, jurisdiction_of, normalize_grade,
-    parse_code_cell,
+    canonical_grade_key, expand_ranges, find_codes, grade_of,
+    jurisdiction_of, normalize_grade, parse_code_cell,
 )
 
 CASES = [
@@ -32,6 +32,28 @@ def test_grades():
     assert grade_of("CA.2.NBT.7.1") == "2"
     assert normalize_grade("Algebra I") == "A1"
     assert normalize_grade("Grade 3") == "3"
+
+
+def test_normalize_grade_high_school_band():
+    """'Grades 9-12' must become a token, not 's 9-12' (Grade/Grades stripped
+    as a substring used to leave the leading 's')."""
+    assert normalize_grade("Grades 9-12") == "HS"
+    assert normalize_grade("9-12") == "HS"
+    assert normalize_grade("HS") == "HS"
+
+
+def test_normalize_grade_algebra_ii_is_not_algebra_i():
+    """'and' binds tighter than 'or': the unparenthesized check happened to
+    be right for every real value, but Algebra II must never read as A1."""
+    assert normalize_grade("Algebra II") == "A2"
+    assert normalize_grade("Algebra 2") == "A2"
+
+
+def test_normalize_grade_unrecognized_returns_none():
+    """No passthrough: an unrecognized cell must not become a grade token."""
+    assert normalize_grade("Kindergarten Readiness") is None
+    assert normalize_grade(None) is None
+    assert normalize_grade("nan") is None
 
 def test_prose_is_not_a_code():
     got, unparsed = parse_code_cell("All orange standards were moved to the next row")
@@ -216,6 +238,57 @@ def test_annotation_dash_is_not_a_range():
     assert codes("CA.K.CC.3--added MF 5/29") == ["CA.K.CC.3"]
     assert codes("TX.1.5A-This goes to 120") == ["TX.1.5A"]
     assert codes("SC.1.NR.2.2—note this standard") == ["SC.1.NR.2.2"]
+
+
+# --- canonical_grade_key ----------------------------------------------------
+# Worksheet keys must match their unanchored twins exactly, or the ruling
+# loader's lookup misses real rows silently.
+
+def test_grade_key_blank_inputs():
+    assert canonical_grade_key(None) == ""
+    assert canonical_grade_key("") == ""
+    assert canonical_grade_key("   ") == ""
+
+
+def test_grade_key_strips_comment_anchors():
+    for anchored, plain in [
+        ("[^c28]7", "7"),
+        ("1, 2[^c20]", "1, 2"),
+        ("1, 2[^c21]", "1, 2"),
+        ("PK, GK[^c5][^c6]", "PK, GK"),
+        ("G1[^c7]", "G1"),
+        ("G2[^c18]", "G2"),
+    ]:
+        assert canonical_grade_key(anchored) == canonical_grade_key(plain), anchored
+
+
+def test_grade_key_word_forms_agree():
+    assert canonical_grade_key("Grade 1") == canonical_grade_key("G1") \
+        == canonical_grade_key("1") == "1"
+
+
+def test_grade_key_kindergarten_and_prek_forms():
+    assert canonical_grade_key("Kindergarten") == canonical_grade_key("GK") == "k"
+    assert (canonical_grade_key("Pre-K") == canonical_grade_key("prek")
+            == canonical_grade_key("pre k") == "pk")
+
+
+def test_grade_key_case_folds():
+    """The ladders contain 'Leaf', 'leaf', and 'LEAF 6' as separate raw values."""
+    assert canonical_grade_key("Leaf") == canonical_grade_key("leaf") == "leaf"
+
+
+def test_grade_key_collapses_multiline_to_single_space():
+    raw = "Grade: Begins in GK with counting by ones\nIn G2, switching between units \nLeaf: Money"
+    got = canonical_grade_key(raw)
+    assert "\n" not in got
+    assert "  " not in got
+
+
+def test_grade_key_does_not_touch_bare_letters():
+    """A literal 'K' is already canonical; only the longer spellings rewrite."""
+    assert canonical_grade_key("K") == "k"
+    assert canonical_grade_key("PK") == "pk"
 
 
 if __name__ == "__main__":

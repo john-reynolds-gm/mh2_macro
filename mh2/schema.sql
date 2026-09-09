@@ -108,6 +108,21 @@ CREATE TABLE IF NOT EXISTS standards (
 );
 CREATE INDEX IF NOT EXISTS ix_std_juris ON standards(jurisdiction, grade);
 
+-- Join-key recovery for ladder-written codes that don't exact-match a
+-- standards.standard_id -- a missing dot, or (tier='nocluster') an omitted
+-- CCSS cluster letter. Built from `standards` after it is fully populated --
+-- see mh2.load_standards.build_standard_alias(). A key two DISTINCT
+-- standard_ids would both produce is ambiguous and is inserted for neither;
+-- see the collisions report on rebuild. node_standards.standard_id is NEVER
+-- rewritten to an alias's target -- see mh2.normalize.resolve_standard_alias,
+-- which resolves on read instead.
+CREATE TABLE IF NOT EXISTS standard_alias (
+    alias_key   TEXT NOT NULL,
+    tier        TEXT NOT NULL CHECK (tier IN ('punct', 'nocluster')),
+    standard_id TEXT NOT NULL REFERENCES standards(standard_id),
+    PRIMARY KEY (alias_key, tier)
+);
+
 -- State standard -> CCSS crosswalk. Path B: boosts a candidate, never
 -- originates one. `source` is IN the primary key on purpose -- the same pair
 -- arriving from both scored_alignments and learnosity is two rows, and that
@@ -432,3 +447,48 @@ CREATE TABLE IF NOT EXISTS ingest_log (
     action       TEXT,
     detail       TEXT
 );
+
+-- ------------------------------------------------------------ grade ruling
+
+-- Grade token ordering. Needed because grades are not numeric: PK < K < 1.
+-- OUT is out-of-band (9-12, A2, Geometry) and is deliberately unordered.
+--
+-- `band` is the PK-5 / 6-9 split the coverage audit reports against:
+--   PK5  - PK, K, 1, 2, 3, 4, 5
+--   6_9  - 6, 7, 8, A1
+--   NULL - outside both audit bands (9, A2, GEO, HS, OUT) -- meaningful,
+--          never coalesced to a string.
+-- grade_order is fully rebuilt by mh2.load_grade_ruling on every run, which
+-- seeds only the worksheet's 12 tokens with no band; mh2.load_layer1 adds
+-- the standards-only tokens (9, A2, GEO, HS) and fills in `band` afterward
+-- -- see seed_grade_bands() there.
+CREATE TABLE IF NOT EXISTS grade_order (
+    grade TEXT PRIMARY KEY,
+    ord   INTEGER NOT NULL,
+    band  TEXT
+);
+
+-- One row per (node, grade). Many-to-many on purpose: grade never goes on
+-- `nodes`. These are the grades ENUMERATED by the ruling, not a min..max fill.
+CREATE TABLE IF NOT EXISTS node_grade (
+    node_id TEXT NOT NULL REFERENCES nodes(node_id) ON DELETE CASCADE,
+    grade   TEXT NOT NULL REFERENCES grade_order(grade),
+    PRIMARY KEY (node_id, grade)
+);
+
+-- One row per node. Carries the properties that are NOT per-grade.
+-- `resolution`: 'ruled' | 'leaf' | 'unresolved' | 'no_grade_field'
+--   ruled          — matched the worksheet, has >= 1 node_grade row
+--   leaf           — is_leaf TRUE; grade_match is 'n/a - leaf' regardless of
+--                    any node_grade rows present
+--   unresolved     — raw string present but no worksheet match
+--   no_grade_field — the ladder cell was blank (21 nodes at time of writing)
+CREATE TABLE IF NOT EXISTS node_grade_ruling (
+    node_id     TEXT PRIMARY KEY REFERENCES nodes(node_id) ON DELETE CASCADE,
+    raw_value   TEXT,
+    canon_key   TEXT,
+    resolution  TEXT NOT NULL,
+    is_leaf     INTEGER NOT NULL DEFAULT 0,
+    notes       TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_ngr_resolution ON node_grade_ruling(resolution);

@@ -1,0 +1,63 @@
+=== 3c: ladder-written codes resolved via standard_alias (fix the .docx; do not rely on this permanently) ===
+26 rows
+  '3.NF.A.2a'          -> 3.NF.A.2.a      tier=punct      nodes=['FRA-0001', 'FRA-0002']
+  '3.NF.A.2b'          -> 3.NF.A.2.b      tier=punct      nodes=['FRA-0003', 'FRA-0004']
+  '3.NF.A.3a'          -> 3.NF.A.3.a      tier=punct      nodes=['FRA-0005']
+  '3.OA.2'             -> 3.OA.A.2        tier=nocluster  nodes=['MUL-0005', 'MUL-0006']
+  '4.NBT.4'            -> 4.NBT.B.4       tier=nocluster  nodes=['ADD-0015', 'ADD-0017']
+  '4.NF.5'             -> 4.NF.C.5        tier=nocluster  nodes=['FRA-0006']
+  '5.NBT.A.3a'         -> 5.NBT.A.3.a     tier=punct      nodes=['WHO-0004']
+  '6.EE.A.2c'          -> 6.EE.A.2.c      tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0004', 'EE_GENERAL_EXPRESSIONS-0005']
+  '6.EE.C.7'           -> 6.EE.B.7        tier=nocluster  nodes=['EE_ONE_VARIABLE_EQUATIONS_DEG_1-0001', 'EE_ONE_VARIABLE_EQUATIONS_DEG_1-0002', 'EE_ONE_VARIABLE_EQUATIONS_DEG_1-0003', 'EE_ONE_VARIABLE_EQUATIONS_DEG_1-0004']
+  '6.EEA.3'            -> 6.EE.A.3        tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0024']
+  '7.NS.A.1d'          -> 7.NS.A.1.d      tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0001']
+  '7.NS.A.2c'          -> 7.NS.A.2.c      tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0001']
+  'FL.6NSO.1.2'        -> FL.6.NSO.1.2    tier=punct      nodes=['NS_INTEGERS_AND_RATIONALS-0001']
+  'HSA.SSE.A.2'        -> HSA-SSE.A.2     tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0024']
+  'K.CC.B.4c'          -> K.CC.B.4.c      tier=punct      nodes=['COM-0005']
+  'NE.6.d.3.b'         -> NE.6.D.3.b      tier=punct      nodes=['PS_PROBABILITY-0003']
+  'TX.4.3.E'           -> TX.4.3E         tier=punct      nodes=['ADD-0019', 'ADD-0020', 'ADD-0022']
+  'TX.4.3.F'           -> TX.4.3F         tier=punct      nodes=['ADD-0020', 'ADD-0022']
+  'TX.5.3.H'           -> TX.5.3H         tier=punct      nodes=['ADD-0021', 'ADD-0023']
+  'TX.6.3.D'           -> TX.6.3D         tier=punct      nodes=['NS_INTEGERS_AND_RATIONALS-0016']
+  'TX.6.7.A'           -> TX.6.7A         tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0003', 'EE_GENERAL_EXPRESSIONS-0004']
+  'TX.6.7.B'           -> TX.6.7B         tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0014', 'EE_GENERAL_EXPRESSIONS-0015', 'EE_ONE_VARIABLE_EQUATIONS_DEG_1-0001']
+  'TX.6.7.C'           -> TX.6.7C         tier=punct      nodes=['EE_GENERAL_EXPRESSIONS-0006', 'EE_GENERAL_EXPRESSIONS-0018']
+  'TX.7.11.A'          -> TX.7.11A        tier=punct      nodes=['EE_ONE_VARIABLE_EQUATIONS_DEG_1-0006']
+  'TX.7.6.E'           -> TX.7.6E         tier=punct      nodes=['PS_PROBABILITY-0003']
+  'TX.K.2.B'           -> TX.K.2B         tier=punct      nodes=['COU-0006']
+
+=== ladder-written codes with no exact or alias match: 25 rows ===
+  7.NA.A.2
+  7.NS.A.A.1.b
+  AL.PK.MAT4aOP
+  CA.4.G.A.1
+  CA.4.NF.C.7
+  CA.7-12.A
+  CA.9-12.A
+  FL.1.NOS.2.5
+  GA.8.PAR
+  GA.PK.CD
+  GA.PK.CD-MA
+  GR.1.1
+  MD.3.NOS.A.1
+  MN.PK.M1.1
+  NA.A.2
+  PA.M03.A
+  PA.M03.D
+  PA.M04.D
+  RN.B.3
+  SC.6.DSPR.2.1
+  SC.PK.MTE
+  SD.PK.CD
+  VA.3.NS.3.a.11
+  VA.7
+  VS.2.NS.1.g
+
+=== 3d: ladder-written codes that match EXACTLY but the standard is outside the coverage denominator (source = all_states.csv) -- not an error, the writer tagged beyond the curated gap list ===
+5 rows
+  NE.K.N.2.a
+  NE.K.N.2.b
+  NE.K.N.2.c
+  NE.K.N.2.f
+  VA.3.CE.2

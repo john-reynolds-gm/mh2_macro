@@ -26,5 +26,21 @@ data/build/*
 # Word lock files left in data/source/ladders
 data/source/**/~$*.docx
 
+# Excel lock files left in data/sources/workbooks/
+data/sources/workbooks/**/~$*.xlsx
+
 # Env/secrets
 .env
+
+# Generated render — 1.8MB, rebuilt by scripts/render_static.py every run
+data/reports/coverage.html
+
+# Script output, regenerable
+gap_overlap_by_state.csv
+
+# Test for a feature of the app that has been canceled
+tests/gap_overlap_by_state.py
+
+# Read by tests/gap_overlap_by_state.py, but no longer needed for actual app build
+data/source/standards/all_states_debug.csv
+

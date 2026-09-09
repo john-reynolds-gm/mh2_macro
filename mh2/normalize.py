@@ -46,6 +46,22 @@ _ANNOT_RE = re.compile(r"\s*(?:--|—|–|\u2014)\s*|(?<=[A-Za-z0-9])-(?=[A-Za-z
 _GRADE_RE = re.compile(r"^(PK|K|HS[A-Z]?|\d{1,2})$", re.I)
 
 
+# The gaps sheet's 'Standard Code' column carries this in place of a real
+# sub-code the source material never numbered ('WI.PK.B.EL.5 not numbered',
+# 'OR.PK.OA 1 not numbered'). Left in, normalize_code's whitespace strip welds
+# the prose straight onto the code ('WI.PK.B.EL.5notnumbered'), producing a
+# standard no ladder tag can ever resolve to -- rev 2 flagged the resulting
+# duplicate rows as a data defect; they are mangled, not duplicated. Every
+# reader of that column (mh2.load_standards.load_gaps_sheet AND
+# mh2.load_layer1.load_tag_status) must strip it the same way, or the two
+# tables disagree on the code for the same row.
+_TRAILING_PROSE_RE = re.compile(r"\s*not\s*numbered\s*$", re.I)
+
+
+def strip_trailing_prose(raw: str) -> str:
+    return _TRAILING_PROSE_RE.sub("", raw).strip()
+
+
 def normalize_code(code: str) -> str:
     """Uppercase the jurisdiction prefix, strip stray punctuation and spaces."""
     code = code.strip().strip(".,;:()[]").replace(" ", "")
@@ -74,16 +90,40 @@ def grade_of(code: str) -> str | None:
     return None
 
 
+_GRADE_WORD_RE = re.compile(r"\bgrades?\b", re.I)
+
+# High-school band forms: 'Grades 9-12' (post grade-word strip becomes
+# '9-12'), '9-12' written bare, or 'HS'. One token for all of them -- see
+# grade_order in schema.sql, which carries it as 'HS'.
+_HS_BAND_RE = re.compile(r"^(?:9\s*-\s*12|hs)$", re.I)
+
+# Already-canonical tokens some sheets write directly (the Gaps sheet's
+# Grade column uses 'A1'/'A2' rather than 'Algebra 1'/'Algebra 2' prose).
+_CANONICAL_TOKENS = {"PK", "K", "A1", "A2", "GEO", "HS",
+                     "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+
+
 def normalize_grade(raw) -> str | None:
-    """Normalize a grade cell ('Grade 1', 'Algebra I', 'K') to a short token."""
+    """
+    Normalize a grade cell ('Grade 1', 'Algebra I', 'K') to a short token.
+
+    Returns None for anything not recognized. Callers should NOT store that
+    None as the grade -- fall back to grade_of(code), and separately record
+    the raw cell for review, so unrecognized vocabulary is visible instead of
+    silently becoming a grade token.
+    """
     if raw is None:
         return None
     s = str(raw).strip()
     if not s or s.lower() == "nan":
         return None
-    s = s.replace("Grade", "").replace("grade", "").strip()
+    s = _GRADE_WORD_RE.sub("", s).strip()
+    if s.upper() in _CANONICAL_TOKENS:
+        return "K" if s.upper() == "K" else s.upper()
     low = s.lower()
-    if low.startswith("algebra 1") or low.startswith("algebra i") and "ii" not in low:
+    if _HS_BAND_RE.match(low):
+        return "HS"
+    if low.startswith("algebra 1") or (low.startswith("algebra i") and "ii" not in low):
         return "A1"
     if low.startswith("algebra 2") or low.startswith("algebra ii"):
         return "A2"
@@ -94,7 +134,7 @@ def normalize_grade(raw) -> str | None:
     if s.upper() == "K":
         return "K"
     m = re.match(r"^(\d{1,2})$", s)
-    return m.group(1) if m else s
+    return m.group(1) if m else None
 
 
 def parse_code_cell(cell) -> tuple[list[tuple[str, str | None]], list[str]]:
@@ -391,6 +431,96 @@ def extract_codes_inline(text: str) -> list[str]:
     return out
 
 
+# ------------------------------------------------------- standard_alias keys
+
+_NON_ALNUM_RE = re.compile(r"[^A-Za-z0-9]")
+
+
+def _alias_punct_key(code: str) -> str:
+    """'3.NF.A.2.a' -> '3NFA2A'."""
+    return _NON_ALNUM_RE.sub("", code).upper()
+
+
+def _alias_nocluster_key(code: str) -> str:
+    """
+    '4.NBT.B.4' -> '4NBT4'. Recovers a ladder-written code that omits the
+    CCSS cluster letter sitting between the domain and the number -- and,
+    because the same key-collapse also swallows whatever letter IS in that
+    slot, just as safely corrects one that is present but wrong (measured:
+    '6.EE.C.7' resolves to '6.EE.B.7' across 4 nodes). Both are safe under
+    the same domain-level uniqueness argument below, so the `len(segs) > 3`
+    branch is deliberate, not overreach to be tightened to `len(segs) == 3`.
+
+    CALLER MUST GATE THIS TO jurisdiction_of(code) == 'CCSS'. The rule below
+    only holds for bare CCSS codes: shape is fixed as
+    grade.domain.cluster.number[.subpart], so the cluster is always index 2,
+    and a CCSS standard number is unique within its DOMAIN, not within the
+    cluster -- there is no '4.NBT.A.4' competing with '4.NBT.B.4', so the
+    letter is redundant and safely droppable.
+
+    State schemes only LOOK like this. Their lettered segment usually is not
+    a cluster and their numbers restart inside each letter group --
+    'LA.1.AR.A.1', 'LA.1.AR.B.1' and 'LA.1.AR.C.1' are three different
+    standards, and dropping the letter there is not a formatting recovery,
+    it is data loss. No positional or character-shape heuristic can tell a
+    CCSS cluster apart from a state's load-bearing letter from the string
+    alone -- two earlier attempts tried and both produced fresh collisions
+    (2,364, then 551, then 115 on narrower and narrower rationalizations of
+    "what a cluster letter looks like"). The jurisdiction gate is the actual
+    fix: state codes never get a nocluster key at all, so there is nothing
+    left to misread.
+
+    Never drops the LAST segment either way -- a trailing '.a' / '.b' is a
+    distinct sub-standard in every jurisdiction, CCSS included.
+    """
+    segs = code.split(".")
+    if len(segs) > 3 and len(segs[2]) == 1 and segs[2].isalpha():
+        segs = segs[:2] + segs[3:]
+    return _alias_punct_key(".".join(segs))
+
+
+def alias_key(code: str, tier: str) -> str:
+    if tier == "punct":
+        return _alias_punct_key(code)
+    if tier == "nocluster":
+        return _alias_nocluster_key(code)
+    raise ValueError(f"unknown standard_alias tier: {tier!r}")
+
+
+def resolve_standard_alias(cur, code: str) -> tuple[str | None, str | None]:
+    """
+    Resolve a ladder-written code to a standards.standard_id.
+
+    Order: exact standards.standard_id match, then the 'punct' alias, then
+    the (lossier) 'nocluster' alias. Returns (standard_id, tier) -- tier is
+    'exact', 'punct', or 'nocluster' so the caller can distinguish a clean tag
+    from a recovered one. (None, None) if nothing resolves.
+
+    'nocluster' is only ever tried for a bare CCSS-shaped code -- it targets
+    one specific, verified shape (an omitted CCSS cluster letter) and
+    standard_alias's 'nocluster' rows are built from CCSS standards only
+    (see load_standards.build_standard_alias): a state-prefixed code has no
+    matching row to find regardless, but skipping the lookup up front makes
+    that scoping a stated rule rather than an accident of what got inserted.
+
+    node_standards.standard_id is NEVER rewritten to the resolved id -- the
+    code the writer typed is evidence the ladder and the corpus disagree, and
+    that has to survive for the export to show it. This resolves on read.
+    """
+    code = normalize_code(code)
+    if cur.execute(
+            "SELECT 1 FROM standards WHERE standard_id = ?", (code,)).fetchone():
+        return code, "exact"
+    tiers = ("punct",) if jurisdiction_of(code) != "CCSS" else ("punct", "nocluster")
+    for tier in tiers:
+        row = cur.execute(
+            "SELECT standard_id FROM standard_alias WHERE alias_key = ? AND tier = ?",
+            (alias_key(code, tier), tier)).fetchone()
+        if row:
+            return row[0], tier
+    return None, None
+
+
 # --------------------------------------------------------------- lesson refs
 
 # The ladder authors write the EM2 lesson a node draws on directly into the
@@ -457,3 +587,56 @@ def parse_lesson_refs(raw: str) -> list[str]:
                 if lesson not in out:
                     out.append(lesson)
     return out
+
+
+# --------------------------------------------------------- grade ruling key
+
+# Footnote markers the grade-normalization worksheet carries on some raw
+# values ('[^c28]7', 'PK, GK[^c5][^c6]'). Purely typographic -- they mark
+# where a reviewer left a comment and carry no grade information themselves.
+_COMMENT_ANCHOR_RE = re.compile(r"\[\^c\d+\]")
+
+_GRADE_WS_RE = re.compile(r"\s+")
+
+# Word-boundary anchored so 'grade' inside other prose ('upgrade') is left
+# alone. Alternatives are disjoint by construction: 'gN' requires the digit
+# immediately after 'g' ('grade 1' never matches it, since 'r' sits between).
+_GRADE_TOKEN_RE = re.compile(
+    r"\bgrade\s*([1-8])\b"
+    r"|\bg([1-8])\b"
+    r"|\bgk\b"
+    r"|\bkindergarten\b"
+    r"|\bpre-k\b|\bprek\b|\bpre k\b"
+)
+
+
+def _grade_token_sub(m: re.Match) -> str:
+    if m.group(1):
+        return m.group(1)
+    if m.group(2):
+        return m.group(2)
+    if m.group(0) in ("gk", "kindergarten"):
+        return "k"
+    return "pk"
+
+
+def canonical_grade_key(raw: str | None) -> str:
+    """
+    Lookup key for a raw ladder grade cell. Interpretation-free.
+
+    Only collapses the spelling variation the ladders and the grade-ruling
+    worksheet both use for the SAME grade cell ('Grade 1' / 'G1' / '1',
+    footnote markers, embedded newlines) so the two sides can be joined on a
+    literal string. It does not parse spans, decide what a leaf is, or
+    recognize out-of-band grades -- that judgement lives in the ruling itself.
+    """
+    if raw is None:
+        return ""
+    s = str(raw)
+    if not s.strip():
+        return ""
+    s = _COMMENT_ANCHOR_RE.sub("", s)
+    s = s.replace("**", "")
+    s = _GRADE_WS_RE.sub(" ", s).strip()
+    s = s.casefold()
+    return _GRADE_TOKEN_RE.sub(_grade_token_sub, s)

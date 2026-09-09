@@ -7,10 +7,94 @@
 *Added K.CC.B.4.c (MF)
 *Added MD.1.NOS.B.6 (MF)
 *Added VA.2.NS.2.f (MF)
+A-CED.A.1
+A-CED.A.3
+A.CED.A.2
+A.CED.A.3
+A.REI.B.3
+A.REI.D.10
+A.REI.D.12
 Adding for Estimation node (MF):
+CA-HSF-LE.6
 CCSS.4.NF.B.4 and 4b
+F-IF.B.6
+F-LE.B.5
 FL. K.NSO.1.2
+FL912.AR.4.3
 From +/- stem:
+HSA-A.REI.4.b
+HSA-APR.A.1
+HSA-APR.B.2
+HSA-APR.D.6
+HSA-CED.A.1
+HSA-CED.A.2
+HSA-CED.A.3
+HSA-CED.A.4
+HSA-REI.A.1
+HSA-REI.B.3
+HSA-REI.B.3.1
+HSA-REI.B.4.a
+HSA-REI.B.4.b
+HSA-REI.C.5
+HSA-REI.C.6
+HSA-REI.C.7
+HSA-REI.C.8
+HSA-REI.C.9
+HSA-REI.D.10
+HSA-REI.D.11
+HSA-SSE.A.1.a
+HSA-SSE.A.1.b
+HSA-SSE.A.2
+HSA-SSE.B.3.a
+HSA-SSE.B.3.b
+HSA-SSE.B.3.c
+HSF-BF.A.1
+HSF-BF.A.1.a
+HSF-BF.A.2
+HSF-BF.B.3
+HSF-F.BF.B.3
+HSF-IF.A.1
+HSF-IF.A.1, HSF-IF.A.2
+HSF-IF.A.1, HSF-IF.A.2, HSF-IF.B.5
+HSF-IF.A.2
+HSF-IF.A.2, HSF-IF.B.5, HSF-IF.C.9
+HSF-IF.B.4
+HSF-IF.B.5
+HSF-IF.B.6
+HSF-IF.C.7.a
+HSF-IF.C.7.b
+HSF-IF.C.7.e
+HSF-IF.C.8
+HSF-IF.C.8.a
+HSF-IF.C.8.b
+HSF-IF.C.9
+HSF-IF.C.9, 8.F.A.2
+HSF-LE.A.1
+HSF-LE.A.1.a
+HSF-LE.A.1.b
+HSF-LE.A.1.c
+HSF-LE.A.2
+HSF-LE.A.3
+HSF-LE.B.5
+HSG-C.A.4
+HSG-CO.D.12
+HSG-CO.D.13
+HSG-GPE.A.1
+HSG-GPE.B.7
+HSN-RN.B.3
+HSS-CP.A.1
+HSS-CP.A.2
+HSS-CP.A.3
+HSS-CP.A.4
+HSS-CP.A.5
+HSS-CP.B.6
+HSS-CP.B.7
+HSS-CP.B.8
+HSS-CP.B.9
+HSS-ID.B.6.a
+MN9.3.7.1
+N.RN.A.1
+N.RN.A.2
 NOTE: 1.G.A.3, CA.1.G.3, and TX.1.6G are going to be partial alignments here. Focus in this node is partitioning into equal shares. Using the language "halves", "fourths", etc. comes in the final node, so these same standards should be cited there, too. All other standards coded in red below should be cited in final node in ladder. (MF)
 PTKLF 1.4
 Partially tagged:

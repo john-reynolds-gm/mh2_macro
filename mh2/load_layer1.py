@@ -50,7 +50,7 @@ import pandas as pd
 
 import config  # noqa: E402
 
-from mh2.normalize import expand_ranges, normalize_code  # noqa: E402
+from mh2.normalize import expand_ranges, normalize_code, strip_trailing_prose  # noqa: E402
 
 # Rows are inserted in batches; the state CSVs are large (all_states.csv is
 # 31 MB) and row-at-a-time inserts dominate the rebuild otherwise.
@@ -80,13 +80,49 @@ TAG_STATUS_SHEETS = [
     # Loaded in this order. 'California-not CCSS' comes AFTER 'California-All'
     # because its 17 codes also appear there, and the not-CCSS sheet is the more
     # specific claim — Path 0 excludes exactly those 17 from code inheritance.
-    ("CCSS", "Notes from standards tagging step", "Notes from post-ladder check step"),
-    ("Florida", "Notes from standards tagging step", "Notes from post-ladder check step"),
-    ("Texas", "Notes from standards tagging step", "Notes from post-ladder check step"),
-    ("California-All", "Notes", None),
-    ("California-not CCSS", "Notes from standards tagging step",
+    #
+    # 'Other State Standards Gaps' is last: it uses 'Standard Code' rather than
+    # 'Number' for the code column and has no tagging-step notes column, only
+    # the post-ladder one. Measured zero cross-sheet collisions between its
+    # 1,491 codes and the other four sheets, so its position in the order
+    # doesn't matter in practice -- see load_tag_status's collision report.
+    ("CCSS", "Number", "Notes from standards tagging step", "Notes from post-ladder check step"),
+    ("Florida", "Number", "Notes from standards tagging step", "Notes from post-ladder check step"),
+    ("Texas", "Number", "Notes from standards tagging step", "Notes from post-ladder check step"),
+    ("California-All", "Number", "Notes", None),
+    ("California-not CCSS", "Number", "Notes from standards tagging step",
+     "Notes from post-ladder check step"),
+    ("Other State Standards Gaps", "Standard Code", None,
      "Notes from post-ladder check step"),
 ]
+
+
+# ------------------------------------------------------------- grade bands
+
+# grade_order is fully rebuilt by mh2.load_grade_ruling (out of scope for
+# this change) with only the worksheet's 12 tokens (PK, K, 1-8, A1, OUT) and
+# no band. These four tokens exist in `standards.grade` but were never
+# needed by the grade-ruling worksheet, so they are added here, after that
+# rebuild -- see grade_order in schema.sql. Sequenced right after A1 (ord
+# 10); OUT (ord 99) is untouched.
+EXTRA_GRADE_TOKENS = [("9", 11), ("A2", 12), ("GEO", 13), ("HS", 14)]
+
+# The PK-5 / 6-9 split the coverage audit reports against. Anything not
+# listed (9, A2, GEO, HS, OUT) keeps band = NULL -- meaningful, not coalesced.
+GRADE_BAND = {
+    "PK": "PK5", "K": "PK5", "1": "PK5", "2": "PK5", "3": "PK5",
+    "4": "PK5", "5": "PK5",
+    "6": "6_9", "7": "6_9", "8": "6_9", "A1": "6_9",
+}
+
+
+def seed_grade_bands(cur) -> None:
+    cur.executemany(
+        "INSERT OR IGNORE INTO grade_order (grade, ord) VALUES (?, ?)",
+        EXTRA_GRADE_TOKENS)
+    cur.executemany(
+        "UPDATE grade_order SET band = ? WHERE grade = ?",
+        [(band, grade) for grade, band in GRADE_BAND.items()])
 
 
 def _flush(cur, sql: str, rows: list) -> int:
@@ -343,28 +379,44 @@ def load_crosswalk_learnosity(cur, path: Path) -> tuple[int, int]:
 
 def load_tag_status(cur, path: Path) -> tuple[int, list[str]]:
     """
-    The 'Tagged to a Stem' work queue from the five standards sheets.
+    The 'Tagged to a Stem' work queue from the tagging workbook's five sheets
+    plus the 'Other State Standards Gaps' sheet.
+
+    That sixth sheet also seeds `leaves.status` directly in
+    mh2.load_standards.load_gaps_sheet(), using the same
+    strip().lower() == "yes" rule — see the module docstring in that file.
+    Two tables carrying the same boolean is a divergence risk if the rule ever
+    changes in one place and not the other; both are kept because leaves is
+    read elsewhere and this is an addition, not a migration.
 
     The primary key is the code alone, so the 17 codes appearing in both
     'California-All' and 'California-not CCSS' can only keep one row. Sheet
     order decides it and the collisions are returned so they are visible rather
-    than assumed.
+    than assumed. The gaps sheet measured zero collisions against the other
+    five sheets' codes.
     """
     total, collisions = 0, []
     seen: dict[str, str] = {}
-    for sheet, note_a, note_b in TAG_STATUS_SHEETS:
+    for sheet, code_col, note_a, note_b in TAG_STATUS_SHEETS:
         try:
             df = pd.read_excel(path, sheet_name=sheet)
         except ValueError:
             continue
         df.columns = [str(c).strip() for c in df.columns]
-        if "Number" not in df.columns:
+        if code_col not in df.columns:
             continue
         for _, r in df.iterrows():
-            raw = r.get("Number")
+            raw = r.get(code_col)
             if pd.isna(raw):
                 continue
-            code = normalize_code(str(raw))
+            raw = str(raw)
+            # Same welded-code fix as mh2.load_standards.load_gaps_sheet, on
+            # the same sheet and column -- both readers must agree on the
+            # code for a gaps-sheet row, or they key `standards` and
+            # `standard_tag_status` differently for the same standard.
+            if sheet == "Other State Standards Gaps":
+                raw = strip_trailing_prose(raw)
+            code = normalize_code(raw)
             if not code:
                 continue
             # Only a CROSS-sheet repeat is interesting. A code listed twice
@@ -397,6 +449,11 @@ def main() -> None:
 
     con = sqlite3.connect(args.db)
     cur = con.cursor()
+
+    seed_grade_bands(cur)
+    bands = cur.execute(
+        "SELECT band, COUNT(*) FROM grade_order GROUP BY band").fetchall()
+    print("grade_order bands:", {b: n for b, n in bands})
 
     print("standard_lessons")
     n = load_lessons_from_ref_csv(cur, config.CCSS_ALIGNMENT_GUIDE_CSV,

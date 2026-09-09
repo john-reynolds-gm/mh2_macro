@@ -36,8 +36,8 @@ import sqlite3
 import unicodedata
 from pathlib import Path
 
-from mh2.normalize import (extract_codes_inline, parse_code_cell,
-                           parse_lesson_refs)
+from mh2.normalize import (expand_ranges, extract_codes_inline,
+                           parse_code_cell, parse_lesson_refs)
 
 _W_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 _M_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
@@ -646,11 +646,19 @@ def persist(cur, nodes: list[dict], run_id: str, *,
                     "INSERT INTO node_fields (node_id, field, ordinal, value) VALUES (?,?,?,?)",
                     (node_id, field, i, item))
 
-        # Standards written into the ladder by hand.
+        # Standards written into the ladder by hand. A range-shorthand code
+        # ('TX.1.2E-1.2G', 'MD.4.NOS.C.7.a-d') expands to its real members --
+        # see expand_ranges -- so the raw range token is replaced by what it
+        # stands for rather than inserted alongside it. Plain codes pass
+        # through expand_ranges unchanged, so this is a no-op for them.
         pairs, _ = parse_code_cell(n.get("standards_notes", ""))
-        codes = {c: a for c, a in pairs}
+        codes = {}
+        for c, a in pairs:
+            for expanded in expand_ranges(c):
+                codes.setdefault(expanded, a)
         for c in extract_codes_inline(n.get("standards_notes", "")):
-            codes.setdefault(c, None)
+            for expanded in expand_ranges(c):
+                codes.setdefault(expanded, None)
         for code, annot in codes.items():
             cur.execute(
                 "INSERT OR IGNORE INTO node_standards (node_id, standard_id, relation,"

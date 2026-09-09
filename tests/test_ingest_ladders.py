@@ -12,12 +12,15 @@ invented case. The three that matter:
 
 Run with: python -m pytest tests/ -q   (or: python tests/test_ingest_ladders.py)
 """
+import sqlite3
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from mh2.ingest_ladders import parse_concept_heading, read_docx
+import config  # noqa: E402
+
+from mh2.ingest_ladders import parse_concept_heading, persist, read_docx  # noqa: E402
 
 LADDERS = Path(__file__).resolve().parent.parent / "data" / "source" / "ladders"
 
@@ -111,6 +114,49 @@ def test_markdown_requires_hash_prefix():
     ) == "Compare and order fractions."
     assert parse_concept_heading(
         "Concept/Skill: Compare and order fractions.", require_hash=True) is None
+
+
+# ------------------------------------------------------------ persist(): §8
+
+def fresh_db():
+    con = sqlite3.connect(":memory:")
+    con.executescript(config.SCHEMA.read_text())
+    return con
+
+
+def _ladder_node(standards_notes):
+    return {
+        "source_file": "f.docx", "stem_name": "Test Stem",
+        "node_text": "some node text", "concept_skill": "a skill",
+        "goal": None, "grade_or_leaf": None,
+        "standards_notes": standards_notes,
+    }
+
+
+def test_persist_expands_range_shorthand_instead_of_tagging_the_range():
+    """
+    §8: expand_ranges already worked but wasn't reached from the ladder path.
+    A range-shaped cell must insert the real members, not the range token
+    itself sitting beside them.
+    """
+    con = fresh_db()
+    cur = con.cursor()
+    persist(cur, [_ladder_node("MD.4.NOS.C.7.a-d")], "run1",
+            stem_id_override="TST", stem_name_override="Test Stem")
+    got = {r[0] for r in cur.execute("SELECT standard_id FROM node_standards")}
+    assert got == {"MD.4.NOS.C.7.a", "MD.4.NOS.C.7.b",
+                   "MD.4.NOS.C.7.c", "MD.4.NOS.C.7.d"}
+
+
+def test_persist_leaves_grade_span_references_alone():
+    """CA.7-12.A is a grade-span reference, not a range -- expand_ranges leaves
+    it unchanged, and persist() must insert exactly that one row, not zero."""
+    con = fresh_db()
+    cur = con.cursor()
+    persist(cur, [_ladder_node("CA.7-12.A")], "run1",
+            stem_id_override="TST", stem_name_override="Test Stem")
+    got = {r[0] for r in cur.execute("SELECT standard_id FROM node_standards")}
+    assert got == {"CA.7-12.A"}
 
 
 # --------------------------------------------------------------- doc-level

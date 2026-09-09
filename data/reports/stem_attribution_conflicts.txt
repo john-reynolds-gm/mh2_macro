@@ -1,0 +1,89 @@
+Step 1 SS2.2: band-aware precedence in stem attribution.
+
+A same-band candidate beats a cross-band candidate regardless of route;
+within the same band, concept_standards still beats the category route.
+This file lists every standard whose stem_ids or ladder_status changed
+under this rule relative to the old band-blind rule (concept_standards
+always wins). Neither candidate set is silently dropped -- both are
+shown, each stem tagged with its own stem_map band.
+
+12 standards affected. This count is measured, not reconciled
+against the G6 session's 14 or the narrower-predicate 5 (deferred_s5_
+band_aware_precedence.md) -- neither is authoritative; this is.
+
+NOTE: scripts/report_stem_attribution.py writes a DIFFERENT, band-blind
+conflicts report (concept_standards vs. category route disagreement,
+258 standards) to this SAME path. Re-running that script will clobber
+this file. Flagged, not resolved -- see the Step 1 session summary.
+
+  5.G.A.1              band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}
+
+  5.G.A.2              band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}
+
+  5.OA.B.3             band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('STR', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'STR'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['STR'], 'status': 'undrafted'}
+
+  FL.5.AR.2.2          band=PK5
+      concept_standards = [('EE_GENERAL_EXPRESSIONS', '6_9'), ('EXP', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['EE_GENERAL_EXPRESSIONS', 'EXP'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['EXP'], 'status': 'undrafted'}
+
+  FL.5.GR.4.1          band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}
+
+  FL.5.GR.4.2          band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}
+
+  IN.5.G.1             band=PK5
+      concept_standards = [('GM_CONSTRUCTIONS', '6_9'), ('IDE', 'PK5')]
+      category          = [('IDE', 'PK5')]
+      old -> {'source': 'concept_standards', 'stem_ids': ['GM_CONSTRUCTIONS', 'IDE'], 'status': 'undrafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['IDE'], 'status': 'undrafted'}
+
+  IN.5.NS.4            band=PK5
+      concept_standards = [('RP_PERCENTS', '6_9')]
+      category          = [('FRA', 'PK5')]
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_PERCENTS'], 'status': 'undrafted'}
+      new -> {'source': 'category', 'stem_ids': ['FRA'], 'status': 'drafted'}
+
+  OK.5.A.2.2           band=PK5
+      concept_standards = [('EE_ONE_VARIABLE_EQUATIONS_DEG_1', '6_9'), ('EXP', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['EE_ONE_VARIABLE_EQUATIONS_DEG_1', 'EXP'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['EXP'], 'status': 'undrafted'}
+
+  OK.5.GM.1.1          band=PK5
+      concept_standards = [('GM_CONSTRUCTIONS', '6_9'), ('IDE', 'PK5')]
+      category          = [('IDE', 'PK5')]
+      old -> {'source': 'concept_standards', 'stem_ids': ['GM_CONSTRUCTIONS', 'IDE'], 'status': 'undrafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['IDE'], 'status': 'undrafted'}
+
+  TX.5.8B              band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}
+
+  TX.5.8C              band=PK5
+      concept_standards = [('RP_COORDINATE_SYSTEM', '6_9'), ('SPA', 'PK5')]
+      category          = []
+      old -> {'source': 'concept_standards', 'stem_ids': ['RP_COORDINATE_SYSTEM', 'SPA'], 'status': 'drafted'}
+      new -> {'source': 'concept_standards', 'stem_ids': ['SPA'], 'status': 'undrafted'}

@@ -1,0 +1,958 @@
+Rows where neither concept_standards nor the category route named any
+stem (§5 rule 6). Ruled: surfaced here, not chased (session brief §8).
+
+952 rows.
+
+band   sheet                        code                
+6_9    CCSS                         6.EE.C.9
+6_9    CCSS                         6.G.A.1
+6_9    CCSS                         6.G.A.2
+6_9    CCSS                         6.G.A.4
+6_9    CCSS                         6.NS.A.1
+6_9    CCSS                         6.NS.B.2
+6_9    CCSS                         6.NS.B.3
+6_9    CCSS                         6.NS.C.7
+6_9    CCSS                         6.NS.C.7.d
+6_9    CCSS                         6.RP.A.1
+6_9    CCSS                         6.RP.A.2
+6_9    CCSS                         6.RP.A.3
+6_9    CCSS                         6.RP.A.3.a
+6_9    CCSS                         6.RP.A.3.b
+6_9    CCSS                         6.RP.A.3.d
+6_9    CCSS                         6.SP.A.1
+6_9    CCSS                         6.SP.A.2
+6_9    CCSS                         6.SP.A.3
+6_9    CCSS                         6.SP.B.4
+6_9    CCSS                         6.SP.B.5
+6_9    CCSS                         6.SP.B.5.a
+6_9    CCSS                         6.SP.B.5.b
+6_9    CCSS                         6.SP.B.5.c
+6_9    CCSS                         6.SP.B.5.d
+6_9    CCSS                         7.G.A.1
+6_9    CCSS                         7.G.A.3
+6_9    CCSS                         7.G.B.4
+6_9    CCSS                         7.G.B.6
+6_9    CCSS                         7.NS.A.1
+6_9    CCSS                         7.RP.A.1
+6_9    CCSS                         7.RP.A.2
+6_9    CCSS                         7.RP.A.2.a
+6_9    CCSS                         7.RP.A.2.b
+6_9    CCSS                         7.RP.A.2.c
+6_9    CCSS                         7.RP.A.2.d
+6_9    CCSS                         7.SP.A.1
+6_9    CCSS                         7.SP.A.2
+6_9    CCSS                         7.SP.B.3
+6_9    CCSS                         7.SP.B.4
+6_9    CCSS                         8.EE.A.3
+6_9    CCSS                         8.EE.A.4
+6_9    CCSS                         8.EE.C.7.a
+6_9    CCSS                         8.EE.C.7.b
+6_9    CCSS                         8.EE.C.8
+6_9    CCSS                         8.F.A.2
+6_9    CCSS                         8.G.A.1
+6_9    CCSS                         8.G.A.1.a
+6_9    CCSS                         8.G.A.1.b
+6_9    CCSS                         8.G.A.1.c
+6_9    CCSS                         8.G.A.2
+6_9    CCSS                         8.G.A.3
+6_9    CCSS                         8.G.A.4
+6_9    CCSS                         8.G.C.9
+6_9    CCSS                         8.SP.A.1
+6_9    CCSS                         8.SP.A.2
+6_9    CCSS                         8.SP.A.3
+6_9    CCSS                         8.SP.A.4
+6_9    California-not CCSS          CA.7-12.A-REI.3.1
+6_9    Florida                      FL.6.AR.3.1
+6_9    Florida                      FL.6.AR.3.2
+6_9    Florida                      FL.6.AR.3.3
+6_9    Florida                      FL.6.AR.3.5
+6_9    Florida                      FL.6.DP.1.1
+6_9    Florida                      FL.6.DP.1.2
+6_9    Florida                      FL.6.DP.1.3
+6_9    Florida                      FL.6.DP.1.4
+6_9    Florida                      FL.6.DP.1.5
+6_9    Florida                      FL.6.DP.1.6
+6_9    Florida                      FL.6.GR.2.1
+6_9    Florida                      FL.6.GR.2.2
+6_9    Florida                      FL.6.GR.2.3
+6_9    Florida                      FL.6.GR.2.4
+6_9    Florida                      FL.6.NSO.2.1
+6_9    Florida                      FL.6.NSO.2.2
+6_9    Florida                      FL.6.NSO.2.3
+6_9    Florida                      FL.7.AR.3.2
+6_9    Florida                      FL.7.AR.3.3
+6_9    Florida                      FL.7.AR.4.1
+6_9    Florida                      FL.7.AR.4.2
+6_9    Florida                      FL.7.AR.4.3
+6_9    Florida                      FL.7.AR.4.4
+6_9    Florida                      FL.7.AR.4.5
+6_9    Florida                      FL.7.DP.1.1
+6_9    Florida                      FL.7.DP.1.2
+6_9    Florida                      FL.7.DP.1.3
+6_9    Florida                      FL.7.DP.1.4
+6_9    Florida                      FL.7.DP.1.5
+6_9    Florida                      FL.7.DP.2.1
+6_9    Florida                      FL.7.GR.1.1
+6_9    Florida                      FL.7.GR.1.2
+6_9    Florida                      FL.7.GR.1.3
+6_9    Florida                      FL.7.GR.1.4
+6_9    Florida                      FL.7.GR.1.5
+6_9    Florida                      FL.7.GR.2.1
+6_9    Florida                      FL.7.GR.2.2
+6_9    Florida                      FL.7.GR.2.3
+6_9    Florida                      FL.8.AR.1.2
+6_9    Florida                      FL.8.AR.1.3
+6_9    Florida                      FL.8.AR.3.1
+6_9    Florida                      FL.8.DP.1.1
+6_9    Florida                      FL.8.DP.1.2
+6_9    Florida                      FL.8.DP.1.3
+6_9    Florida                      FL.8.GR.1.4
+6_9    Florida                      FL.8.GR.1.5
+6_9    Florida                      FL.8.GR.1.6
+6_9    Florida                      FL.8.GR.2.1
+6_9    Florida                      FL.8.GR.2.2
+6_9    Florida                      FL.8.GR.2.3
+6_9    Florida                      FL.8.GR.2.4
+6_9    Florida                      FL.8.NSO.1.4
+6_9    Florida                      FL.8.NSO.1.5
+6_9    Florida                      FL.8.NSO.1.6
+6_9    Florida                      FL.8.NSO.1.7
+6_9    Florida                      FL.912.AR.1.1
+6_9    Florida                      FL.912.AR.1.4
+6_9    Florida                      FL.912.AR.4.3
+6_9    Florida                      FL.912.DP.1.1
+6_9    Florida                      FL.912.DP.1.2
+6_9    Florida                      FL.912.DP.1.3
+6_9    Florida                      FL.912.DP.1.4
+6_9    Florida                      FL.912.DP.2.4
+6_9    Florida                      FL.912.DP.2.6
+6_9    Florida                      FL.912.DP.3.1
+6_9    Florida                      FL.912.F.1.1
+6_9    Florida                      FL.912.F.1.3
+6_9    Florida                      FL.912.F.2.1
+6_9    Florida                      FL.912.FL.3.2
+6_9    Florida                      FL.912.NSO.1.4
+6_9    Other State Standards Gaps   AK.6.G.5
+6_9    Other State Standards Gaps   AL.6.DSP.24
+6_9    Other State Standards Gaps   AR.6.GM.7
+6_9    Other State Standards Gaps   AR.7.SP.1
+6_9    Other State Standards Gaps   AR.7.SP.2
+6_9    Other State Standards Gaps   AR.8.GM.2
+6_9    Other State Standards Gaps   GA.6.NR.1.1
+6_9    Other State Standards Gaps   GA.6.NR.1.2
+6_9    Other State Standards Gaps   GA.6.NR.4.7
+6_9    Other State Standards Gaps   IN.6.GM.2
+6_9    Other State Standards Gaps   KS.6.SP.4
+6_9    Other State Standards Gaps   KS.7.G.2
+6_9    Other State Standards Gaps   KS.7.G.3
+6_9    Other State Standards Gaps   KY.6.G.4
+6_9    Other State Standards Gaps   KY.7.SP.0
+6_9    Other State Standards Gaps   KY.7.SP.3
+6_9    Other State Standards Gaps   MA.6.RP.A.3.e
+6_9    Other State Standards Gaps   MA.6.SP.B.4.a
+6_9    Other State Standards Gaps   MN.6.1.1.4
+6_9    Other State Standards Gaps   MN.6.1.1.5
+6_9    Other State Standards Gaps   MN.6.2.3.4
+6_9    Other State Standards Gaps   MN.6.3.5.8
+6_9    Other State Standards Gaps   MN.6.3.5.9
+6_9    Other State Standards Gaps   MN.7.1.1.5
+6_9    Other State Standards Gaps   MN.8.1.1.2
+6_9    Other State Standards Gaps   MN.8.1.1.5
+6_9    Other State Standards Gaps   MN.9.1.1.10
+6_9    Other State Standards Gaps   MN.9.1.1.12
+6_9    Other State Standards Gaps   MO.6.DSP.B.4
+6_9    Other State Standards Gaps   MO.6.DSP.B.4.b
+6_9    Other State Standards Gaps   MO.7.GM.A.3
+6_9    Other State Standards Gaps   ND.6.NO.O.3
+6_9    Other State Standards Gaps   ND.7.NO.O.2
+6_9    Other State Standards Gaps   NE.6.D.2.b
+6_9    Other State Standards Gaps   NE.7.G.2.a
+6_9    Other State Standards Gaps   NY.7.SP.1
+6_9    Other State Standards Gaps   OH.7.SP.2c
+6_9    Other State Standards Gaps   OH.S.ID.1
+6_9    Other State Standards Gaps   OK.6.GM.4.1
+6_9    Other State Standards Gaps   OK.6.N.4.2
+6_9    Other State Standards Gaps   OK.6.N.4.3
+6_9    Other State Standards Gaps   OK.7.D.1.2
+6_9    Other State Standards Gaps   OK.7.D.1.3
+6_9    Other State Standards Gaps   OK.7.GM.3.1
+6_9    Other State Standards Gaps   PA.CC.2.1.HS.F.3
+6_9    Other State Standards Gaps   PA.M07.C-G.1.1.2
+6_9    Other State Standards Gaps   RI.6.RP.A.3.e
+6_9    Other State Standards Gaps   RI.6.SP.B.4.a
+6_9    Other State Standards Gaps   SC.6.PAFR.3.6
+6_9    Other State Standards Gaps   SC.7.DPSR.1.1
+6_9    Other State Standards Gaps   SC.7.MGSR.1.1
+6_9    Other State Standards Gaps   SC.7.PAFR.2.4
+6_9    Other State Standards Gaps   TN.6.SP.B.4
+6_9    Other State Standards Gaps   VA.6.CE.1.a
+6_9    Other State Standards Gaps   VA.6.CE.1.b
+6_9    Other State Standards Gaps   VA.6.CE.1.c
+6_9    Other State Standards Gaps   VA.6.CE.1.d
+6_9    Other State Standards Gaps   VA.6.CE.1.e
+6_9    Other State Standards Gaps   VA.6.MG.1.a
+6_9    Other State Standards Gaps   VA.6.MG.1.b
+6_9    Other State Standards Gaps   VA.6.MG.1.b.i
+6_9    Other State Standards Gaps   VA.6.MG.1.b.ii
+6_9    Other State Standards Gaps   VA.6.MG.1.b.iii
+6_9    Other State Standards Gaps   VA.6.MG.1.c
+6_9    Other State Standards Gaps   VA.6.MG.1.d
+6_9    Other State Standards Gaps   VA.6.MG.1.e
+6_9    Other State Standards Gaps   VA.6.MG.4.a
+6_9    Other State Standards Gaps   VA.6.MG.4.c
+6_9    Other State Standards Gaps   VA.6.MG.4.d
+6_9    Other State Standards Gaps   VA.6.PS.1.d
+6_9    Other State Standards Gaps   VA.6.PS.1.e
+6_9    Other State Standards Gaps   VA.6.PS.1.f
+6_9    Other State Standards Gaps   VA.7.MG.3.c
+6_9    Other State Standards Gaps   VA.7.MG.3.d
+6_9    Other State Standards Gaps   VA.7.PS.7.2.d
+6_9    Other State Standards Gaps   VA.7.PS.7.2.e
+6_9    Other State Standards Gaps   VA.7.PS.7.2.f
+6_9    Other State Standards Gaps   VA.8.PS.2.d
+6_9    Other State Standards Gaps   VA.8.PS.2.e
+6_9    Other State Standards Gaps   VA.8.PS.2.i
+6_9    Other State Standards Gaps   VA.8.PS.2.j
+6_9    Other State Standards Gaps   VA.PS.7.2.g
+6_9    Texas                        TX.6.12A
+6_9    Texas                        TX.6.12B
+6_9    Texas                        TX.6.12C
+6_9    Texas                        TX.6.12D
+6_9    Texas                        TX.6.13A
+6_9    Texas                        TX.6.13B
+6_9    Texas                        TX.6.14A
+6_9    Texas                        TX.6.14B
+6_9    Texas                        TX.6.14C
+6_9    Texas                        TX.6.14D
+6_9    Texas                        TX.6.14E
+6_9    Texas                        TX.6.14F
+6_9    Texas                        TX.6.14G
+6_9    Texas                        TX.6.14H
+6_9    Texas                        TX.6.2A
+6_9    Texas                        TX.6.2E
+6_9    Texas                        TX.6.3A
+6_9    Texas                        TX.6.3B
+6_9    Texas                        TX.6.4A
+6_9    Texas                        TX.6.4B
+6_9    Texas                        TX.6.4C
+6_9    Texas                        TX.6.4D
+6_9    Texas                        TX.6.4E
+6_9    Texas                        TX.6.4F
+6_9    Texas                        TX.6.4G
+6_9    Texas                        TX.6.4H
+6_9    Texas                        TX.6.5A
+6_9    Texas                        TX.6.6A
+6_9    Texas                        TX.6.6B
+6_9    Texas                        TX.6.6C
+6_9    Texas                        TX.6.7A
+6_9    Texas                        TX.6.7B
+6_9    Texas                        TX.6.7C
+6_9    Texas                        TX.6.7D
+6_9    Texas                        TX.6.8A
+6_9    Texas                        TX.6.8B
+6_9    Texas                        TX.6.8C
+6_9    Texas                        TX.6.8D
+6_9    Texas                        TX.7.12A
+6_9    Texas                        TX.7.12B
+6_9    Texas                        TX.7.12C
+6_9    Texas                        TX.7.13A
+6_9    Texas                        TX.7.13B
+6_9    Texas                        TX.7.13C
+6_9    Texas                        TX.7.13D
+6_9    Texas                        TX.7.13E
+6_9    Texas                        TX.7.13F
+6_9    Texas                        TX.7.2
+6_9    Texas                        TX.7.4A
+6_9    Texas                        TX.7.4B
+6_9    Texas                        TX.7.4C
+6_9    Texas                        TX.7.4D
+6_9    Texas                        TX.7.4E
+6_9    Texas                        TX.7.5A
+6_9    Texas                        TX.7.5B
+6_9    Texas                        TX.7.5C
+6_9    Texas                        TX.7.6F
+6_9    Texas                        TX.7.6G
+6_9    Texas                        TX.7.7
+6_9    Texas                        TX.7.8A
+6_9    Texas                        TX.7.8B
+6_9    Texas                        TX.7.8C
+6_9    Texas                        TX.7.9A
+6_9    Texas                        TX.7.9B
+6_9    Texas                        TX.7.9C
+6_9    Texas                        TX.7.9D
+6_9    Texas                        TX.8.10A
+6_9    Texas                        TX.8.10B
+6_9    Texas                        TX.8.10C
+6_9    Texas                        TX.8.10D
+6_9    Texas                        TX.8.11A
+6_9    Texas                        TX.8.11B
+6_9    Texas                        TX.8.11C
+6_9    Texas                        TX.8.12A
+6_9    Texas                        TX.8.13B
+6_9    Texas                        TX.8.13C
+6_9    Texas                        TX.8.13D
+6_9    Texas                        TX.8.13E
+6_9    Texas                        TX.8.13F
+6_9    Texas                        TX.8.13G
+6_9    Texas                        TX.8.2C
+6_9    Texas                        TX.8.2D
+6_9    Texas                        TX.8.3A
+6_9    Texas                        TX.8.3B
+6_9    Texas                        TX.8.3C
+6_9    Texas                        TX.8.5A
+6_9    Texas                        TX.8.5C
+6_9    Texas                        TX.8.5D
+6_9    Texas                        TX.8.5E
+6_9    Texas                        TX.8.5F
+6_9    Texas                        TX.8.6A
+6_9    Texas                        TX.8.6B
+6_9    Texas                        TX.8.7A
+6_9    Texas                        TX.8.7B
+6_9    Texas                        TX.8.9
+6_9    Texas                        TX.A1.10C
+6_9    Texas                        TX.A1.10F
+6_9    Texas                        TX.A1.2D
+6_9    Texas                        TX.A1.4A
+6_9    Texas                        TX.A1.4B
+6_9    Texas                        TX.A1.4C
+6_9    Texas                        TX.A1.6C
+6_9    Texas                        TX.A1.7C
+None   California-not CCSS          CA.8-12.G-GMD.5
+None   California-not CCSS          CA.8-12.G-GMD.6
+None   California-not CCSS          CA.8-12.G-SRT.8.1
+None   California-not CCSS          CA.9-12.A-REI.3.1
+None   California-not CCSS          CA.9-12.F-IF.10
+None   California-not CCSS          CA.9-12.F-IF.11
+None   California-not CCSS          CA.9-12.F-LE.4.1
+None   California-not CCSS          CA.9-12.F-LE.4.2
+None   California-not CCSS          CA.9-12.F-LE.4.3
+None   California-not CCSS          CA.9-12.F-TF.10
+None   California-not CCSS          CA.9-12.F-TF.2.1
+None   California-not CCSS          CA.9-12.G-GPE.3.1
+None   Florida                      FL.912.AR.1.10
+None   Florida                      FL.912.AR.1.11
+None   Florida                      FL.912.AR.1.9
+None   Florida                      FL.912.AR.10.3
+None   Florida                      FL.912.AR.10.4
+None   Florida                      FL.912.AR.3.10
+None   Florida                      FL.912.AR.3.3
+None   Florida                      FL.912.AR.3.9
+None   Florida                      FL.912.AR.4.4
+None   Florida                      FL.912.AR.5.2
+None   Florida                      FL.912.AR.5.8
+None   Florida                      FL.912.AR.5.9
+None   Florida                      FL.912.AR.6.2
+None   Florida                      FL.912.AR.6.3
+None   Florida                      FL.912.AR.6.4
+None   Florida                      FL.912.AR.6.5
+None   Florida                      FL.912.AR.6.6
+None   Florida                      FL.912.AR.7.1
+None   Florida                      FL.912.AR.7.2
+None   Florida                      FL.912.AR.7.3
+None   Florida                      FL.912.AR.7.4
+None   Florida                      FL.912.AR.8.1
+None   Florida                      FL.912.AR.8.2
+None   Florida                      FL.912.AR.8.3
+None   Florida                      FL.912.AR.9.8
+None   Florida                      FL.912.C.1.1
+None   Florida                      FL.912.C.1.10
+None   Florida                      FL.912.C.1.11
+None   Florida                      FL.912.C.1.2
+None   Florida                      FL.912.C.1.3
+None   Florida                      FL.912.C.1.4
+None   Florida                      FL.912.C.1.5
+None   Florida                      FL.912.C.1.6
+None   Florida                      FL.912.C.1.7
+None   Florida                      FL.912.C.1.8
+None   Florida                      FL.912.C.1.9
+None   Florida                      FL.912.C.2.1
+None   Florida                      FL.912.C.2.10
+None   Florida                      FL.912.C.2.2
+None   Florida                      FL.912.C.2.3
+None   Florida                      FL.912.C.2.4
+None   Florida                      FL.912.C.2.5
+None   Florida                      FL.912.C.2.6
+None   Florida                      FL.912.C.2.7
+None   Florida                      FL.912.C.2.8
+None   Florida                      FL.912.C.2.9
+None   Florida                      FL.912.C.3.1
+None   Florida                      FL.912.C.3.10
+None   Florida                      FL.912.C.3.2
+None   Florida                      FL.912.C.3.3
+None   Florida                      FL.912.C.3.4
+None   Florida                      FL.912.C.3.5
+None   Florida                      FL.912.C.3.6
+None   Florida                      FL.912.C.3.7
+None   Florida                      FL.912.C.3.8
+None   Florida                      FL.912.C.3.9
+None   Florida                      FL.912.C.4.1
+None   Florida                      FL.912.C.4.2
+None   Florida                      FL.912.C.4.3
+None   Florida                      FL.912.C.4.4
+None   Florida                      FL.912.C.4.5
+None   Florida                      FL.912.C.4.6
+None   Florida                      FL.912.C.4.6.a
+None   Florida                      FL.912.C.4.6.b
+None   Florida                      FL.912.C.4.6.c
+None   Florida                      FL.912.C.4.6.d
+None   Florida                      FL.912.C.4.6.e
+None   Florida                      FL.912.C.4.6.f
+None   Florida                      FL.912.C.4.7
+None   Florida                      FL.912.C.5.1
+None   Florida                      FL.912.C.5.2
+None   Florida                      FL.912.C.5.3
+None   Florida                      FL.912.C.5.4
+None   Florida                      FL.912.C.5.5
+None   Florida                      FL.912.C.5.6
+None   Florida                      FL.912.C.5.7
+None   Florida                      FL.912.DP.1.5
+None   Florida                      FL.912.DP.2.1
+None   Florida                      FL.912.DP.2.2
+None   Florida                      FL.912.DP.2.3
+None   Florida                      FL.912.DP.2.5
+None   Florida                      FL.912.DP.2.7
+None   Florida                      FL.912.DP.3.2
+None   Florida                      FL.912.DP.3.3
+None   Florida                      FL.912.DP.3.4
+None   Florida                      FL.912.DP.3.5
+None   Florida                      FL.912.DP.5.1
+None   Florida                      FL.912.DP.5.10
+None   Florida                      FL.912.DP.5.11
+None   Florida                      FL.912.DP.5.2
+None   Florida                      FL.912.DP.5.3
+None   Florida                      FL.912.DP.5.4
+None   Florida                      FL.912.DP.5.5
+None   Florida                      FL.912.DP.5.6
+None   Florida                      FL.912.DP.5.7
+None   Florida                      FL.912.DP.5.8
+None   Florida                      FL.912.DP.5.9
+None   Florida                      FL.912.DP.6.1
+None   Florida                      FL.912.DP.6.2
+None   Florida                      FL.912.DP.6.3
+None   Florida                      FL.912.DP.6.4
+None   Florida                      FL.912.DP.6.5
+None   Florida                      FL.912.DP.6.6
+None   Florida                      FL.912.DP.6.7
+None   Florida                      FL.912.DP.6.8
+None   Florida                      FL.912.F.1.4
+None   Florida                      FL.912.F.1.9
+None   Florida                      FL.912.F.2.2
+None   Florida                      FL.912.F.2.4
+None   Florida                      FL.912.F.3.5
+None   Florida                      FL.912.F.3.6
+None   Florida                      FL.912.F.3.7
+None   Florida                      FL.912.F.3.8
+None   Florida                      FL.912.F.3.9
+None   Florida                      FL.912.FL.1.1
+None   Florida                      FL.912.FL.1.2
+None   Florida                      FL.912.FL.1.3
+None   Florida                      FL.912.FL.2.1
+None   Florida                      FL.912.FL.2.2
+None   Florida                      FL.912.FL.2.3
+None   Florida                      FL.912.FL.2.4
+None   Florida                      FL.912.FL.2.5
+None   Florida                      FL.912.FL.2.6
+None   Florida                      FL.912.FL.3.1
+None   Florida                      FL.912.FL.3.10
+None   Florida                      FL.912.FL.3.11
+None   Florida                      FL.912.FL.3.12
+None   Florida                      FL.912.FL.3.3
+None   Florida                      FL.912.FL.3.5
+None   Florida                      FL.912.FL.3.6
+None   Florida                      FL.912.FL.3.7
+None   Florida                      FL.912.FL.3.8
+None   Florida                      FL.912.FL.3.9
+None   Florida                      FL.912.FL.4.1
+None   Florida                      FL.912.FL.4.2
+None   Florida                      FL.912.FL.4.3
+None   Florida                      FL.912.FL.4.4
+None   Florida                      FL.912.FL.4.5
+None   Florida                      FL.912.FL.4.6
+None   Florida                      FL.912.GR.1.1
+None   Florida                      FL.912.GR.1.2
+None   Florida                      FL.912.GR.1.3
+None   Florida                      FL.912.GR.1.4
+None   Florida                      FL.912.GR.1.5
+None   Florida                      FL.912.GR.1.6
+None   Florida                      FL.912.GR.2.1
+None   Florida                      FL.912.GR.2.2
+None   Florida                      FL.912.GR.2.3
+None   Florida                      FL.912.GR.2.4
+None   Florida                      FL.912.GR.2.5
+None   Florida                      FL.912.GR.2.6
+None   Florida                      FL.912.GR.2.7
+None   Florida                      FL.912.GR.2.8
+None   Florida                      FL.912.GR.2.9
+None   Florida                      FL.912.GR.3.1
+None   Florida                      FL.912.GR.4.1
+None   Florida                      FL.912.GR.4.2
+None   Florida                      FL.912.GR.4.3
+None   Florida                      FL.912.GR.4.4
+None   Florida                      FL.912.GR.4.5
+None   Florida                      FL.912.GR.4.6
+None   Florida                      FL.912.GR.5.3
+None   Florida                      FL.912.GR.6.1
+None   Florida                      FL.912.GR.6.2
+None   Florida                      FL.912.GR.6.3
+None   Florida                      FL.912.GR.6.4
+None   Florida                      FL.912.GR.6.5
+None   Florida                      FL.912.GR.7.1
+None   Florida                      FL.912.GR.7.2
+None   Florida                      FL.912.GR.7.3
+None   Florida                      FL.912.GR.7.4
+None   Florida                      FL.912.GR.7.5
+None   Florida                      FL.912.GR.7.6
+None   Florida                      FL.912.GR.7.7
+None   Florida                      FL.912.GR.7.8
+None   Florida                      FL.912.GR.7.9
+None   Florida                      FL.912.LT.1.1
+None   Florida                      FL.912.LT.1.2
+None   Florida                      FL.912.LT.1.3
+None   Florida                      FL.912.LT.2.1
+None   Florida                      FL.912.LT.2.2
+None   Florida                      FL.912.LT.2.3
+None   Florida                      FL.912.LT.2.4
+None   Florida                      FL.912.LT.2.5
+None   Florida                      FL.912.LT.2.6
+None   Florida                      FL.912.LT.2.7
+None   Florida                      FL.912.LT.3.1
+None   Florida                      FL.912.LT.3.2
+None   Florida                      FL.912.LT.3.3
+None   Florida                      FL.912.LT.3.4
+None   Florida                      FL.912.LT.4.1
+None   Florida                      FL.912.LT.4.10
+None   Florida                      FL.912.LT.4.2
+None   Florida                      FL.912.LT.4.3
+None   Florida                      FL.912.LT.4.4
+None   Florida                      FL.912.LT.4.5
+None   Florida                      FL.912.LT.4.6
+None   Florida                      FL.912.LT.4.7
+None   Florida                      FL.912.LT.4.8
+None   Florida                      FL.912.LT.4.9
+None   Florida                      FL.912.LT.5.1
+None   Florida                      FL.912.LT.5.2
+None   Florida                      FL.912.LT.5.3
+None   Florida                      FL.912.LT.5.4
+None   Florida                      FL.912.LT.5.5
+None   Florida                      FL.912.LT.5.6
+None   Florida                      FL.912.NSO.1.3
+None   Florida                      FL.912.NSO.1.5
+None   Florida                      FL.912.NSO.1.6
+None   Florida                      FL.912.NSO.1.7
+None   Florida                      FL.912.NSO.2.1
+None   Florida                      FL.912.NSO.2.2
+None   Florida                      FL.912.NSO.2.4
+None   Florida                      FL.912.NSO.2.5
+None   Florida                      FL.912.NSO.2.6
+None   Florida                      FL.912.NSO.3.1
+None   Florida                      FL.912.NSO.3.2
+None   Florida                      FL.912.NSO.3.3
+None   Florida                      FL.912.NSO.3.4
+None   Florida                      FL.912.NSO.3.5
+None   Florida                      FL.912.NSO.3.6
+None   Florida                      FL.912.NSO.3.7
+None   Florida                      FL.912.NSO.3.8
+None   Florida                      FL.912.NSO.3.9
+None   Florida                      FL.912.NSO.4.1
+None   Florida                      FL.912.NSO.4.3
+None   Florida                      FL.912.NSO.4.4
+None   Florida                      FL.912.T.1.1
+None   Florida                      FL.912.T.1.2
+None   Florida                      FL.912.T.1.3
+None   Florida                      FL.912.T.1.4
+None   Florida                      FL.912.T.1.5
+None   Florida                      FL.912.T.1.6
+None   Florida                      FL.912.T.1.7
+None   Florida                      FL.912.T.1.8
+None   Florida                      FL.912.T.2.1
+None   Florida                      FL.912.T.2.2
+None   Florida                      FL.912.T.2.3
+None   Florida                      FL.912.T.2.4
+None   Florida                      FL.912.T.2.5
+None   Florida                      FL.912.T.3.1
+None   Florida                      FL.912.T.3.2
+None   Florida                      FL.912.T.3.3
+None   Florida                      FL.912.T.4.1
+None   Florida                      FL.912.T.4.2
+None   Florida                      FL.912.T.4.3
+None   Florida                      FL.912.T.4.4
+None   Florida                      FL.912.T.4.5
+None   Florida                      FL.912.T.4.6
+None   Florida                      FL.912.T.4.7
+None   Texas                        TX.A2.2B
+None   Texas                        TX.A2.2C
+None   Texas                        TX.A2.2D
+None   Texas                        TX.A2.4A
+None   Texas                        TX.A2.4B
+None   Texas                        TX.A2.4C
+None   Texas                        TX.A2.4E
+None   Texas                        TX.A2.4G
+None   Texas                        TX.A2.4H
+None   Texas                        TX.A2.5A
+None   Texas                        TX.A2.5C
+None   Texas                        TX.A2.5E
+None   Texas                        TX.A2.6A
+None   Texas                        TX.A2.6B
+None   Texas                        TX.A2.6C
+None   Texas                        TX.A2.6G
+None   Texas                        TX.A2.6H
+None   Texas                        TX.A2.6I
+None   Texas                        TX.A2.6J
+None   Texas                        TX.A2.6K
+None   Texas                        TX.A2.6L
+None   Texas                        TX.A2.7A
+None   Texas                        TX.A2.7C
+None   Texas                        TX.A2.7D
+None   Texas                        TX.A2.7E
+None   Texas                        TX.A2.7F
+None   Texas                        TX.A2.7H
+None   Texas                        TX.G.10A
+None   Texas                        TX.G.10B
+None   Texas                        TX.G.11A
+None   Texas                        TX.G.11B
+None   Texas                        TX.G.11C
+None   Texas                        TX.G.11D
+None   Texas                        TX.G.12A
+None   Texas                        TX.G.12B
+None   Texas                        TX.G.12C
+None   Texas                        TX.G.12D
+None   Texas                        TX.G.13B
+None   Texas                        TX.G.2C
+None   Texas                        TX.G.3A
+None   Texas                        TX.G.3B
+None   Texas                        TX.G.3C
+None   Texas                        TX.G.3D
+None   Texas                        TX.G.4A
+None   Texas                        TX.G.4B
+None   Texas                        TX.G.4C
+None   Texas                        TX.G.4D
+None   Texas                        TX.G.5A
+None   Texas                        TX.G.5D
+None   Texas                        TX.G.6B
+None   Texas                        TX.G.6C
+None   Texas                        TX.G.6E
+None   Texas                        TX.G.7A
+None   Texas                        TX.G.7B
+None   Texas                        TX.G.8A
+None   Texas                        TX.G.8B
+None   Texas                        TX.G.9A
+PK5    CCSS                         1.MD.A.1
+PK5    CCSS                         1.MD.A.2
+PK5    CCSS                         1.MD.C.4
+PK5    CCSS                         1.NBT.B.2.a
+PK5    CCSS                         1.NBT.B.2.b
+PK5    CCSS                         1.NBT.B.2.c
+PK5    CCSS                         2.MD.A.1
+PK5    CCSS                         2.MD.A.2
+PK5    CCSS                         2.MD.A.4
+PK5    CCSS                         2.MD.D.10
+PK5    CCSS                         2.MD.D.9
+PK5    CCSS                         2.NBT.A.1.b
+PK5    CCSS                         2.NBT.B.6
+PK5    CCSS                         3.MD.B.3
+PK5    CCSS                         3.MD.B.4
+PK5    CCSS                         3.MD.C.5
+PK5    CCSS                         3.MD.C.5.a
+PK5    CCSS                         3.MD.C.5.b
+PK5    CCSS                         3.MD.C.6
+PK5    CCSS                         3.MD.C.7
+PK5    CCSS                         3.MD.C.7.a
+PK5    CCSS                         3.MD.C.7.b
+PK5    CCSS                         3.MD.C.7.c
+PK5    CCSS                         3.MD.C.7.d
+PK5    CCSS                         3.NF.A.2
+PK5    CCSS                         3.NF.A.2.a
+PK5    CCSS                         3.NF.A.2.b
+PK5    CCSS                         3.NF.A.3
+PK5    CCSS                         3.NF.A.3.a
+PK5    CCSS                         3.NF.A.3.b
+PK5    CCSS                         3.NF.A.3.c
+PK5    CCSS                         3.OA.B.6
+PK5    CCSS                         4.G.A.3
+PK5    CCSS                         4.MD.A.1
+PK5    CCSS                         4.MD.B.4
+PK5    CCSS                         4.MD.C.5.b
+PK5    CCSS                         4.NBT.B.4
+PK5    CCSS                         4.NF.B.3
+PK5    CCSS                         4.NF.B.3.b
+PK5    CCSS                         4.NF.B.3.c
+PK5    CCSS                         4.NF.B.3.d
+PK5    CCSS                         4.OA.B.4
+PK5    CCSS                         5.MD.B.2
+PK5    CCSS                         5.MD.C.3
+PK5    CCSS                         5.MD.C.3.a
+PK5    CCSS                         5.MD.C.3.b
+PK5    CCSS                         5.MD.C.4
+PK5    CCSS                         5.MD.C.5
+PK5    CCSS                         5.MD.C.5.a
+PK5    CCSS                         5.MD.C.5.b
+PK5    CCSS                         5.MD.C.5.c
+PK5    CCSS                         5.NF.A.2
+PK5    CCSS                         5.NF.B.4.b
+PK5    CCSS                         5.NF.B.5
+PK5    CCSS                         5.NF.B.5.a
+PK5    CCSS                         5.NF.B.5.b
+PK5    CCSS                         5.NF.B.6
+PK5    CCSS                         5.NF.B.7
+PK5    CCSS                         5.NF.B.7.a
+PK5    CCSS                         5.OA.A.2
+PK5    CCSS                         K.G.B.5
+PK5    CCSS                         K.MD.A.1
+PK5    CCSS                         K.MD.B.3
+PK5    CCSS                         K.OA.A.5
+PK5    California-not CCSS          CA.5.OA.2.1
+PK5    Florida                      FL.1.DP.1.1
+PK5    Florida                      FL.1.DP.1.2
+PK5    Florida                      FL.1.FR.1.1
+PK5    Florida                      FL.1.M.1.2
+PK5    Florida                      FL.1.M.2.2
+PK5    Florida                      FL.1.M.2.3
+PK5    Florida                      FL.1.NSO.2.4
+PK5    Florida                      FL.1.NSO.2.5
+PK5    Florida                      FL.2.DP.1.1
+PK5    Florida                      FL.2.DP.1.2
+PK5    Florida                      FL.2.FR.1.1
+PK5    Florida                      FL.2.FR.1.2
+PK5    Florida                      FL.2.GR.1.3
+PK5    Florida                      FL.2.M.1.2
+PK5    Florida                      FL.2.M.1.3
+PK5    Florida                      FL.2.M.2.2
+PK5    Florida                      FL.2.NSO.2.3
+PK5    Florida                      FL.3.AR.3.1
+PK5    Florida                      FL.3.AR.3.2
+PK5    Florida                      FL.3.DP.1.1
+PK5    Florida                      FL.3.DP.1.2
+PK5    Florida                      FL.3.FR.1.2
+PK5    Florida                      FL.3.FR.1.3
+PK5    Florida                      FL.3.FR.2.2
+PK5    Florida                      FL.3.GR.1.3
+PK5    Florida                      FL.3.GR.2.2
+PK5    Florida                      FL.3.M.1.1
+PK5    Florida                      FL.3.M.1.2
+PK5    Florida                      FL.3.NSO.2.1
+PK5    Florida                      FL.3.NSO.2.4
+PK5    Florida                      FL.4.AR.1.2
+PK5    Florida                      FL.4.AR.3.1
+PK5    Florida                      FL.4.DP.1.1
+PK5    Florida                      FL.4.DP.1.2
+PK5    Florida                      FL.4.DP.1.3
+PK5    Florida                      FL.4.FR.1.1
+PK5    Florida                      FL.4.FR.1.3
+PK5    Florida                      FL.4.FR.2.1
+PK5    Florida                      FL.4.FR.2.2
+PK5    Florida                      FL.4.FR.2.3
+PK5    Florida                      FL.4.M.1.1
+PK5    Florida                      FL.4.M.2.2
+PK5    Florida                      FL.5.AR.1.2
+PK5    Florida                      FL.5.AR.2.1
+PK5    Florida                      FL.5.DP.1.1
+PK5    Florida                      FL.5.DP.1.2
+PK5    Florida                      FL.5.FR.2.1
+PK5    Florida                      FL.5.FR.2.4
+PK5    Florida                      FL.5.GR.3.1
+PK5    Florida                      FL.5.GR.3.2
+PK5    Florida                      FL.5.GR.3.3
+PK5    Florida                      FL.5.M.2.1
+PK5    Florida                      FL.K.AR.2.1
+PK5    Florida                      FL.K.DP.1.1
+PK5    Florida                      FL.K.GR.1.1
+PK5    Florida                      FL.K.M.1.1
+PK5    Florida                      FL.K.M.1.2
+PK5    Florida                      FL.K.M.1.3
+PK5    Other State Standards Gaps   AL.3.DA.16.a
+PK5    Other State Standards Gaps   AR.4.DA.1
+PK5    Other State Standards Gaps   AR.5.DA.1
+PK5    Other State Standards Gaps   GA.3.GSR.6.3
+PK5    Other State Standards Gaps   GA.3.MDR.5.1
+PK5    Other State Standards Gaps   GA.5.MDR.7.2
+PK5    Other State Standards Gaps   IA.2.MD.D.IA.2
+PK5    Other State Standards Gaps   ID.5.MD.B.2
+PK5    Other State Standards Gaps   KY.1.MD.4
+PK5    Other State Standards Gaps   KY.1.MD.4.a
+PK5    Other State Standards Gaps   KY.1.MD.4.b
+PK5    Other State Standards Gaps   KY.2.MD.9
+PK5    Other State Standards Gaps   KY.2.MD.9a
+PK5    Other State Standards Gaps   KY.3.MD.3
+PK5    Other State Standards Gaps   KY.3.MD.3.a
+PK5    Other State Standards Gaps   KY.3.MD.4
+PK5    Other State Standards Gaps   KY.3.MD.4.a
+PK5    Other State Standards Gaps   KY.4.MD.4.a
+PK5    Other State Standards Gaps   KY.5.MD.2
+PK5    Other State Standards Gaps   MD.1.DS.A.1.a
+PK5    Other State Standards Gaps   MD.1.DS.A.1.b
+PK5    Other State Standards Gaps   MD.1.DS.A.1.d
+PK5    Other State Standards Gaps   MD.2.DS.A.1.a
+PK5    Other State Standards Gaps   MD.2.DS.A.1.b
+PK5    Other State Standards Gaps   MD.2.DS.A.1.d
+PK5    Other State Standards Gaps   MD.2.GR.B.6
+PK5    Other State Standards Gaps   MD.3.DS.A.1.b
+PK5    Other State Standards Gaps   MD.4.DS.A.1.b
+PK5    Other State Standards Gaps   MD.4.DS.A.1.c
+PK5    Other State Standards Gaps   MD.5.DS.A.1.b
+PK5    Other State Standards Gaps   MN.1.1.1.1
+PK5    Other State Standards Gaps   MN.1.1.2.1
+PK5    Other State Standards Gaps   MN.2.1.1.1
+PK5    Other State Standards Gaps   MN.2.1.1.2
+PK5    Other State Standards Gaps   MN.2.1.2.1
+PK5    Other State Standards Gaps   MN.3.1.1.1
+PK5    Other State Standards Gaps   MN.3.1.1.2
+PK5    Other State Standards Gaps   MN.3.1.1.3
+PK5    Other State Standards Gaps   MN.3.1.1.5
+PK5    Other State Standards Gaps   MN.3.1.2.1
+PK5    Other State Standards Gaps   MN.4.1.1.1
+PK5    Other State Standards Gaps   MN.4.1.1.2
+PK5    Other State Standards Gaps   MN.4.1.1.4
+PK5    Other State Standards Gaps   MN.4.1.2.1
+PK5    Other State Standards Gaps   MN.4.1.2.2
+PK5    Other State Standards Gaps   MN.5.1.1.1
+PK5    Other State Standards Gaps   MN.5.1.1.2
+PK5    Other State Standards Gaps   MN.5.1.1.3
+PK5    Other State Standards Gaps   MN.5.1.1.4
+PK5    Other State Standards Gaps   MN.5.1.1.5
+PK5    Other State Standards Gaps   MN.5.1.2.1
+PK5    Other State Standards Gaps   MN.5.1.2.2
+PK5    Other State Standards Gaps   MN.PK.M10.9
+PK5    Other State Standards Gaps   NC.5.MD.2
+PK5    Other State Standards Gaps   ND.3.DPS.D.1
+PK5    Other State Standards Gaps   ND.3.GM.G.3
+PK5    Other State Standards Gaps   ND.4.DPS.D.1
+PK5    Other State Standards Gaps   NE.2.D.1.a
+PK5    Other State Standards Gaps   NE.2.D.1.b
+PK5    Other State Standards Gaps   NE.5.A.1.d
+PK5    Other State Standards Gaps   NJ.2.DL.A.1
+PK5    Other State Standards Gaps   NJ.2.DL.A.2
+PK5    Other State Standards Gaps   NJ.3.DL.A.1
+PK5    Other State Standards Gaps   NJ.3.DL.A.2
+PK5    Other State Standards Gaps   NJ.4.DL.A.1
+PK5    Other State Standards Gaps   NJ.4.DL.A.2
+PK5    Other State Standards Gaps   NJ.4.DL.A.3
+PK5    Other State Standards Gaps   NJ.5.DL.A.2
+PK5    Other State Standards Gaps   NJ.5.DL.A.3
+PK5    Other State Standards Gaps   OK.K.D.1.1
+PK5    Other State Standards Gaps   OR.4.DR.A.1
+PK5    Other State Standards Gaps   OR.5.DR.A.1
+PK5    Other State Standards Gaps   SC.3.DPSR.2.1
+PK5    Other State Standards Gaps   SC.4.DPSR.1.1
+PK5    Other State Standards Gaps   SC.4.DPSR.2.1
+PK5    Other State Standards Gaps   SC.5.DPSR.2.1
+PK5    Other State Standards Gaps   VA.1.PS.1.c
+PK5    Other State Standards Gaps   VA.1.PS.1.d
+PK5    Other State Standards Gaps   VA.2.MG.3.a
+PK5    Other State Standards Gaps   VA.2.MG.3.b
+PK5    Other State Standards Gaps   VA.2.MG.3.c
+PK5    Other State Standards Gaps   VA.2.PS.1.a
+PK5    Other State Standards Gaps   VA.2.PS.1.b
+PK5    Other State Standards Gaps   VA.3.PS.1.a
+PK5    Other State Standards Gaps   VA.3.PS.1.b
+PK5    Other State Standards Gaps   VA.4.PS.1.a
+PK5    Other State Standards Gaps   VA.4.PS.1.b
+PK5    Other State Standards Gaps   VA.4.PS.2.a
+PK5    Other State Standards Gaps   VA.4.PS.2.b
+PK5    Other State Standards Gaps   VA.4.PS.2.c
+PK5    Other State Standards Gaps   VA.4.PS.2.d
+PK5    Other State Standards Gaps   VA.4.PS.2.e
+PK5    Other State Standards Gaps   VA.5.CE.4.a.i
+PK5    Other State Standards Gaps   VA.5.CE.4.a.ii
+PK5    Other State Standards Gaps   VA.5.CE.4.a.iii
+PK5    Other State Standards Gaps   VA.5.CE.4.a.iv
+PK5    Other State Standards Gaps   VA.5.CE.4.b
+PK5    Other State Standards Gaps   VA.5.PS.1.b
+PK5    Other State Standards Gaps   VA.5.PS.3.a
+PK5    Other State Standards Gaps   VA.5.PS.3.b
+PK5    Other State Standards Gaps   VA.K.PS.1.c
+PK5    Other State Standards Gaps   VA.K.PS.1.d
+PK5    Texas                        TX.1.2E
+PK5    Texas                        TX.1.3E
+PK5    Texas                        TX.1.4A
+PK5    Texas                        TX.1.4B
+PK5    Texas                        TX.1.4C
+PK5    Texas                        TX.1.6C
+PK5    Texas                        TX.1.7A
+PK5    Texas                        TX.1.7B
+PK5    Texas                        TX.1.7C
+PK5    Texas                        TX.1.7D
+PK5    Texas                        TX.1.8A
+PK5    Texas                        TX.1.8B
+PK5    Texas                        TX.1.8C
+PK5    Texas                        TX.1.9A
+PK5    Texas                        TX.1.9B
+PK5    Texas                        TX.1.9C
+PK5    Texas                        TX.1.9D
+PK5    Texas                        TX.2.10A
+PK5    Texas                        TX.2.10B
+PK5    Texas                        TX.2.10C
+PK5    Texas                        TX.2.10D
+PK5    Texas                        TX.2.11A
+PK5    Texas                        TX.2.11B
+PK5    Texas                        TX.2.11C
+PK5    Texas                        TX.2.11D
+PK5    Texas                        TX.2.11E
+PK5    Texas                        TX.2.11F
+PK5    Texas                        TX.2.3D
+PK5    Texas                        TX.2.5A
+PK5    Texas                        TX.2.5B
+PK5    Texas                        TX.2.9A
+PK5    Texas                        TX.2.9B
+PK5    Texas                        TX.2.9D
+PK5    Texas                        TX.2.9F
+PK5    Texas                        TX.3.3B
+PK5    Texas                        TX.3.3F
+PK5    Texas                        TX.3.3G
+PK5    Texas                        TX.3.4C
+PK5    Texas                        TX.3.4D
+PK5    Texas                        TX.3.4E
+PK5    Texas                        TX.3.4I
+PK5    Texas                        TX.3.5C
+PK5    Texas                        TX.3.5E
+PK5    Texas                        TX.3.7A
+PK5    Texas                        TX.3.7D
+PK5    Texas                        TX.3.7E
+PK5    Texas                        TX.3.8A
+PK5    Texas                        TX.3.8B
+PK5    Texas                        TX.3.9A
+PK5    Texas                        TX.3.9B
+PK5    Texas                        TX.3.9C
+PK5    Texas                        TX.3.9D
+PK5    Texas                        TX.3.9E
+PK5    Texas                        TX.3.9F
+PK5    Texas                        TX.4.10A
+PK5    Texas                        TX.4.10B
+PK5    Texas                        TX.4.10C
+PK5    Texas                        TX.4.10D
+PK5    Texas                        TX.4.10E
+PK5    Texas                        TX.4.2H
+PK5    Texas                        TX.4.3B
+PK5    Texas                        TX.4.3F
+PK5    Texas                        TX.4.4C
+PK5    Texas                        TX.4.6B
+PK5    Texas                        TX.4.6D
+PK5    Texas                        TX.4.8A
+PK5    Texas                        TX.4.9A
+PK5    Texas                        TX.4.9B
+PK5    Texas                        TX.5.10A
+PK5    Texas                        TX.5.10B
+PK5    Texas                        TX.5.10C
+PK5    Texas                        TX.5.10D
+PK5    Texas                        TX.5.10E
+PK5    Texas                        TX.5.10F
+PK5    Texas                        TX.5.3K
+PK5    Texas                        TX.5.4A
+PK5    Texas                        TX.5.4D
+PK5    Texas                        TX.5.4E
+PK5    Texas                        TX.5.4G
+PK5    Texas                        TX.5.6A
+PK5    Texas                        TX.5.6B
+PK5    Texas                        TX.5.9A
+PK5    Texas                        TX.5.9B
+PK5    Texas                        TX.5.9C
+PK5    Texas                        TX.K.3C
+PK5    Texas                        TX.K.4A
+PK5    Texas                        TX.K.7A
+PK5    Texas                        TX.K.7B
+PK5    Texas                        TX.K.8A
+PK5    Texas                        TX.K.8B
+PK5    Texas                        TX.K.8C
+PK5    Texas                        TX.K.9A
+PK5    Texas                        TX.K.9B
+PK5    Texas                        TX.K.9C
+PK5    Texas                        TX.K.9D

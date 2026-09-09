@@ -1,0 +1,23 @@
+=== tag_proposal: landed (closed, with before/after color) ===
+0 rows
+
+=== tag_proposal: landed_elsewhere (coverage achieved, node differs) ===
+0 rows
+
+=== tag_proposal: needs_attention (source_key reworded or removed) ===
+0 rows
+
+=== tag_proposal: still open (outstanding work) ===
+0 rows
+
+=== tag_review: referring to changed content (source_key absent from nodes) -- never auto-deleted ===
+0 rows
+
+=== standard_review: may be stale (rollup color changed since review) ===
+0 rows
+
+=== standard_color_override: redundant (computed now equals writer_color) -- offered for retirement, not auto-retired ===
+0 rows
+
+=== standard_color_override: conflict (computed changed, still != writer_color) -- needs human attention ===
+0 rows

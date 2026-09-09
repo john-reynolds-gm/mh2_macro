@@ -140,13 +140,20 @@ def load(cur, csv_path: Path, ladder_dir: Path) -> dict:
     rows = read_stems_csv(csv_path)
     resolved = resolve_ladder_files(rows, ladder_dir)
 
+    # Keyed on (band, normalized name), not name alone: two PK-5 stems ('Area',
+    # 'Volume') would otherwise be stolen by the 6-9 stems of the same name
+    # ('GM_AREA', 'GM_VOLUME') now that both bands write to `stems`. Every
+    # existing row has band=NULL (PK-5's INSERT never sets it), so the NULL
+    # fallback below keeps PK-5 behavior unchanged; only the newly tagged 6_9
+    # rows are fenced by an exact band match.
     workbook_ids = {}
-    for stem_id, name in cur.execute("SELECT stem_id, name FROM stems"):
-        workbook_ids[normalize_stem_text(name)] = stem_id
+    for stem_id, name, band in cur.execute("SELECT stem_id, name, band FROM stems"):
+        workbook_ids[(band, normalize_stem_text(name))] = stem_id
 
     stats = {"rows": 0, "drafted": 0, "workbook_matched": 0, "unmatched": []}
     for r in rows:
-        wb_id = workbook_ids.get(normalize_stem_text(r["workbook_stem"]))
+        key = normalize_stem_text(r["workbook_stem"])
+        wb_id = workbook_ids.get((r["band"], key)) or workbook_ids.get((None, key))
         if r["workbook_stem"] and wb_id is None:
             stats["unmatched"].append(f"{r['stem_id']}: {r['workbook_stem']!r}")
         if wb_id:
