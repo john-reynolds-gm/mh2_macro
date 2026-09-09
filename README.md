@@ -81,8 +81,10 @@ mh2-ladders/
 ```
 
 The one rule worth internalizing: **`data/source` is read-only, `data/build`
-is disposable.** If anything looks wrong, delete `data/build` and rebuild. You
-can never corrupt the originals, so there's no state to be afraid of.
+is disposable** — except `mh2_seq.db`, the authored review database, which is
+tracked and cannot be regenerated. If anything looks wrong, delete
+`data/build` and rebuild. You can never corrupt the originals, so there's no
+state to be afraid of.
 
 ## Adding a new ladder
 

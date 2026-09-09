@@ -8,8 +8,13 @@ __pycache__/
 .venv/
 venv/
 
-# Disposable build artifacts (rm -rf data/build && rebuild.py is always safe)
-data/build/
+# Build artifacts. `rm -rf data/build && rebuild.py` regenerates everything
+# here EXCEPT mh2_seq.db, which is authored review state (rev 9 R2) and
+# cannot be regenerated -- so it is tracked, and the glob is `data/build/*`
+# rather than `data/build/` because git cannot re-include a file whose
+# parent directory is excluded.
+data/build/*
+!data/build/mh2_seq.db
 
 # OS junk
 .DS_Store
