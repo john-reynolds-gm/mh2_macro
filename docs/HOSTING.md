@@ -6,12 +6,14 @@ per-writer env-var credentials (code), Fly.io free/hobby tier (host),
 Fly's own HTTPS (transport). Nothing here touches `mh2/coverage.py`, the
 rollup, `app/`, or any other do-not-touch item from rev 11 §4.
 
-This file assumes commands run on a real machine with normal internet
-access (your laptop, or a Claude Code session with shell access) — the
-Cowork session that wrote this file has none, so none of the steps below
-have been executed or verified by running them. Steps 1–2 exist specifically
-to catch anything that doesn't hold up before you're unreachable for two
-weeks.
+**Update, same day:** steps 1–2 below are confirmed — 251 passed locally,
+and the auth gate returns 401 with no credentials / 200 with correct ones.
+Steps 3 onward originally assumed a local `flyctl` install, which turned
+out to be blocked by John's corporate-managed Mac (the install script gets
+intercepted, likely the same policy that made IT hesitant about Homebrew).
+Steps 3+ now run through GitHub Actions instead, using Fly's remote
+builder — no `flyctl` or Docker on any local machine at all. The rest of
+this file (§0–2) is unchanged and still applies.
 
 ## 0. One thing to decide first
 
@@ -52,81 +54,94 @@ default) leaves every route open, exactly as it always has; this is only
 a no-op-by-default gate, so it's easy to convince yourself it's wired up
 when it silently isn't.
 
-## 3. Install flyctl and log in (one-time)
+## 3. Get a Fly API token (browser only, no CLI)
+
+Log into `fly.io/dashboard`. Find your account's **access tokens** page
+(under your account or organization settings — Fly's exact wording has
+moved around over the years; look for "Tokens"). Create a new personal
+access token with full account access (not one scoped to a single app —
+the setup workflow below needs to *create* the app and volume, so an
+app-scoped token doesn't yet have anything to scope to). Copy it
+immediately; Fly won't show it again.
+
+## 4. Add two GitHub repo secrets
+
+On GitHub: this repo → **Settings → Secrets and variables → Actions →
+New repository secret**. Add two:
+
+| Name | Value |
+|---|---|
+| `FLY_API_TOKEN` | the token from step 3 |
+| `MH2_AUTH_USERS` | the long `debbie:...,katie:...,...` line from `credentials.local.txt` |
+
+Both are secrets (masked in logs), never committed to the repo.
+
+## 5. Run the one-time setup workflow
+
+GitHub → **Actions** tab → **Fly one-time setup** → **Run workflow**.
+
+This runs `.github/workflows/fly-setup.yml`: creates the Fly app
+(`greatminds-mh2-gap-auditor`, matching `fly.toml`), creates the
+`mh2_data` volume that `mh2_seq.db` lives on, and sets `MH2_AUTH_USERS` as
+a Fly secret on the app. **Watch the log for the volume-creation step
+before it runs** — it prints any existing volumes first specifically so
+you can catch a mistaken second run before it creates a duplicate. Run
+this workflow exactly once. If a step fails partway, check the Fly
+dashboard for what already exists before triggering it again, rather than
+re-running blind.
+
+To change writer credentials later (add/remove/rotate), use the separate
+**"Fly update writer credentials"** workflow instead
+(`.github/workflows/fly-secrets.yml`) — safe to re-run any time. Don't
+re-run this setup workflow just to update a password; its volume-creation
+step isn't idempotent.
+
+## 6. Deploy
+
+Either push this branch to `main` (deploy triggers automatically), or
+GitHub → **Actions** → **Fly deploy** → **Run workflow** to trigger it by
+hand without waiting on a push.
+
+This runs `.github/workflows/fly-deploy.yml`, which installs `flyctl` on
+GitHub's runner (not your machine) and runs `flyctl deploy --remote-only`
+— the Docker image is built on Fly's own infrastructure, so nothing about
+this step touches your laptop or its network restrictions. Watch the
+Action's log the same way you'd watch a local `fly deploy`:
+`entrypoint.sh` runs `rebuild.py` (rebuilds `mh2.db` from the committed
+`data/source`) then `render_static.py`, then starts `uvicorn`. A failure
+here names the pipeline step, same as it would locally.
+
+## 7. Verify the live deployment
+
+Get the URL from the Fly dashboard (your app's page shows it, something
+like `https://greatminds-mh2-gap-auditor.fly.dev`). From here, plain
+`curl` against your *own* app is a normal HTTPS request to a domain you
+control — unrelated to the install-script block from step 3's old
+attempt, so this should work fine from your Mac:
 
 ```bash
-curl -L https://fly.io/install.sh | sh
-fly auth login       # opens a browser; sign up if you don't have an account
-```
-
-## 4. Launch, using the fly.toml already in the repo
-
-```bash
-cd ~/mh2_macro
-fly launch --no-deploy
-```
-
-Say **yes** to reusing the existing `fly.toml`/`Dockerfile` when asked.
-Pick an app name (the placeholder `mh2-gap-auditor` may be taken) and a
-region close to your writers. flyctl will rewrite `fly.toml`'s `app` /
-`primary_region` lines to match — that's expected and fine.
-
-## 5. Create the persistent volume
-
-`mh2_seq.db` (every writer's reviews, overrides, and proposals) lives in
-`data/build/`, which `fly.toml` mounts to a volume — without this step
-every redeploy silently wipes all writer judgments.
-
-```bash
-fly volumes create mh2_data --size 1 --region <the region from step 4>
-```
-
-## 6. Set the writer credentials
-
-The generated passwords are in `credentials.local.txt` (repo root,
-git-ignored — never commit it). Set them as one secret:
-
-```bash
-fly secrets set MH2_AUTH_USERS="$(grep -A1 'live in one Fly.io secret' credentials.local.txt | tail -1)"
-```
-
-(Or just copy the long `debbie:...,katie:...,...` line out of that file by
-hand into the command — either way, confirm with `fly secrets list`, which
-shows names only, never values.)
-
-## 7. Deploy
-
-```bash
-fly deploy
-```
-
-Watch the build log. `entrypoint.sh` runs `rebuild.py` (rebuilds `mh2.db`
-from the committed `data/source` — takes a bit, it's parsing 17 `.docx`
-ladders and two Excel workbooks) then `render_static.py`, then starts
-`uvicorn`. If `rebuild.py` fails, the deploy log will say which pipeline
-step and why — same failure mode as running it locally.
-
-## 8. Verify the live deployment
-
-```bash
-fly status                        # confirms the machine is running
-curl -i https://<your-app>.fly.dev/          # expect 401 (no creds)
-curl -i -u debbie:<her password> https://<your-app>.fly.dev/          # expect 200, HTML
-curl -i -u debbie:<her password> https://<your-app>.fly.dev/api/audit  # expect 200, JSON, 2,987ish rows
+curl -i https://greatminds-mh2-gap-auditor.fly.dev/          # expect 401 (no creds)
+curl -i -u debbie:<her password> https://greatminds-mh2-gap-auditor.fly.dev/          # expect 200, HTML
+curl -i -u debbie:<her password> https://greatminds-mh2-gap-auditor.fly.dev/api/audit  # expect 200, JSON, 2,987ish rows
 ```
 
 Then the persistence check that actually matters — write something,
-restart the machine, confirm it's still there:
+restart the machine, confirm it's still there. Restart from the Fly
+dashboard (your app → Machines → the one machine → Restart), no CLI
+needed:
 
 ```bash
 curl -s -u debbie:<her password> -X POST \
-  https://<your-app>.fly.dev/api/standards/K.CC.A.1/review \
+  https://greatminds-mh2-gap-auditor.fly.dev/api/standards/K.CC.A.1/review \
   -H 'content-type: application/json' \
   -d '{"outcome":"confirmed","reviewed_by":"smoke-test"}'
+```
 
-fly machine restart $(fly machine list --json | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['id'])")
+Restart the machine from the dashboard, wait for it to come back (the
+dashboard shows machine state), then:
 
-curl -s -u debbie:<her password> https://<your-app>.fly.dev/api/standards/K.CC.A.1 \
+```bash
+curl -s -u debbie:<her password> https://greatminds-mh2-gap-auditor.fly.dev/api/standards/K.CC.A.1 \
   | python3 -m json.tool | grep -A3 standard_review
 ```
 
@@ -136,18 +151,18 @@ test so it doesn't sit in `mh2_seq.db` alongside real writer judgments:
 
 ```bash
 curl -s -u debbie:<her password> -X DELETE \
-  https://<your-app>.fly.dev/api/standards/K.CC.A.1/review
+  https://greatminds-mh2-gap-auditor.fly.dev/api/standards/K.CC.A.1/review
 ```
 
-## 9. Hand off to writers
+## 8. Hand off to writers
 
 Give each writer, individually, **their own line** from
-`credentials.local.txt` plus the URL from `fly status`. Their browser will
-show a native login prompt on first visit — no separate signup, no account
-system. Point them at the tool exactly as rev 11 §2.1 describes: start from
-the 82 computed-Green-and-flagged rows, and see whether the grouped node
-picker (§1.2) is enough to propose a tag without opening the ladder
-document.
+`credentials.local.txt` plus the URL from the Fly dashboard. Their browser
+will show a native login prompt on first visit — no separate signup, no
+account system. Point them at the tool exactly as rev 11 §2.1 describes:
+start from the 82 computed-Green-and-flagged rows, and see whether the
+grouped node picker (§1.2) is enough to propose a tag without opening the
+ladder document.
 
 ## What this deliberately does not do
 
@@ -164,10 +179,19 @@ document.
 
 ## If something breaks while John is out
 
-`fly logs` shows the running container's stdout, including `rebuild.py`'s
-own step-by-step output — the same log a local run would produce. The
-volume (`mh2_data`) holds the only irreplaceable state; everything else
-(`mh2.db`, `coverage.html`) regenerates from what's already committed to
-git. Worst case, `fly apps destroy` and redo steps 4–7 loses nothing except
-writer judgments already in `mh2_seq.db` on that volume — which is exactly
-why step 8's restart-and-check matters before handing out logins.
+The Fly dashboard's **Logs** view for the app shows the running
+container's stdout, including `rebuild.py`'s own step-by-step output — the
+same log a local run would produce, no CLI needed to read it. The volume
+(`mh2_data`) holds the only irreplaceable state; everything else (`mh2.db`,
+`coverage.html`) regenerates from what's already committed to git. Worst
+case, delete the app from the dashboard and re-run the **Fly one-time
+setup** and **Fly deploy** workflows — that loses nothing except writer
+judgments already in `mh2_seq.db` on that volume, which is exactly why
+step 7's restart-and-check matters before handing out logins.
+
+If anyone on the team ever wants `flyctl` itself for something this
+runbook doesn't cover, it doesn't have to be John's laptop — a GitHub
+Codespace (github.com → this repo → **Code → Codespaces**) is a normal
+Linux environment in the browser with unrestricted internet, so the
+original curl-based install works there without going near corporate
+network policy at all.

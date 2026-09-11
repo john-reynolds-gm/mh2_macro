@@ -1,10 +1,13 @@
-# Starting point for `fly launch --no-deploy` / `fly deploy`. See
-# docs/HOSTING.md -- run `fly launch --no-deploy` first and let flyctl
-# merge/adjust this against your actual account/region before trusting it
-# blindly; app name and region below are placeholders.
+# See docs/HOSTING.md. Deployed via GitHub Actions (.github/workflows/), not
+# a local `fly launch` -- John's machine can't run flyctl (corporate network
+# blocks the install script). The app name below is real, not a placeholder:
+# it must match .github/workflows/fly-setup.yml and fly-deploy.yml exactly,
+# since those hardcode it rather than reading it back out of this file for
+# the `apps create` / `volumes create` steps. Change it in all three places
+# together, or not at all.
 
-app = "mh2-gap-auditor"       # change if this name is taken
-primary_region = "iad"        # change to whatever `fly launch` suggests as closest to your writers
+app = "greatminds-mh2-gap-auditor"
+primary_region = "iad"        # Ashburn, VA -- reasonable US default; change in all three files together if writers are elsewhere
 
 [build]
 
