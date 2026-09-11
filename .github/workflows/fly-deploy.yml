@@ -1,0 +1,25 @@
+# Builds and deploys on Fly's remote builder -- no Docker or flyctl needed
+# on any local machine, which matters here specifically because John's
+# corporate-managed Mac blocks the flyctl install script. Runs fly-setup.yml
+# once first (app + volume + secrets must already exist).
+
+name: Fly deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: fly-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
