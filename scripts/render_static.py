@@ -20,9 +20,9 @@ null-band rows. Excluding them from the denominator would mean changing
 coverage.py, which is out of scope for this step (see brief §7) and would
 break the "rendered count == denominator count" invariant (§8 #4). So the
 ruling this script implements is KEEP AND LABEL: all 2,987 rows are
-rendered, OUT_OF_SCOPE_GRADES is embedded so the page can label them, and
-the grade filter defaults to hiding them (still reachable by selecting them
-explicitly).
+rendered, and OUT_OF_SCOPE_GRADES is embedded so the page can label them
+(dashed chips in the grade filter) -- the grade filter itself shows every
+grade by default, same as the color and ladder-status filters.
 """
 from __future__ import annotations
 
@@ -41,8 +41,8 @@ from mh2 import coverage, node_lookup  # noqa: E402
 from mh2.coverage import _collapse_ws  # noqa: E402
 
 # See module docstring. HS is included despite being "murkier" per the brief
-# because it is exactly the rest of the null band, and leaving it in the
-# default view would mix uncheckable rows into every writer's worklist.
+# because it is exactly the rest of the null band -- it gets the same
+# dashed-chip out-of-scope label as GEO/A2 in the grade filter.
 OUT_OF_SCOPE_GRADES = ("GEO", "A2", "HS")
 
 # The names the row contract closes over (brief §2, §8 #2). A test pins
@@ -167,110 +167,139 @@ _PAGE_TEMPLATE = """<!doctype html>
 <style>
 :root {
   color-scheme: light;
-  --bg: #f7f7f5; --panel: #ffffff; --border: #dcdcd6; --text: #1c1c1a;
-  --muted: #6b6b64; --accent: #2f5d8a;
-  --green-bg: #e4f3e6; --green-fg: #1e6b30; --green-bd: #a9d9b1;
-  --yellow-bg: #fdf3d8; --yellow-fg: #8a6a00; --yellow-bd: #edd68a;
-  --red-bg: #fbe3e1; --red-fg: #9c2b21; --red-bd: #f0b3ac;
-  --chip-bg: #ececea;
+  --bg: #f4f5f7; --panel: #ffffff; --border: #e2e4e9; --border-strong: #cbcfd8;
+  --text: #1a1d23; --muted: #6b7080; --muted-2: #8a8f9c;
+  --accent: #3457d5; --accent-fg: #ffffff; --accent-soft: #eaeefc; --accent-soft-bd: #c3ccf3;
+  --green-bg: #e6f4ea; --green-fg: #1e7a37; --green-bd: #b3ddbf;
+  --yellow-bg: #fdf1d6; --yellow-fg: #93690a; --yellow-bd: #efd694;
+  --red-bg: #fbe6e4; --red-fg: #ab2f24; --red-bd: #f0bab2;
+  --chip-bg: #eef0f3; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 33, .05);
+  --shadow-md: 0 2px 8px rgba(20, 24, 33, .06), 0 1px 2px rgba(20, 24, 33, .04);
+  --shadow-lg: 0 8px 24px rgba(20, 24, 33, .08), 0 2px 6px rgba(20, 24, 33, .05);
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
-  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+::selection { background: var(--accent-soft-bd); }
 header {
-  padding: 14px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 5;
+  padding: 16px 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5; box-shadow: var(--shadow-sm);
 }
-h1 { font-size: 16px; margin: 0 0 6px; }
+h1 { font-size: 17px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 6px; }
 #summary { color: var(--muted); font-size: 13px; }
-#summary b { color: var(--text); }
-.tabs { display: flex; gap: 4px; margin: 12px 0 0; flex-wrap: wrap; }
+#summary b { color: var(--text); font-weight: 650; }
+.tabs { display: flex; gap: 4px; margin: 14px 0 0; flex-wrap: wrap; }
 .tab {
-  padding: 6px 12px; border: 1px solid var(--border); border-bottom: none;
-  border-radius: 6px 6px 0 0; background: var(--chip-bg); cursor: pointer;
-  font-size: 13px; color: var(--muted);
+  padding: 7px 14px; border: 1px solid transparent; border-bottom: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: transparent; cursor: pointer;
+  font-size: 13px; color: var(--muted); font-weight: 500; transition: background .12s ease, color .12s ease;
 }
-.tab.active { background: var(--panel); color: var(--text); font-weight: 600; }
+.tab:hover { background: var(--chip-bg); color: var(--text); }
+.tab.active { background: var(--accent-soft); color: var(--accent); font-weight: 650;
+  border-color: var(--accent-soft-bd); }
 .filters {
-  padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
-  display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start;
+  padding: 14px 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start;
 }
-.filter-group { display: flex; flex-direction: column; gap: 4px; }
-.filter-group .label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
-  color: var(--muted); margin-bottom: 2px; }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-group .label { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted-2); margin-bottom: 1px; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; max-width: 420px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
-  border: 1px solid var(--border); border-radius: 999px; background: var(--chip-bg);
+  display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--panel);
   cursor: pointer; font-size: 12.5px; user-select: none; white-space: nowrap;
+  transition: background .12s ease, border-color .12s ease, color .12s ease;
 }
-.chip input { margin: 0; }
+.chip:hover { border-color: var(--border-strong); }
+.chip input { margin: 0; accent-color: var(--accent); }
 .chip.out-of-scope { border-style: dashed; }
-.chip .n { color: var(--muted); }
-.chip.checked { background: #dfe9f3; border-color: var(--accent); }
+.chip .n { color: var(--muted-2); }
+.chip.checked { background: var(--accent-soft); border-color: var(--accent-soft-bd); color: var(--accent); }
+.chip.checked .n { color: var(--accent); opacity: .75; }
 #search {
-  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
-  font-size: 13px; width: 240px;
+  padding: 7px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; width: 240px; background: var(--panel); transition: border-color .12s ease, box-shadow .12s ease;
+}
+#search:focus, .write-row input:focus, .write-row textarea:focus, .write-row select:focus,
+.writer-bar input:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
 }
 #reset { align-self: flex-end; font-size: 12.5px; color: var(--accent); background: none;
-  border: none; cursor: pointer; padding: 6px 0; text-decoration: underline; }
-main { padding: 0 20px 40px; }
-table { width: 100%; border-collapse: collapse; background: var(--panel); margin-top: 14px; }
-th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border);
+  border: none; cursor: pointer; padding: 7px 0; font-weight: 600; }
+#reset:hover { text-decoration: underline; }
+main { padding: 24px 24px 48px; }
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0; background: var(--panel);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border);
   vertical-align: top; font-size: 13px; }
-th { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted);
-  position: sticky; top: 129px; background: var(--panel); z-index: 3; }
-tr.row { cursor: pointer; }
-tr.row:hover { background: #fafaf7; }
-td.code { font-weight: 600; white-space: nowrap; }
-td.text { color: #333; }
-td.grade { white-space: nowrap; width: 4ch; }
-.color-chip { display: inline-block; padding: 1px 9px; border-radius: 999px;
-  font-size: 12px; font-weight: 600; border: 1px solid; }
-.color-Green { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-bd); }
-.color-Yellow { background: var(--yellow-bg); color: var(--yellow-fg); border-color: var(--yellow-bd); }
-.color-Red { background: var(--red-bg); color: var(--red-fg); border-color: var(--red-bd); }
+thead th:first-child { border-top-left-radius: var(--radius-lg); }
+thead th:last-child { border-top-right-radius: var(--radius-lg); }
+tbody tr:last-child td:first-child { border-bottom-left-radius: var(--radius-lg); }
+tbody tr:last-child td:last-child { border-bottom-right-radius: var(--radius-lg); }
+th { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-2);
+  position: sticky; top: 137px; background: #fbfbfc; z-index: 3; }
+tr.row { cursor: pointer; transition: background .1s ease; }
+tr.row:hover { background: #f7f8fb; }
+tr.row:last-child td, tr.detail:last-child td { border-bottom: none; }
+td.code { font-weight: 650; white-space: nowrap; }
+td.text { color: #33363d; }
+td.grade { white-space: nowrap; width: 4ch; color: var(--muted); }
+.color-chip { display: inline-block; width: 9px; height: 9px; margin-right: 7px;
+  border-radius: 3px; border: 1px solid; vertical-align: middle; }
+.color-Green { background: var(--green-fg); border-color: var(--green-fg); }
+.color-Yellow { background: var(--yellow-fg); border-color: var(--yellow-fg); }
+.color-Red { background: var(--red-fg); border-color: var(--red-fg); }
 .ladder-status { font-size: 12.5px; color: var(--muted); }
-.ladder-status.drafted { color: var(--text); }
-tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
-.detail-section { margin-bottom: 12px; }
-.detail-section h4 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase;
-  letter-spacing: .03em; color: var(--muted); }
-.tag-block { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
-  margin-bottom: 6px; background: var(--panel); }
-.tag-block .node-id { font-weight: 600; }
+.ladder-status.drafted { color: var(--text); font-weight: 550; }
+tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: inset 0 1px 0 var(--border); }
+.detail-section { margin-bottom: 14px; }
+.detail-section h4 { margin: 0 0 6px; font-size: 10.5px; font-weight: 650; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--muted-2); }
+.tag-block { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px;
+  margin-bottom: 8px; background: var(--panel); box-shadow: var(--shadow-sm); }
+.tag-block .node-id { font-weight: 650; }
 .tag-block .meta { color: var(--muted); font-size: 12px; }
-.tag-block .node-text { margin-top: 4px; }
+.tag-block .node-text { margin-top: 5px; }
 .reason-list { margin: 0; padding-left: 18px; }
-#empty { padding: 40px; text-align: center; color: var(--muted); display: none; }
-#count { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
-.out-of-scope-note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+#empty { padding: 56px 20px; text-align: center; color: var(--muted-2); display: none;
+  background: var(--panel); border: 1px dashed var(--border); border-radius: var(--radius-lg); margin-top: 14px; }
+#count { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
+.out-of-scope-note { font-size: 11.5px; color: var(--muted-2); margin-top: 3px; }
 
-.writer-bar { margin-top: 8px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
-.writer-bar input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 12.5px; }
+.writer-bar { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.writer-bar input { padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12.5px; }
 #api-status { color: var(--muted); }
 .override-marker { margin-left: 5px; font-size: 11px; color: var(--accent); }
-.reviewed-badge { margin-left: 6px; font-size: 11px; padding: 1px 6px; border-radius: 999px;
+.reviewed-badge { margin-left: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
   background: var(--chip-bg); color: var(--muted); }
-.write-section { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 10px; }
-.write-section h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase;
-  letter-spacing: .03em; color: var(--muted); }
+.write-section { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 12px; }
+.write-section h4 { margin: 0 0 8px; font-size: 10.5px; font-weight: 650; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--muted-2); }
 .write-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px; }
 .write-row input[type=text], .write-row textarea, .write-row select {
-  padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; font-size: 12.5px;
+  padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12.5px;
+  background: var(--panel); color: var(--text);
 }
 .write-row textarea { width: 320px; min-height: 32px; font-family: inherit; }
 .write-row button {
-  padding: 4px 11px; border: 1px solid var(--accent); border-radius: 5px; background: var(--accent);
-  color: #fff; font-size: 12.5px; cursor: pointer;
+  padding: 5px 13px; border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent);
+  color: var(--accent-fg); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: filter .1s ease;
 }
+.write-row button:hover:not(:disabled) { filter: brightness(1.08); }
 .write-row button.secondary { background: var(--panel); color: var(--accent); }
-.write-row button:disabled { opacity: .5; cursor: not-allowed; }
+.write-row button.secondary:hover:not(:disabled) { background: var(--accent-soft); }
+.write-row button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
 .write-status { font-size: 12px; color: var(--muted); }
 .current-state { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
-.tag-block .write-row { margin-top: 6px; margin-bottom: 0; }
+.tag-block .write-row { margin-top: 8px; margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -288,7 +317,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
     <div class="label">Grade</div>
     <div class="chip-row" id="grade-filter"></div>
     <div class="out-of-scope-note">Dashed chips (GEO / A2 / HS) sit outside PK-8 + Algebra 1
-      scope and are hidden by default -- see §4.1.</div>
+      scope -- see §4.1.</div>
   </div>
   <div class="filter-group">
     <div class="label">Color</div>
@@ -314,7 +343,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 <main>
   <table>
     <thead>
-      <tr><th>Standard</th><th>Text</th><th>Color</th><th>Grade</th><th>Ladder status</th></tr>
+      <tr><th>Standard</th><th>Text</th><th>Grade</th><th>Ladder status</th></tr>
     </thead>
     <tbody id="rows"></tbody>
   </table>
@@ -449,7 +478,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 
   var state = {
     sheet: TABS[0],
-    grades: null,   // null until initialized from data, below
+    grades: {},     // empty object = no filter (all pass)
     colors: {},     // empty object = no filter (all pass)
     ladders: {},
     flaggedOnly: false,
@@ -461,10 +490,6 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
   var allGrades = Array.from(new Set(ROWS.map(function (r) { return r.grade; })))
     .filter(function (g) { return g !== null && g !== undefined; })
     .sort(function (a, b) { return (GRADE_ORDER[a] || 0) - (GRADE_ORDER[b] || 0); });
-  state.grades = {};
-  allGrades.forEach(function (g) {
-    state.grades[g] = OUT_OF_SCOPE.indexOf(g) === -1;
-  });
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -483,7 +508,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 
   function passesAllExcept(r, dim) {
     if (dim !== 'sheet' && r.sheet !== state.sheet) return false;
-    if (dim !== 'grade' && !state.grades[r.grade]) return false;
+    if (dim !== 'grade' && Object.keys(state.grades).length && !state.grades[r.grade]) return false;
     if (dim !== 'color' && Object.keys(state.colors).length && !state.colors[effectiveColor(r)]) return false;
     if (dim !== 'ladder' && Object.keys(state.ladders).length && !state.ladders[r.ladder_status]) return false;
     if (dim !== 'flagged' && state.flaggedOnly && !r.flagged) return false;
@@ -550,7 +575,10 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
 
   function renderFilters() {
     renderChipGroup('grade-filter', allGrades, facetCounts('grade', function (r) { return r.grade; }),
-      state.grades, function (g, on) { state.grades[g] = on; renderAll(); }, OUT_OF_SCOPE);
+      state.grades, function (g, on) {
+        if (on) { state.grades[g] = true; } else { delete state.grades[g]; }
+        renderAll();
+      }, OUT_OF_SCOPE);
 
     var colors = ['Green', 'Yellow', 'Red'];
     renderChipGroup('color-filter', colors, facetCounts('color', effectiveColor),
@@ -878,12 +906,11 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
       tr.className = 'row';
       var ec = effectiveColor(r);
       var a = auditIndex[r.code];
-      var colorCell = '<span class="color-chip color-' + ec + '">' + ec + '</span>'
-        + ((a && a.has_override) ? '<span class="override-marker" title="writer override; computed color: ' + esc(r.color) + '">&#9733;</span>' : '')
+      var badges = ((a && a.has_override) ? '<span class="override-marker" title="writer override; computed color: ' + esc(r.color) + '">&#9733;</span>' : '')
         + ((a && a.review_state && a.review_state !== 'unreviewed') ? '<span class="reviewed-badge">' + esc(a.review_state) + '</span>' : '');
-      tr.innerHTML = '<td class="code">' + esc(r.code) + '</td>'
+      tr.innerHTML = '<td class="code"><span class="color-chip color-' + ec + '" title="' + esc(ec) + '"></span>'
+        + esc(r.code) + badges + '</td>'
         + '<td class="text">' + esc(truncate(r.text, 110)) + '</td>'
-        + '<td>' + colorCell + '</td>'
         + '<td class="grade">' + esc(r.grade) + '</td>'
         + '<td class="ladder-status ' + r.ladder_status + '">' + r.ladder_status + '</td>';
       tr.onclick = function () {
@@ -895,7 +922,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
         var dtr = document.createElement('tr');
         dtr.className = 'detail';
         var td = document.createElement('td');
-        td.colSpan = 5;
+        td.colSpan = 4;
         td.innerHTML = renderDetail(r);
         dtr.appendChild(td);
         tbody.appendChild(dtr);
@@ -943,7 +970,7 @@ tr.detail td { background: #fbfbf9; padding: 14px 10px 18px 28px; }
   };
   document.getElementById('reset').onclick = function () {
     state.sheet = TABS[0];
-    allGrades.forEach(function (g) { state.grades[g] = OUT_OF_SCOPE.indexOf(g) === -1; });
+    state.grades = {};
     state.colors = {};
     state.ladders = {};
     state.flaggedOnly = false;
@@ -1018,8 +1045,8 @@ def main(argv=None):
         "\n§4.1 ruling applied: GEO/A2/HS (396 rows, the null band) are KEPT and "
         "LABELED, not excluded -- excluding them would require changing "
         "coverage.py's denominator, which is out of scope for this step. The "
-        "grade filter defaults to hiding them; they are reachable by selecting "
-        "them explicitly.")
+        "grade filter shows them by default like any other grade; the dashed "
+        "chip styling is what marks them as out-of-scope.")
 
 
 if __name__ == "__main__":
