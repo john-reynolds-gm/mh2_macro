@@ -1,0 +1,46 @@
+# One-time setup: creates the Fly app, its persistent volume, and the
+# writer-credentials secret. Run this exactly once (manually, from the
+# Actions tab), before the first fly-deploy.yml run.
+#
+# Why this exists as a separate workflow rather than folding into deploy:
+# `flyctl volumes create` is NOT safe to repeat blindly -- running it twice
+# creates a second, separate volume rather than erroring cleanly. If a step
+# here fails partway, check the Fly dashboard (fly.io/dashboard) for what
+# already exists before re-running, rather than just re-triggering this.
+#
+# App name is hardcoded to match fly.toml's `app =` line -- see that file's
+# comment. Requires two GitHub repo secrets (Settings -> Secrets and
+# variables -> Actions): FLY_API_TOKEN (a Fly personal access token, from
+# the Fly dashboard) and MH2_AUTH_USERS (the writer credentials line from
+# credentials.local.txt).
+
+name: Fly one-time setup
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_APP: greatminds-mh2-gap-auditor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create the app (safe to re-run -- errors harmlessly if it already exists)
+        run: flyctl apps create "$FLY_APP" || echo "App may already exist -- check the Fly dashboard if this step failed for another reason."
+
+      - name: Create the persistent volume for mh2_seq.db
+        run: |
+          echo "Existing volumes for $FLY_APP, if any:"
+          flyctl volumes list --app "$FLY_APP" || true
+          echo ""
+          echo "About to create a new 1GB volume named mh2_data."
+          echo "If one already exists above, STOP this run (do not let the next step execute) --"
+          echo "re-running this creates a second, separate volume rather than reusing it."
+          flyctl volumes create mh2_data --app "$FLY_APP" --region iad --size 1 --yes
+
+      - name: Set writer credentials
+        run: flyctl secrets set MH2_AUTH_USERS="${{ secrets.MH2_AUTH_USERS }}" --app "$FLY_APP"
