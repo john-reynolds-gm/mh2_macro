@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+notebooks/
+.DS_Store
+docs/
+*.md
+credentials.local.txt

@@ -194,6 +194,20 @@ band, and grade to be tractable.
 Hosting is not blocking. Local screen-share for the first feedback round. For
 5–10 users: Cloudflare Tunnel + Cloudflare Access. **Do not hand-roll auth.**
 
+**Update, 2026-09-11 (see `docs/HOSTING.md`, `docs/handoff_rev12.md`):** ahead
+of a 2-week gap with nobody around to babysit a tunnel, this went to a
+managed host instead (Fly.io, persistent volume for `mh2_seq.db`) with HTTP
+Basic + per-writer credentials in `MH2_AUTH_USERS` — rev 9 R1's originally
+intended shape, not a new invention, and no custom session/token/password
+code of its own (`secrets.compare_digest`, stdlib). Written and tested
+locally (`tests/test_review_api_auth.py`, 6 new tests); **not yet deployed
+or verified live** — this Cowork session had no outbound network access to
+run `fly deploy` itself. `docs/HOSTING.md` is the exact runbook to finish
+it. Cloudflare Tunnel/Access was reconsidered and set aside only because it
+needs a machine of John's to stay powered on for two weeks; the "don't
+hand-roll auth" ruling still holds and HTTP Basic is not a violation of it
+per R1's own text.
+
 ---
 
 ## 4. Known decay risks — watch, don't fix

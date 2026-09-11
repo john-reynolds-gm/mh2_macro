@@ -12,22 +12,71 @@ assumes a fixed loopback host or port, so hosting this behind anything else
 is a deploy decision, not a rebuild.
 
 Run: uvicorn review_api:app --reload
+
+Auth (added for hosting, see docs/HOSTING.md): HTTP Basic, per-writer
+credentials read from the MH2_AUTH_USERS environment variable
+("user1:pass1,user2:pass2,..."). If that variable is unset -- true for
+every local dev/test run today -- auth is a no-op and every route behaves
+exactly as before. Set it only in the deployed environment. This matches
+rev 9 R1's intended shape (per-writer creds in env vars) and DEFERRED.md
+§3.4's ruling not to hand-roll anything fancier than that.
 """
 from __future__ import annotations
 
+import os
+import secrets
 import sqlite3
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
 import config
 from mh2 import node_lookup, review_store
 from mh2.coverage import GREEN_MATCH, build_rows, build_tags_by_standard
 
-app = FastAPI(title="MH2 Review API")
+_security = HTTPBasic(auto_error=False)
+
+
+def _configured_writers() -> dict[str, str]:
+    """Parse MH2_AUTH_USERS ("user:pass,user:pass,..."). Empty/unset means
+    no writers are configured, which is read below as "auth disabled" --
+    deliberate, so every existing test and local `uvicorn --reload` run
+    keeps working with zero setup. Only the deployed container sets this."""
+    raw = os.environ.get("MH2_AUTH_USERS", "")
+    users: dict[str, str] = {}
+    for pair in raw.split(","):
+        pair = pair.strip()
+        if not pair:
+            continue
+        user, _, pw = pair.partition(":")
+        if user and pw:
+            users[user] = pw
+    return users
+
+
+def require_writer(
+    credentials: HTTPBasicCredentials | None = Depends(_security),
+) -> str:
+    users = _configured_writers()
+    if not users:
+        return "local"  # MH2_AUTH_USERS unset -- auth off, dev/test default
+    unauthorized = HTTPException(
+        status_code=401, detail="Login required",
+        headers={"WWW-Authenticate": "Basic"})
+    if credentials is None:
+        raise unauthorized
+    expected = users.get(credentials.username)
+    ok = expected is not None and secrets.compare_digest(credentials.password, expected)
+    if not ok:
+        raise unauthorized
+    return credentials.username
+
+
+app = FastAPI(title="MH2 Review API", dependencies=[Depends(require_writer)])
 
 
 def _mh2_con() -> sqlite3.Connection:

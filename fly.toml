@@ -1,0 +1,30 @@
+# Starting point for `fly launch --no-deploy` / `fly deploy`. See
+# docs/HOSTING.md -- run `fly launch --no-deploy` first and let flyctl
+# merge/adjust this against your actual account/region before trusting it
+# blindly; app name and region below are placeholders.
+
+app = "mh2-gap-auditor"       # change if this name is taken
+primary_region = "iad"        # change to whatever `fly launch` suggests as closest to your writers
+
+[build]
+
+[env]
+  PORT = "8080"
+
+# Persistent disk for data/build: mh2.db (rebuilt every start, fine to lose)
+# and mh2_seq.db (durable writer judgments, must never be lost). Create
+# with: fly volumes create mh2_data --size 1 --region <primary_region>
+[[mounts]]
+  source = "mh2_data"
+  destination = "/app/data/build"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false   # keep the one machine running -- writers,
+  auto_start_machines = true   # not bursty traffic; avoid cold-start auth confusion
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

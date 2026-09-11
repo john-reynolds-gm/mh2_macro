@@ -134,6 +134,11 @@ After a rebuild, `data/reports/` contains:
 python tests/test_normalize.py
 ```
 
+## Hosting the gap auditor (review_api.py)
+
+See `docs/HOSTING.md` for the deploy runbook (Fly.io + HTTP Basic auth) and
+`docs/handoff_rev12.md` for what's been prepared vs. actually deployed.
+
 ## Not built yet
 
 Streamlit UI, automated alignment suggestions, leaf detection, coverage
