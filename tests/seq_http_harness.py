@@ -33,6 +33,7 @@ It prints "LISTENING http://HOST:PORT/" once ready; open /seq/ in a browser.
 used by tests/js/seq_e2e_test.js (never enable on shared data):
     /__harness/demo_payload   {"grade": "2", "with_sequence": false} -> DemoPayload
     /__harness/reword         {"node_id": "WHO-0011", "suffix": " today"} -> {old_key, new_key}
+    /__harness/set_kind       {"node_id": "COM-0012", "grade": "2", "kind": "state_extension"} -> {updated}
     /__harness/guardrail      {"placements": [...]} -> seq_guardrail.compute(...)
 """
 from __future__ import annotations
@@ -463,6 +464,15 @@ def _hook(app, name, body):
         finally:
             con.close()
         return {"old_key": row[2], "new_key": new_key, "node_text": text}
+    if name == "set_kind":
+        con = sqlite3.connect(ctx.mh2_path)
+        try:
+            n = con.execute("UPDATE node_grade_kind SET kind=? WHERE node_id=? AND grade=?",
+                            (body["kind"], body["node_id"], body["grade"])).rowcount
+            con.commit()
+        finally:
+            con.close()
+        return {"updated": n}
     if name == "guardrail":
         return seq_guardrail.compute(body["placements"])
     raise KeyError(name)

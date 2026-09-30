@@ -407,6 +407,32 @@ function makeDoc() {
       assert.deepStrictEqual(positions(dr.sequence), positions(r.sequence));
     });
 
+    await check("reconcile: a changed grade ruling is grade_changed; acknowledge (sequence rev) keeps it", async () => {
+      const K = H1.K;
+      const r0 = await hook(base, "set_kind", { node_id: "COM-0012", grade: "2", kind: "state_extension" });
+      assert.strictEqual(r0.updated, 1);
+      const v = await http.sequence("2");
+      const it = v.attention.find((a) => a.source_key === K["COM-0012"]);
+      assert.ok(it, JSON.stringify(v.attention)); assert.strictEqual(it.status, "grade_changed");
+      assert.deepStrictEqual(it.actions, ["acknowledge", "remove"]); assert.strictEqual(it.state_now, "state_extension");
+      const pv = flatPlacements(v).find((p) => p.source_key === K["COM-0012"]);
+      assert.ok(pv.badges.some((b) => b.code === "grade_changed" && b.label.includes("state_extension")));
+      assert.ok(v.slice_badges[K["COM-0012"]].some((b) => b.code === "grade_changed"));
+      // demo seeded from this server view shows the same item, and acknowledges the same way
+      const demo = new DemoApi(await hook(base, "demo_payload", { grade: "2", with_sequence: true }), null);
+      const dv = await demo.sequence("2");
+      assert.deepStrictEqual(shapeDiff(v, dv, "grade_changed_view"), []);
+      const a = await http.acknowledge(it.placement_id, v.sequence.rev);
+      assert.ok(!a.sequence.attention.some((x) => x.placement_id === it.placement_id));
+      const da = await demo.acknowledge(it.placement_id, dv.sequence.rev);
+      assert.ok(!da.sequence.attention.some((x) => x.placement_id === it.placement_id));
+      assert.deepStrictEqual(shapeDiff(a, da, "acknowledge"), []);
+      const after = flatPlacements(a.sequence).find((p) => p.placement_id === it.placement_id);
+      assert.strictEqual(after.status, "ok"); assert.strictEqual(after.grade_kind_seen, "state_extension");
+      // stale acknowledge is refused with the current view
+      await assert.rejects(http.acknowledge(it.placement_id, v.sequence.rev), (e) => e.error === "stale_revision" && !!e.detail.sequence);
+    });
+
     await check("errors: FastAPI-style validation list and a bad key both become ApiError", async () => {
       const v = await http.sequence("2");
       await assert.rejects(http.createModule(v.sequence.sequence_id, "not-a-number", "x"), (e) => e instanceof ApiError && e.status === 422 && e.error === "invalid");
