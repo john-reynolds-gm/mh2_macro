@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MH2 Grade Sequencing</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<div id="app" class="app">
+  <header id="top" class="top">
+    <div id="hdr" class="hdr"></div>
+    <div id="banner" class="banners"></div>
+    <div id="toolbar" class="toolbar"></div>
+  </header>
+  <div id="notice" class="notice-bar" aria-live="polite"></div>
+  <main class="main">
+    <aside id="rail" class="rail" aria-label="Sequence builder"></aside>
+    <section id="slice" class="slice" aria-label="Grade slice"><p class="loading">Loading the grade slice&hellip;</p></section>
+    <aside id="drawer" class="drawer" role="complementary" aria-label="Node details" hidden></aside>
+  </main>
+  <div id="tray" class="tray" hidden></div>
+  <section id="sheet" class="sheet" aria-label="Compare nodes" hidden></section>
+  <footer id="foot" class="foot"></footer>
+  <div id="toasts" class="toasts"></div>
+</div>
+<noscript>This tool needs JavaScript.</noscript>
+<script src="assets/app.js"></script>
+</body>
+</html>

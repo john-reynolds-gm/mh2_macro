@@ -1,0 +1,1710 @@
+{
+ "format": "mh2-seq-demo/1",
+ "generated_at": "2026-09-30T12:00:00+00:00",
+ "grade": "2",
+ "source": "fixture",
+ "whoami": {
+  "user": "demo",
+  "auth_enabled": false,
+  "source": "demo"
+ },
+ "grades": {
+  "grades": [
+   {
+    "grade": "1",
+    "label": "Grade 1",
+    "short": "G1",
+    "ord": 0,
+    "band": null,
+    "in_grade_nodes": 0,
+    "owed_nodes": 0,
+    "chips": 0,
+    "sequence": null
+   },
+   {
+    "grade": "2",
+    "label": "Grade 2",
+    "short": "G2",
+    "ord": 1,
+    "band": null,
+    "in_grade_nodes": 6,
+    "owed_nodes": 5,
+    "chips": 8,
+    "sequence": null
+   },
+   {
+    "grade": "3",
+    "label": "Grade 3",
+    "short": "G3",
+    "ord": 2,
+    "band": null,
+    "in_grade_nodes": 0,
+    "owed_nodes": 0,
+    "chips": 0,
+    "sequence": null
+   }
+  ],
+  "kind_source": "grade_type",
+  "ladders_last_read": "2026-09-09 15:11:11"
+ },
+ "slice": {
+  "grade": "2",
+  "grade_label": "Grade 2",
+  "kind_source": "grade_type",
+  "ladders_last_read": "2026-09-09 15:11:11",
+  "counts": {
+   "in_grade_nodes": 6,
+   "in_grade_nodes_excl_leaf": 5,
+   "owed_nodes": 5,
+   "leaf_in_grade": 1,
+   "concept_skills": 3,
+   "concept_skills_excl_leaf": 3,
+   "context_nodes": 2,
+   "stems": 2,
+   "chips": 8
+  },
+  "super_stems": [
+   {
+    "domain": "Measurement and Data",
+    "stems": [
+     {
+      "stem_id": "TIM",
+      "stem_name": "Time",
+      "concept_skills": [
+       {
+        "cs_id": "TIM:c22eed5f",
+        "label": "Tell and write time to the nearest minute.",
+        "label_display": "Tell and write time to the nearest minute.",
+        "goal": "Read analog and digital clocks",
+        "goal_missing": false,
+        "in_grade_count": 2,
+        "in_grade_count_excl_leaf": 2,
+        "nodes": [
+         {
+          "source_key": "K:tim0010",
+          "node_id": "TIM-0010",
+          "seq": 10,
+          "node_text": "Tell and write time to the nearest five minutes.",
+          "grades": [
+           "2",
+           "3"
+          ],
+          "state": "unconfirmed",
+          "in_grade": true,
+          "owed": true,
+          "requires_confirm": false,
+          "resolution": "ruled",
+          "grade_raw": "3 (2 for some states)",
+          "states_mentioned": null,
+          "badges": [
+           {
+            "code": "unconfirmed",
+            "tier": "info",
+            "label": "unconfirmed",
+            "detail": "Grade ruling not final: 3 (2 for some states)",
+            "refs": [],
+            "partners": []
+           }
+          ],
+          "placed_elsewhere": [],
+          "period_hint": {
+           "text": "Likely 1 instructional period",
+           "value": null,
+           "unit": "period",
+           "qualifier": "exact",
+           "low": 1.0,
+           "high": 1.0,
+           "basis": "ungraded_multi_grade",
+           "n_estimates": 1
+          }
+         },
+         {
+          "source_key": "K:tim0011",
+          "node_id": "TIM-0011",
+          "seq": 11,
+          "node_text": "Solve problems involving <b>time</b> intervals.",
+          "grades": [
+           "2"
+          ],
+          "state": "core",
+          "in_grade": true,
+          "owed": true,
+          "requires_confirm": false,
+          "resolution": "ruled",
+          "grade_raw": "G2",
+          "states_mentioned": null,
+          "badges": [],
+          "placed_elsewhere": [],
+          "period_hint": null
+         },
+         {
+          "source_key": "K:tim0012",
+          "node_id": "TIM-0012",
+          "seq": 12,
+          "node_text": "Tell time in context (no grade stated).",
+          "grades": [],
+          "state": "no_grade",
+          "in_grade": false,
+          "owed": false,
+          "requires_confirm": true,
+          "resolution": "no_grade_field",
+          "grade_raw": null,
+          "states_mentioned": null,
+          "badges": [
+           {
+            "code": "no_grade",
+            "tier": "info",
+            "label": "no grade",
+            "detail": "The ladder cell has no grade",
+            "refs": [],
+            "partners": []
+           }
+          ],
+          "placed_elsewhere": [],
+          "period_hint": null
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "domain": "Number Systems and Structures",
+    "stems": [
+     {
+      "stem_id": "WHO",
+      "stem_name": "Whole Numbers and Base Ten Structure",
+      "concept_skills": [
+       {
+        "cs_id": "WHO:7046b922",
+        "label": "Compare and order numbers by using place value.",
+        "label_display": "Compare and order numbers by using place value.",
+        "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+        "goal_missing": false,
+        "in_grade_count": 2,
+        "in_grade_count_excl_leaf": 2,
+        "nodes": [
+         {
+          "source_key": "K:who0010",
+          "node_id": "WHO-0010",
+          "seq": 10,
+          "node_text": "Compare whole numbers by using place value.",
+          "grades": [
+           "1",
+           "2",
+           "3",
+           "4"
+          ],
+          "state": "span",
+          "in_grade": true,
+          "owed": true,
+          "requires_confirm": false,
+          "resolution": "ruled",
+          "grade_raw": "1, 2, 3, 4",
+          "states_mentioned": null,
+          "badges": [
+           {
+            "code": "span",
+            "tier": "info",
+            "label": "span",
+            "detail": "Also G1, G3, G4",
+            "refs": [],
+            "partners": []
+           },
+           {
+            "code": "shared_code",
+            "tier": "pairing",
+            "label": "pairs: COM",
+            "detail": "Shares CCSS codes with Comparing (1)",
+            "refs": [],
+            "partners": [
+             {
+              "stem_id": "COM",
+              "stem_name": "Comparing",
+              "codes": [
+               "2.NBT.A.4"
+              ],
+              "nodes": [
+               {
+                "source_key": "K:com0012",
+                "node_id": "COM-0012",
+                "in_grade": true
+               }
+              ]
+             }
+            ]
+           }
+          ],
+          "placed_elsewhere": [],
+          "period_hint": {
+           "text": "G2: Likely 2 instructional periods",
+           "value": 2.0,
+           "unit": "period",
+           "qualifier": "exact",
+           "low": 2.0,
+           "high": 2.0,
+           "basis": "grade_named",
+           "n_estimates": 1
+          }
+         },
+         {
+          "source_key": "K:who0011",
+          "node_id": "WHO-0011",
+          "seq": 11,
+          "node_text": "Order whole numbers by using place value.",
+          "grades": [
+           "1",
+           "2",
+           "3",
+           "4"
+          ],
+          "state": "span",
+          "in_grade": true,
+          "owed": true,
+          "requires_confirm": false,
+          "resolution": "ruled",
+          "grade_raw": "1, 2, 3, 4",
+          "states_mentioned": null,
+          "badges": [
+           {
+            "code": "span",
+            "tier": "info",
+            "label": "span",
+            "detail": "Also G1, G3, G4",
+            "refs": [],
+            "partners": []
+           },
+           {
+            "code": "placed_elsewhere",
+            "tier": "info",
+            "label": "also G3",
+            "detail": "Placed in G3 · M1 Place value",
+            "refs": [],
+            "partners": []
+           }
+          ],
+          "placed_elsewhere": [
+           {
+            "grade": "3",
+            "sequence_id": 2,
+            "sequence_title": "Grade 3 sequence",
+            "module_id": 7,
+            "module_title": "M1 Place value",
+            "placement_id": 31
+           }
+          ],
+          "period_hint": null
+         },
+         {
+          "source_key": "K:who0012",
+          "node_id": "WHO-0012",
+          "seq": 12,
+          "node_text": "Compare decimal numbers by using place value.",
+          "grades": [
+           "4",
+           "5"
+          ],
+          "state": "off_grade",
+          "in_grade": false,
+          "owed": false,
+          "requires_confirm": true,
+          "resolution": "ruled",
+          "grade_raw": "4, 5",
+          "states_mentioned": null,
+          "badges": [],
+          "placed_elsewhere": [],
+          "period_hint": null
+         }
+        ]
+       },
+       {
+        "cs_id": "WHO:aa11bb22",
+        "label": "Count to 1,000.",
+        "label_display": "Count to 1,000.",
+        "goal": null,
+        "goal_missing": true,
+        "in_grade_count": 2,
+        "in_grade_count_excl_leaf": 1,
+        "nodes": [
+         {
+          "source_key": "K:who0020",
+          "node_id": "WHO-0020",
+          "seq": 20,
+          "node_text": "Count to 1,000 by ones, tens and hundreds.",
+          "grades": [
+           "2"
+          ],
+          "state": "core",
+          "in_grade": true,
+          "owed": true,
+          "requires_confirm": false,
+          "resolution": "ruled",
+          "grade_raw": "G2",
+          "states_mentioned": null,
+          "badges": [],
+          "placed_elsewhere": [],
+          "period_hint": null
+         },
+         {
+          "source_key": "K:who0021",
+          "node_id": "WHO-0021",
+          "seq": 21,
+          "node_text": "Count with a leaf-only routine.",
+          "grades": [
+           "2"
+          ],
+          "state": "leaf",
+          "in_grade": true,
+          "owed": false,
+          "requires_confirm": true,
+          "resolution": "leaf",
+          "grade_raw": "leaf",
+          "states_mentioned": null,
+          "badges": [
+           {
+            "code": "leaf",
+            "tier": "info",
+            "label": "leaf",
+            "detail": "leaf",
+            "refs": [],
+            "partners": []
+           }
+          ],
+          "placed_elsewhere": [],
+          "period_hint": null
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "drawers": {
+  "K:who0010": {
+   "grade": "2",
+   "source_key": "K:who0010",
+   "node_id": "WHO-0010",
+   "node_text": "Compare whole numbers by using place value.",
+   "seq": 10,
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "domain": "Number Systems and Structures",
+   "source_file": "MH2_PK5_Whole Numbers and Base Ten Structure.docx",
+   "state": "span",
+   "in_grade": true,
+   "owed": true,
+   "requires_confirm": false,
+   "cs": {
+    "cs_id": "WHO:7046b922",
+    "label": "Compare and order numbers by using place value.",
+    "label_display": "Compare and order numbers by using place value.",
+    "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:who0010",
+     "node_id": "WHO-0010",
+     "seq": 10,
+     "state": "span",
+     "in_grade": true,
+     "is_self": true
+    },
+    {
+     "source_key": "K:who0011",
+     "node_id": "WHO-0011",
+     "seq": 11,
+     "state": "span",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:who0012",
+     "node_id": "WHO-0012",
+     "seq": 12,
+     "state": "off_grade",
+     "in_grade": false,
+     "is_self": false
+    }
+   ],
+   "ruling": {
+    "raw_value": "1, 2, 3, 4",
+    "resolution": "ruled",
+    "ruling_type": "span",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "1",
+     "short": "G1",
+     "state": "span"
+    },
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "span"
+    },
+    {
+     "grade": "3",
+     "short": "G3",
+     "state": "span"
+    },
+    {
+     "grade": "4",
+     "short": "G4",
+     "state": "span"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    },
+    {
+     "key": "additional_notes",
+     "label": "Additional notes",
+     "values": [
+      "G2: Likely 2 instructional periods"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": true
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [
+    {
+     "stem_id": "COM",
+     "stem_name": "Comparing",
+     "codes": [
+      "2.NBT.A.4"
+     ],
+     "nodes": [
+      {
+       "source_key": "K:com0012",
+       "node_id": "COM-0012",
+       "in_grade": true
+      }
+     ]
+    }
+   ],
+   "lessons": [
+    {
+     "lesson_id": "G2-M1-L35",
+     "product": "EM2",
+     "raw_ref": "EM2 G2 M1 L35",
+     "shared_with": [
+      {
+       "stem_id": "COM",
+       "stem_name": "Comparing",
+       "nodes": [
+        {
+         "source_key": "K:com0012",
+         "node_id": "COM-0012",
+         "in_grade": true
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "product_refs": [
+    {
+     "product": "EM2",
+     "raw_ref": "EM2 G2 M1 L35",
+     "lesson_id": "G2-M1-L35"
+    }
+   ],
+   "links": [
+    {
+     "text": "Time",
+     "stem_id": "TIM",
+     "label": "as captured"
+    },
+    {
+     "text": "Likely 1 instructional period",
+     "stem_id": null,
+     "label": "as captured"
+    }
+   ],
+   "period_hint": {
+    "text": "G2: Likely 2 instructional periods",
+    "value": 2.0,
+    "unit": "period",
+    "qualifier": "exact",
+    "low": 2.0,
+    "high": 2.0,
+    "basis": "grade_named",
+    "n_estimates": 1
+   },
+   "placed_elsewhere": [],
+   "badges": [
+    {
+     "code": "span",
+     "tier": "info",
+     "label": "span",
+     "detail": "Also G1, G3, G4",
+     "refs": [],
+     "partners": []
+    },
+    {
+     "code": "shared_code",
+     "tier": "pairing",
+     "label": "pairs: COM",
+     "detail": "Shares CCSS codes with Comparing (1)",
+     "refs": [],
+     "partners": [
+      {
+       "stem_id": "COM",
+       "stem_name": "Comparing",
+       "codes": [
+        "2.NBT.A.4"
+       ],
+       "nodes": [
+        {
+         "source_key": "K:com0012",
+         "node_id": "COM-0012",
+         "in_grade": true
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "K:who0011": {
+   "grade": "2",
+   "source_key": "K:who0011",
+   "node_id": "WHO-0011",
+   "node_text": "Order whole numbers by using place value.",
+   "seq": 11,
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "domain": "Number Systems and Structures",
+   "source_file": "MH2_PK5_Whole Numbers and Base Ten Structure.docx",
+   "state": "span",
+   "in_grade": true,
+   "owed": true,
+   "requires_confirm": false,
+   "cs": {
+    "cs_id": "WHO:7046b922",
+    "label": "Compare and order numbers by using place value.",
+    "label_display": "Compare and order numbers by using place value.",
+    "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:who0010",
+     "node_id": "WHO-0010",
+     "seq": 10,
+     "state": "span",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:who0011",
+     "node_id": "WHO-0011",
+     "seq": 11,
+     "state": "span",
+     "in_grade": true,
+     "is_self": true
+    },
+    {
+     "source_key": "K:who0012",
+     "node_id": "WHO-0012",
+     "seq": 12,
+     "state": "off_grade",
+     "in_grade": false,
+     "is_self": false
+    }
+   ],
+   "ruling": {
+    "raw_value": "1, 2, 3, 4",
+    "resolution": "ruled",
+    "ruling_type": "span",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "1",
+     "short": "G1",
+     "state": "span"
+    },
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "span"
+    },
+    {
+     "grade": "3",
+     "short": "G3",
+     "state": "span"
+    },
+    {
+     "grade": "4",
+     "short": "G4",
+     "state": "span"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [
+    {
+     "grade": "3",
+     "sequence_id": 2,
+     "sequence_title": "Grade 3 sequence",
+     "module_id": 7,
+     "module_title": "M1 Place value",
+     "placement_id": 31
+    }
+   ],
+   "badges": [
+    {
+     "code": "span",
+     "tier": "info",
+     "label": "span",
+     "detail": "Also G1, G3, G4",
+     "refs": [],
+     "partners": []
+    },
+    {
+     "code": "placed_elsewhere",
+     "tier": "info",
+     "label": "also G3",
+     "detail": "Placed in G3 · M1 Place value",
+     "refs": [],
+     "partners": []
+    }
+   ]
+  },
+  "K:who0012": {
+   "grade": "2",
+   "source_key": "K:who0012",
+   "node_id": "WHO-0012",
+   "node_text": "Compare decimal numbers by using place value.",
+   "seq": 12,
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "domain": "Number Systems and Structures",
+   "source_file": "MH2_PK5_Whole Numbers and Base Ten Structure.docx",
+   "state": "off_grade",
+   "in_grade": false,
+   "owed": false,
+   "requires_confirm": true,
+   "cs": {
+    "cs_id": "WHO:7046b922",
+    "label": "Compare and order numbers by using place value.",
+    "label_display": "Compare and order numbers by using place value.",
+    "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:who0010",
+     "node_id": "WHO-0010",
+     "seq": 10,
+     "state": "span",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:who0011",
+     "node_id": "WHO-0011",
+     "seq": 11,
+     "state": "span",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:who0012",
+     "node_id": "WHO-0012",
+     "seq": 12,
+     "state": "off_grade",
+     "in_grade": false,
+     "is_self": true
+    }
+   ],
+   "ruling": {
+    "raw_value": "4, 5",
+    "resolution": "ruled",
+    "ruling_type": "off_grade",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "4",
+     "short": "G4",
+     "state": "span"
+    },
+    {
+     "grade": "5",
+     "short": "G5",
+     "state": "span"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [],
+   "badges": []
+  },
+  "K:who0020": {
+   "grade": "2",
+   "source_key": "K:who0020",
+   "node_id": "WHO-0020",
+   "node_text": "Count to 1,000 by ones, tens and hundreds.",
+   "seq": 20,
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "domain": "Number Systems and Structures",
+   "source_file": "MH2_PK5_Whole Numbers and Base Ten Structure.docx",
+   "state": "core",
+   "in_grade": true,
+   "owed": true,
+   "requires_confirm": false,
+   "cs": {
+    "cs_id": "WHO:aa11bb22",
+    "label": "Count to 1,000.",
+    "label_display": "Count to 1,000.",
+    "goal": null,
+    "goal_missing": true
+   },
+   "strip": [
+    {
+     "source_key": "K:who0020",
+     "node_id": "WHO-0020",
+     "seq": 20,
+     "state": "core",
+     "in_grade": true,
+     "is_self": true
+    },
+    {
+     "source_key": "K:who0021",
+     "node_id": "WHO-0021",
+     "seq": 21,
+     "state": "leaf",
+     "in_grade": true,
+     "is_self": false
+    }
+   ],
+   "ruling": {
+    "raw_value": "G2",
+    "resolution": "ruled",
+    "ruling_type": "core",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "core"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [],
+   "badges": []
+  },
+  "K:who0021": {
+   "grade": "2",
+   "source_key": "K:who0021",
+   "node_id": "WHO-0021",
+   "node_text": "Count with a leaf-only routine.",
+   "seq": 21,
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "domain": "Number Systems and Structures",
+   "source_file": "MH2_PK5_Whole Numbers and Base Ten Structure.docx",
+   "state": "leaf",
+   "in_grade": true,
+   "owed": false,
+   "requires_confirm": true,
+   "cs": {
+    "cs_id": "WHO:aa11bb22",
+    "label": "Count to 1,000.",
+    "label_display": "Count to 1,000.",
+    "goal": null,
+    "goal_missing": true
+   },
+   "strip": [
+    {
+     "source_key": "K:who0020",
+     "node_id": "WHO-0020",
+     "seq": 20,
+     "state": "core",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:who0021",
+     "node_id": "WHO-0021",
+     "seq": 21,
+     "state": "leaf",
+     "in_grade": true,
+     "is_self": true
+    }
+   ],
+   "ruling": {
+    "raw_value": "leaf",
+    "resolution": "leaf",
+    "ruling_type": "leaf",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "leaf"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [],
+   "badges": [
+    {
+     "code": "leaf",
+     "tier": "info",
+     "label": "leaf",
+     "detail": "leaf",
+     "refs": [],
+     "partners": []
+    }
+   ]
+  },
+  "K:tim0010": {
+   "grade": "2",
+   "source_key": "K:tim0010",
+   "node_id": "TIM-0010",
+   "node_text": "Tell and write time to the nearest five minutes.",
+   "seq": 10,
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "domain": "Measurement and Data",
+   "source_file": "MH2_PK5_Time.docx",
+   "state": "unconfirmed",
+   "in_grade": true,
+   "owed": true,
+   "requires_confirm": false,
+   "cs": {
+    "cs_id": "TIM:c22eed5f",
+    "label": "Tell and write time to the nearest minute.",
+    "label_display": "Tell and write time to the nearest minute.",
+    "goal": "Read analog and digital clocks",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:tim0010",
+     "node_id": "TIM-0010",
+     "seq": 10,
+     "state": "unconfirmed",
+     "in_grade": true,
+     "is_self": true
+    },
+    {
+     "source_key": "K:tim0011",
+     "node_id": "TIM-0011",
+     "seq": 11,
+     "state": "core",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:tim0012",
+     "node_id": "TIM-0012",
+     "seq": 12,
+     "state": "no_grade",
+     "in_grade": false,
+     "is_self": false
+    }
+   ],
+   "ruling": {
+    "raw_value": "3 (2 for some states)",
+    "resolution": "ruled",
+    "ruling_type": "unconfirmed",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "unconfirmed"
+    },
+    {
+     "grade": "3",
+     "short": "G3",
+     "state": "span"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": {
+    "text": "Likely 1 instructional period",
+    "value": null,
+    "unit": "period",
+    "qualifier": "exact",
+    "low": 1.0,
+    "high": 1.0,
+    "basis": "ungraded_multi_grade",
+    "n_estimates": 1
+   },
+   "placed_elsewhere": [],
+   "badges": [
+    {
+     "code": "unconfirmed",
+     "tier": "info",
+     "label": "unconfirmed",
+     "detail": "Grade ruling not final: 3 (2 for some states)",
+     "refs": [],
+     "partners": []
+    }
+   ]
+  },
+  "K:tim0011": {
+   "grade": "2",
+   "source_key": "K:tim0011",
+   "node_id": "TIM-0011",
+   "node_text": "Solve problems involving <b>time</b> intervals.",
+   "seq": 11,
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "domain": "Measurement and Data",
+   "source_file": "MH2_PK5_Time.docx",
+   "state": "core",
+   "in_grade": true,
+   "owed": true,
+   "requires_confirm": false,
+   "cs": {
+    "cs_id": "TIM:c22eed5f",
+    "label": "Tell and write time to the nearest minute.",
+    "label_display": "Tell and write time to the nearest minute.",
+    "goal": "Read analog and digital clocks",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:tim0010",
+     "node_id": "TIM-0010",
+     "seq": 10,
+     "state": "unconfirmed",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:tim0011",
+     "node_id": "TIM-0011",
+     "seq": 11,
+     "state": "core",
+     "in_grade": true,
+     "is_self": true
+    },
+    {
+     "source_key": "K:tim0012",
+     "node_id": "TIM-0012",
+     "seq": 12,
+     "state": "no_grade",
+     "in_grade": false,
+     "is_self": false
+    }
+   ],
+   "ruling": {
+    "raw_value": "G2",
+    "resolution": "ruled",
+    "ruling_type": "core",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [
+    {
+     "grade": "2",
+     "short": "G2",
+     "state": "core"
+    }
+   ],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [
+    {
+     "code": "2.NBT.A.4",
+     "relation": "aligned",
+     "annotation": null,
+     "shared": false
+    }
+   ],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [],
+   "badges": []
+  },
+  "K:tim0012": {
+   "grade": "2",
+   "source_key": "K:tim0012",
+   "node_id": "TIM-0012",
+   "node_text": "Tell time in context (no grade stated).",
+   "seq": 12,
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "domain": "Measurement and Data",
+   "source_file": "MH2_PK5_Time.docx",
+   "state": "no_grade",
+   "in_grade": false,
+   "owed": false,
+   "requires_confirm": true,
+   "cs": {
+    "cs_id": "TIM:c22eed5f",
+    "label": "Tell and write time to the nearest minute.",
+    "label_display": "Tell and write time to the nearest minute.",
+    "goal": "Read analog and digital clocks",
+    "goal_missing": false
+   },
+   "strip": [
+    {
+     "source_key": "K:tim0010",
+     "node_id": "TIM-0010",
+     "seq": 10,
+     "state": "unconfirmed",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:tim0011",
+     "node_id": "TIM-0011",
+     "seq": 11,
+     "state": "core",
+     "in_grade": true,
+     "is_self": false
+    },
+    {
+     "source_key": "K:tim0012",
+     "node_id": "TIM-0012",
+     "seq": 12,
+     "state": "no_grade",
+     "in_grade": false,
+     "is_self": true
+    }
+   ],
+   "ruling": {
+    "raw_value": null,
+    "resolution": "no_grade_field",
+    "ruling_type": "no_grade",
+    "states_mentioned": null,
+    "notes": null,
+    "needs_writer_review": 0
+   },
+   "grade_states": [],
+   "fields": [
+    {
+     "key": "specifications",
+     "label": "Specifications",
+     "values": [
+      "Use symbols: >, <, =",
+      "Within 1,000"
+     ]
+    }
+   ],
+   "fields_empty": [
+    {
+     "key": "strategies",
+     "label": "Strategies"
+    },
+    {
+     "key": "terminology",
+     "label": "Terminology"
+    }
+   ],
+   "standards": [],
+   "state_codes": [
+    {
+     "code": "CA.2.NBT.4",
+     "state": "CA",
+     "relation": "aligned",
+     "annotation": null
+    }
+   ],
+   "pairings": [],
+   "lessons": [],
+   "product_refs": [],
+   "links": [],
+   "period_hint": null,
+   "placed_elsewhere": [],
+   "badges": [
+    {
+     "code": "no_grade",
+     "tier": "info",
+     "label": "no grade",
+     "detail": "The ladder cell has no grade",
+     "refs": [],
+     "partners": []
+    }
+   ]
+  }
+ },
+ "compare_columns": {
+  "K:who0010": {
+   "source_key": "K:who0010",
+   "node_id": "WHO-0010",
+   "node_text": "Compare whole numbers by using place value.",
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "cs_label_display": "Compare and order numbers by using place value.",
+   "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+   "grades": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "state": "span",
+   "in_grade": true,
+   "grade_raw": "1, 2, 3, 4",
+   "period_hint_text": "G2: Likely 2 instructional periods",
+   "ccss": [
+    "2.NBT.A.4"
+   ],
+   "lessons": [
+    "G2-M1-L35"
+   ],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:who0011": {
+   "source_key": "K:who0011",
+   "node_id": "WHO-0011",
+   "node_text": "Order whole numbers by using place value.",
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "cs_label_display": "Compare and order numbers by using place value.",
+   "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+   "grades": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "state": "span",
+   "in_grade": true,
+   "grade_raw": "1, 2, 3, 4",
+   "period_hint_text": null,
+   "ccss": [
+    "2.NBT.A.4"
+   ],
+   "lessons": [
+    "G2-M1-L35"
+   ],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:who0012": {
+   "source_key": "K:who0012",
+   "node_id": "WHO-0012",
+   "node_text": "Compare decimal numbers by using place value.",
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "cs_label_display": "Compare and order numbers by using place value.",
+   "goal": "Identify relationships between quantities\nCompare multiple quantities to sequence them",
+   "grades": [
+    "4",
+    "5"
+   ],
+   "state": "off_grade",
+   "in_grade": false,
+   "grade_raw": "4, 5",
+   "period_hint_text": null,
+   "ccss": [
+    "2.NBT.A.4"
+   ],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:who0020": {
+   "source_key": "K:who0020",
+   "node_id": "WHO-0020",
+   "node_text": "Count to 1,000 by ones, tens and hundreds.",
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "cs_label_display": "Count to 1,000.",
+   "goal": null,
+   "grades": [
+    "2"
+   ],
+   "state": "core",
+   "in_grade": true,
+   "grade_raw": "G2",
+   "period_hint_text": null,
+   "ccss": [
+    "2.NBT.A.4"
+   ],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:who0021": {
+   "source_key": "K:who0021",
+   "node_id": "WHO-0021",
+   "node_text": "Count with a leaf-only routine.",
+   "stem_id": "WHO",
+   "stem_name": "Whole Numbers and Base Ten Structure",
+   "cs_label_display": "Count to 1,000.",
+   "goal": null,
+   "grades": [
+    "2"
+   ],
+   "state": "leaf",
+   "in_grade": true,
+   "grade_raw": "leaf",
+   "period_hint_text": null,
+   "ccss": [
+    "2.NBT.A.4"
+   ],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:tim0010": {
+   "source_key": "K:tim0010",
+   "node_id": "TIM-0010",
+   "node_text": "Tell and write time to the nearest five minutes.",
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "cs_label_display": "Tell and write time to the nearest minute.",
+   "goal": "Read analog and digital clocks",
+   "grades": [
+    "2",
+    "3"
+   ],
+   "state": "unconfirmed",
+   "in_grade": true,
+   "grade_raw": "3 (2 for some states)",
+   "period_hint_text": "Likely 1 instructional period",
+   "ccss": [],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:tim0011": {
+   "source_key": "K:tim0011",
+   "node_id": "TIM-0011",
+   "node_text": "Solve problems involving <b>time</b> intervals.",
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "cs_label_display": "Tell and write time to the nearest minute.",
+   "goal": "Read analog and digital clocks",
+   "grades": [
+    "2"
+   ],
+   "state": "core",
+   "in_grade": true,
+   "grade_raw": "G2",
+   "period_hint_text": null,
+   "ccss": [],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  },
+  "K:tim0012": {
+   "source_key": "K:tim0012",
+   "node_id": "TIM-0012",
+   "node_text": "Tell time in context (no grade stated).",
+   "stem_id": "TIM",
+   "stem_name": "Time",
+   "cs_label_display": "Tell and write time to the nearest minute.",
+   "goal": "Read analog and digital clocks",
+   "grades": [],
+   "state": "no_grade",
+   "in_grade": false,
+   "grade_raw": null,
+   "period_hint_text": null,
+   "ccss": [],
+   "lessons": [],
+   "state_codes": [
+    "CA.2.NBT.4"
+   ],
+   "fields": {
+    "specifications": [
+     "Use symbols: >, <, =",
+     "Within 1,000"
+    ]
+   }
+  }
+ },
+ "field_defs": [
+  {
+   "key": "specifications",
+   "label": "Specifications"
+  },
+  {
+   "key": "strategies",
+   "label": "Strategies"
+  },
+  {
+   "key": "additional_notes",
+   "label": "Additional notes"
+  }
+ ],
+ "sequence": {
+  "grade": "2",
+  "ladders_last_read": "2026-09-09 15:11:11",
+  "sequence": null,
+  "modules": [],
+  "placed_index": {},
+  "slice_badges": {},
+  "guardrail": {
+   "n": 0,
+   "n_calibrated": 0,
+   "n_timed": 0,
+   "counts": {
+    "deep": 0,
+    "functional": 0,
+    "illuminating": 0,
+    "unset": 0
+   },
+   "count_share": {
+    "deep": null,
+    "functional": null,
+    "illuminating": null
+   },
+   "periods": {
+    "deep": 0.0,
+    "functional": 0.0,
+    "illuminating": 0.0,
+    "unset": 0.0
+   },
+   "total_periods": 0.0,
+   "time_share": {
+    "deep": null,
+    "functional": null,
+    "illuminating": null
+   },
+   "time_coverage": null,
+   "show_time_targets": false,
+   "count_target": {
+    "deep": 0.25,
+    "functional": 0.5,
+    "illuminating": 0.25
+   },
+   "time_target": {
+    "deep": 0.4,
+    "functional": 0.45,
+    "illuminating": 0.15
+   },
+   "time_mark_min_coverage": 0.5
+  },
+  "attention": []
+ },
+ "views": []
+}
