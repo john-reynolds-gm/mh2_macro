@@ -21,6 +21,7 @@ Real data is copied to a temp dir; the real DB files are never opened for writin
 from __future__ import annotations
 
 import ast
+import atexit
 import base64
 import json
 import os
@@ -55,6 +56,15 @@ def _skip(msg):
         import pytest
         pytest.skip(msg)
     raise Skip(msg)
+
+
+def _cleanup():
+    for d in _TMP:
+        shutil.rmtree(d, ignore_errors=True)
+    _TMP.clear()
+
+
+atexit.register(_cleanup)     # under pytest too (real-DB copies are ~150 MB)
 
 
 def _tmpdir():
@@ -275,8 +285,7 @@ def _main():
                     print("FAIL", name)
                     traceback.print_exc()
     finally:
-        for d in _TMP:
-            shutil.rmtree(d, ignore_errors=True)
+        _cleanup()
     print(f"\n{failed} failed" if failed else "\nall passed")
     return 1 if failed else 0
 
