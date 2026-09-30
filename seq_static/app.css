@@ -105,7 +105,7 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .menu-foot { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 6px; }
 
 /* ---- main: rail | slice | drawer ---------------------------------------- */
-.main { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 380px minmax(0, 1fr); }
+.main { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 380px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
 .app.drawer-open .main { grid-template-columns: 380px minmax(0, 1fr) 420px; }
 .rail { overflow: auto; background: var(--panel); border-right: 1px solid var(--border); padding: 0 14px 40px; min-height: 0; }
 .slice { overflow: auto; padding: 0 20px 60px; min-height: 0; }

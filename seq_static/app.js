@@ -1878,8 +1878,11 @@ function createApp(env) {
       ui.scrollTo = null;
     }
   }
+  var pointerDown = false, renderPending = false;
   function renderAll() {
     if (!M.slice) return;
+    // Do not swap the DOM between mousedown and mouseup: the browser would drop the click.
+    if (pointerDown) { renderPending = true; return; }
     fixTarget();
     M.vis = visibleSlice(M.slice, state, M.seqView);
     M.demo.persisted = !!api.persisted;
@@ -1933,6 +1936,7 @@ function createApp(env) {
   async function write(fn) {
     if (busy) return null;
     busy = true;
+    ui.notice = null;
     try {
       var res = await fn();
       M.seqView = res.sequence;
@@ -2179,7 +2183,7 @@ function createApp(env) {
     }
   });
   on("click", "seq-edit", function () { ui.editing = { kind: "seqtitle" }; renderAll(); focusKey("seqtitle"); });
-  on("change", "seq-title", function (d) { ui.editing = null; var t = String(d.value || "").trim(); if (!t) { renderAll(); return; } return seqWrite(function (sid, rev) { return api.updateSequence(sid, rev, { title: t }); }); });
+  on("change", "seq-title", function (d) { ui.editing = null; var t = String(d.value || "").trim(); if (!t || t === seqOf(M).title) { renderAll(); return; } return seqWrite(function (sid, rev) { return api.updateSequence(sid, rev, { title: t }); }); });
   on("click", "guard-tab", function (d) { ui.guardTab = d.id; renderAll(); });
   on("click", "add-module", async function () {
     var n = ((M.seqView && M.seqView.modules) || []).length + 1;
@@ -2190,8 +2194,9 @@ function createApp(env) {
   on("click", "module-edit", function (d) { ui.editing = { kind: "module", id: num(d.id) }; renderAll(); focusKey("modtitle:" + d.id); });
   on("dblclick", "module-edit-dbl", function (d) { ui.editing = { kind: "module", id: num(d.id) }; renderAll(); focusKey("modtitle:" + d.id); });
   on("change", "module-title", function (d) {
-    ui.editing = null; var t = String(d.value || "").trim(); if (!t) { renderAll(); return; }
+    ui.editing = null; var t = String(d.value || "").trim(); var cur = findModule(num(d.id));
     ui.focusOverride = "modedit:" + d.id;
+    if (!t || (cur && cur.title === t)) { renderAll(); return; }
     return seqWrite(function (sid, rev) { return api.updateModule(num(d.id), rev, { title: t }); });
   });
   on("click", "module-move", function (d) { ui.focusOverride = "module:" + d.id + ":" + d.val; return seqWrite(function (sid, rev) { return api.moveModule(num(d.id), rev, d.val); }); });
@@ -2211,7 +2216,12 @@ function createApp(env) {
     return seqWrite(function (sid, rev) { return api.mergeSlot(num(d.id), rev, flat[i - 1].slot_id); });
   });
   on("click", "slot-label-edit", function (d) { ui.editing = { kind: "slot", id: num(d.id) }; renderAll(); focusKey("slotlabel:" + d.id); });
-  on("change", "slot-label", function (d) { ui.editing = null; ui.focusOverride = "slot:" + d.id; return seqWrite(function (sid, rev) { return api.updateSlot(num(d.id), rev, String(d.value || "").trim() || null); }); });
+  on("change", "slot-label", function (d) {
+    var f = findSlot(num(d.id)), t = String(d.value || "").trim() || null;
+    ui.editing = null; ui.focusOverride = "slot:" + d.id;
+    if (f && (f.slot.label || null) === t) { renderAll(); return; }
+    return seqWrite(function (sid, rev) { return api.updateSlot(num(d.id), rev, t); });
+  });
   // rail: placements
   on("click", "set-cal", function (d) {
     var f = findPlacement(num(d.id)); if (!f) return;
@@ -2287,6 +2297,11 @@ function createApp(env) {
       return;
     }
     if (k === "Enter" && actEl && actEl.getAttribute("data-action") === "view-name") { if (ev.preventDefault) ev.preventDefault(); act("view-commit"); return; }
+    if (k === "Enter" && actEl && ["module-title", "slot-label", "seq-title"].indexOf(actEl.getAttribute("data-action")) >= 0) {
+      if (ev.preventDefault) ev.preventDefault();
+      act(actEl.getAttribute("data-action"), { id: actEl.getAttribute("data-id"), value: actEl.value });
+      return;
+    }
     if (actEl && actEl.getAttribute("data-action") === "sheet-grip" && (k === "ArrowUp" || k === "ArrowDown")) {
       if (ev.preventDefault) ev.preventDefault();
       ui.sheetH = Math.max(20, Math.min(80, ui.sheetH + (k === "ArrowUp" ? 5 : -5))); renderAll();
@@ -2306,7 +2321,14 @@ function createApp(env) {
       var el = R[id]; if (!el || !el.addEventListener) return;
       ["click", "change", "input", "keydown", "dblclick"].forEach(function (type) { el.addEventListener(type, function (ev) { onEvent(type, ev); }); });
     });
-    if (doc.addEventListener) doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape") onKeydown(ev); });
+    if (doc.addEventListener) {
+      doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape") onKeydown(ev); });
+      doc.addEventListener("mousedown", function () { pointerDown = true; }, true);
+      doc.addEventListener("mouseup", function () {
+        pointerDown = false;
+        if (renderPending) setT(function () { if (!pointerDown && renderPending) { renderPending = false; renderAll(); } }, 0);
+      }, true);
+    }
     if (R.sheet && R.sheet.addEventListener) {
       R.sheet.addEventListener("pointerdown", function (ev) {
         var g = ev.target && ev.target.closest ? ev.target.closest(".sheet-grip") : null;
