@@ -107,6 +107,11 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 /* ---- main: rail | slice | drawer ---------------------------------------- */
 .main { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 380px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
 .app.drawer-open .main { grid-template-columns: 380px minmax(0, 1fr) 420px; }
+/* 1280-1599px with the drawer open: 380 + 420 left ~440px for chips, i.e. ONE 220px chip
+   per row. Narrower rail and drawer keep two chips per row (integrator fix). */
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .app.drawer-open .main { grid-template-columns: 340px minmax(0, 1fr) 380px; }
+}
 .rail { overflow: auto; background: var(--panel); border-right: 1px solid var(--border); padding: 0 14px 40px; min-height: 0; }
 .slice { overflow: auto; padding: 0 20px 60px; min-height: 0; }
 .drawer { overflow: auto; background: var(--panel); border-left: 1px solid var(--border); box-shadow: var(--shadow-md); min-height: 0; }
@@ -114,7 +119,7 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 
 /* ---- slice -------------------------------------------------------------- */
 .super-h { position: sticky; top: 0; z-index: 3; margin: 0 -20px; padding: 10px 20px 6px; background: var(--bg); font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); border-bottom: 1px solid var(--border); }
-.stem { margin: 14px 0 22px; }
+.stem { margin: 14px 0 22px; scroll-margin-top: 44px; }   /* clear the sticky super-stem heading */
 .stem-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 0 6px; }
 .stem-h h3 { font-size: 15px; font-weight: 650; }
 .stem-stat { font-size: 12px; color: var(--muted); }
@@ -177,7 +182,7 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .gbar .segs { display: flex; width: 100%; height: 100%; border-radius: 999px; overflow: hidden; }
 .gbar .seg { height: 100%; }
 .seg-deep { background: var(--deep); } .seg-functional { background: var(--functional); } .seg-illuminating { background: var(--illuminating); }
-.tick { position: absolute; top: -4px; width: 2px; height: 20px; background: var(--text); opacity: .75; }
+.tick { position: absolute; top: -4px; width: 2px; margin-left: -1px; height: 20px; background: var(--text); opacity: .75; }
 .glegend { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 11.5px; color: var(--text); }
 .lg { white-space: nowrap; }
 .lg .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; vertical-align: baseline; }
@@ -219,7 +224,8 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .slot-pos { font-weight: 650; color: var(--muted); }
 .slot-label { font-weight: 500; font-style: italic; }
 .slot-label-in { width: 160px; }
-.pl { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
+.pl { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; scroll-margin-top: 230px; }   /* below the sticky Balance panel */
+.prompt { scroll-margin-top: 230px; }
 .slot .pl:first-of-type { border-top: none; margin-top: 4px; padding-top: 0; }
 .pl.flash { animation: flash 1.6s ease-out 1; }
 @keyframes flash { from { background: var(--yellow-bg); } to { background: transparent; } }
@@ -301,6 +307,10 @@ button.linkchip { color: var(--accent); background: var(--accent-soft); border-c
 .skipnote { font-size: 12px; color: var(--yellow-text); }
 .sheet-body { overflow: auto; flex: 1 1 auto; min-height: 0; }
 table.cmp { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
+/* max-width is ignored on table cells, and the table is max-content wide, so a long field value
+   would make its column as wide as the whole sentence. Cap the cell CONTENT instead (integrator fix). */
+.cmp td > *, .cmp .cmp-col > *, .cmp .corner-in { max-width: 320px; }
+.cmp .corner-in { max-width: 170px; }
 .cmp th, .cmp td { padding: 6px 10px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: top; text-align: left; min-width: 200px; max-width: 320px; }
 .cmp thead th { position: sticky; top: 0; background: #fbfbfc; z-index: 2; font-weight: 500; }
 .cmp .corner, .cmp .row-lbl { position: sticky; left: 0; min-width: 150px; max-width: 170px; background: #fbfbfc; z-index: 1; font-weight: 650; font-size: 12px; color: var(--muted); }
@@ -312,9 +322,9 @@ table.cmp { border-collapse: separate; border-spacing: 0; width: max-content; mi
 .cmp-id { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .cmp-stem { font-size: 11.5px; color: var(--muted); }
 .cmp-text { font-size: 12.5px; margin: 2px 0 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.cell-line { white-space: pre-line; margin-bottom: 3px; }
+.cell-line { white-space: pre-line; margin-bottom: 3px; overflow-wrap: anywhere; }
 .tick-ok { color: var(--accent); font-weight: 700; }
-.codes-inline { font-size: 12px; color: var(--muted); }
+.codes-inline { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 
 .foot { flex: none; font-size: 11.5px; color: var(--muted); padding: 3px 20px; background: var(--panel); border-top: 1px solid var(--border); }
 .foot:empty { display: none; }

@@ -1551,7 +1551,7 @@ function renderPlacement(p, M, ctx) {
     '<div class="pl-tools">' + (ctx.multi ? button("Ungroup", { action: "ungroup", id: p.placement_id }, { cls: "tbtn sm", title: "Give this node a slot of its own" }) : "") +
     coPlaceSelect(p, M) +
     button(confirming ? "Confirm remove" : "Remove", { action: "remove-placement", id: p.placement_id }, { cls: "tbtn sm danger", aria: "Remove " + (p.node_id || p.node_id_seen) + " from the sequence", title: confirming ? "Click again to remove. History keeps a record." : "Remove from the sequence" }) +
-    button("Open in drawer", { action: "open-node", id: p.source_key }, { cls: "tbtn sm" }) + "</div></div>";
+    (p.status === "orphaned" ? "" : button("Open in drawer", { action: "open-node", id: p.source_key }, { cls: "tbtn sm" })) + "</div></div>";
 }
 
 function renderSlot(s, mod, M, flat) {
@@ -1778,7 +1778,7 @@ function renderSheet(state, M) {
     return "<tr" + (r.shared ? ' class="shared"' : "") + (sep ? ' data-group-start="' + esc(r.group) + '"' : "") + '><th scope="row" class="row-lbl">' + esc(r.label) + (r.shared ? ' <span class="tag-shared">shared</span>' : "") + "</th>" +
       r.cells.map(function (cell) { return "<td>" + renderCell(r, cell) + "</td>"; }).join("") + "</tr>";
   }).join("");
-  return head + '<div class="sheet-body"><table class="cmp"><thead><tr><th class="corner" scope="col">' + (cmp.shared_ccss.length || cmp.shared_lessons.length ? "Shared: " + esc(cmp.shared_ccss.concat(cmp.shared_lessons).join(", ")) : "No shared standards or lessons") + "</th>" + cols + "</tr></thead><tbody>" + body + "</tbody></table></div>";
+  return head + '<div class="sheet-body"><table class="cmp"><thead><tr><th class="corner" scope="col"><div class="corner-in">' + (cmp.shared_ccss.length || cmp.shared_lessons.length ? "Shared: " + esc(cmp.shared_ccss.concat(cmp.shared_lessons).join(", ")) : "No shared standards or lessons") + "</div></th>" + cols + "</tr></thead><tbody>" + body + "</tbody></table></div>";
 }
 
 /* ---- notices and toasts ------------------------------------------------------------ */
@@ -1901,11 +1901,15 @@ function createApp(env) {
       ui.scrollTo = null;
     }
   }
-  var pointerDown = false, renderPending = false;
+  var pointerDown = false, pointerDownAt = 0, renderPending = false;
   function renderAll() {
     if (!M.slice) return;
     // Do not swap the DOM between mousedown and mouseup: the browser would drop the click.
-    if (pointerDown) { renderPending = true; return; }
+    // A native <select> menu can swallow the mouseup, so the guard expires after 1.5 s and
+    // any change event ends it (integrator fix: otherwise the page stopped re-rendering).
+    if (pointerDown && Date.now() - pointerDownAt > 1500) pointerDown = false;
+    if (pointerDown) { renderPending = true; setT(function () { if (renderPending) renderAll(); }, 1600); return; }
+    renderPending = false;
     fixTarget();
     M.vis = visibleSlice(M.slice, state, M.seqView);
     M.demo.persisted = !!api.persisted;
@@ -2317,6 +2321,7 @@ function createApp(env) {
     if (ui.open.stemsmenu) { ui.open.stemsmenu = false; renderAll(); return true; }
     if (state.node) { closeDrawer(); return true; }
     if (state.sheet) { act("close-sheet"); return true; }
+    if (ui.railOpen) { ui.railOpen = false; renderAll(); return true; }      // the narrow-screen rail overlay
     return false;
   }
   function onKeydown(ev) {
@@ -2345,6 +2350,7 @@ function createApp(env) {
   }
   function onEvent(type, ev) {
     if (type === "keydown") return onKeydown(ev);
+    if (type === "change") pointerDown = false;
     var t = ev.target, el = t && t.closest ? t.closest("[data-action]") : null;
     if (!el) return;
     var name = el.getAttribute("data-action"), spec = ACTIONS[name];
@@ -2358,8 +2364,10 @@ function createApp(env) {
       ["click", "change", "input", "keydown", "dblclick"].forEach(function (type) { el.addEventListener(type, function (ev) { onEvent(type, ev); }); });
     });
     if (doc.addEventListener) {
-      doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape") onKeydown(ev); });
-      doc.addEventListener("mousedown", function () { pointerDown = true; }, true);
+      // Regions already handle Esc (and preventDefault when they closed something); the document
+      // listener only covers focus outside the regions, so one Esc never closes two layers.
+      doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !ev.defaultPrevented) onKeydown(ev); });
+      doc.addEventListener("mousedown", function () { pointerDown = true; pointerDownAt = Date.now(); }, true);
       doc.addEventListener("mouseup", function () {
         pointerDown = false;
         if (renderPending) setT(function () { if (!pointerDown && renderPending) { renderPending = false; renderAll(); } }, 0);

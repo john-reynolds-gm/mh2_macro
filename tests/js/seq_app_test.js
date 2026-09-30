@@ -802,7 +802,9 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   assert.ok(app.getState().node);
   assert.ok(app.ui.editing); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.ui.editing, null);      // an open inline edit closes first
   assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().node, null); assert.strictEqual(R.drawer.hidden, true);
-  assert.strictEqual(app.getState().sheet, true); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().sheet, false); assert.strictEqual(app.escapeKey(), false);
+  assert.strictEqual(app.getState().sheet, true); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().sheet, false);
+  assert.strictEqual(M.ui.railOpen, true); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(M.ui.railOpen, false);   // then the narrow-screen rail overlay
+  assert.strictEqual(app.escapeKey(), false);
   // -- delegated DOM events reach the same handlers
   const before = M.ui.railOpen;
   R.hdr.listeners.click[0]({ target: fakeTarget({ "data-action": "toggle-rail" }) }); await new Promise((r) => setImmediate(r));
@@ -842,6 +844,26 @@ test("smoke: HTTP-style boot restores node, compare and sheet from the URL; owne
   // a bad node key in the URL is dropped without breaking boot
   const app2 = A.createApp({ doc: makeDoc(), api, hist: null, loc: { search: "?node=nope" }, storage: null, setTimeout() { return 0; } });
   await app2.init(); assert.strictEqual(app2.getState().node, null);
+});
+
+test("integrator: one Esc closes one layer (region + document listeners); a change event ends the mouse guard", async () => {
+  const doc = makeDoc(), R = doc.els;
+  const api = new DemoApi(small(), memStorage());
+  const app = A.createApp({ doc, api, hist: null, loc: { search: "" }, storage: null, setTimeout() { return 0; } });
+  await app.init();
+  await app.act("open-node", { id: K.w10 }); await app.act("toggle-compare", { id: K.w10 }); await app.act("open-sheet");
+  assert.ok(app.getState().node && app.getState().sheet);
+  let prevented = false;
+  const ev = { key: "Escape", target: fakeTarget({}), get defaultPrevented() { return prevented; }, preventDefault() { prevented = true; } };
+  R.drawer.listeners.keydown[0](ev);            // the region listener runs first (bubbling) ...
+  doc.listeners.keydown.forEach((f) => f(ev));   // ... then the document listener sees defaultPrevented
+  assert.strictEqual(app.getState().node, null); assert.strictEqual(app.getState().sheet, true, "the sheet must survive the same Esc");
+  // a mousedown whose mouseup never arrives (native select menu) must not freeze rendering
+  doc.listeners.mousedown.forEach((f) => f({}));
+  const before = R.toolbar.innerHTML;
+  R.toolbar.listeners.change[0]({ target: fakeTarget({ "data-action": "stem-visible", "data-id": "TIM" }, undefined) });
+  await new Promise((r) => setImmediate(r));
+  assert.notStrictEqual(R.toolbar.innerHTML, before, "the change re-rendered");
 });
 
 /* --------------------------------------------------------------- runner ---- */
