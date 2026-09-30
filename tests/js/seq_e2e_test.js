@@ -279,6 +279,8 @@ function makeDoc() {
   fs.copyFileSync(cfg.db, path.join(dir, "mh2.db"));
   if (fs.existsSync(cfg.seq)) fs.copyFileSync(cfg.seq, path.join(dir, "mh2_seq.db"));
   let H = null, failed = 0;
+  const bail = () => { try { if (H) H.child.kill(); fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { /* ignore */ } process.exit(130); };
+  process.on("SIGINT", bail); process.on("SIGTERM", bail);
   const ok = (name) => console.log("ok " + name);
   const check = async (name, fn) => { try { await fn(); ok(name); } catch (e) { failed += 1; console.log("FAIL " + name + "\n" + (e && e.stack ? e.stack : e)); } };
   try {
