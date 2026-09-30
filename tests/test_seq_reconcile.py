@@ -10,6 +10,20 @@ import sys
 import tempfile
 from pathlib import Path
 
+
+# Integrator: temp dirs (real-DB copies are ~150 MB each) are removed at exit.
+import atexit as _atexit  # noqa: E402
+_TMPDIRS = []
+
+
+def _mkdtemp(**kw):
+    d = tempfile.mkdtemp(**kw)
+    _TMPDIRS.append(d)
+    return d
+
+
+_atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True) for d in _TMPDIRS])
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -106,7 +120,7 @@ def test_cli_on_temp_copies_writes_report_and_no_rows():
     T.mh2_edit(mh2, "UPDATE node_grade_kind SET kind='state_extension' WHERE node_id='COM-0012'")
     T.mh2_edit(mh2, "UPDATE nodes SET concept_skill='Renamed heading' WHERE node_id='WHO-0010'")
     before = _table_hashes(ctx.seq_path)
-    out = Path(tempfile.mkdtemp()) / "placement_reconcile.txt"
+    out = Path(_mkdtemp()) / "placement_reconcile.txt"
     assert R.main(["--db", str(ctx.mh2_path), "--seq-db", str(ctx.seq_path), "--out", str(out)]) == 0
     assert _table_hashes(ctx.seq_path) == before, "the CLI must write no rows"
     text = out.read_text()
@@ -117,7 +131,7 @@ def test_cli_on_temp_copies_writes_report_and_no_rows():
     assert "stem WHO: 1 of 3 placements orphaned" in text
     assert "orphaned: 1    grade_changed: 1    relabelled: 1" in text
     # --out as a directory
-    d = Path(tempfile.mkdtemp())
+    d = Path(_mkdtemp())
     assert R.main(["--db", str(ctx.mh2_path), "--seq-db", str(ctx.seq_path), "--out", str(d)]) == 0
     assert (d / "placement_reconcile.txt").exists()
     # the database files are opened read-only: a read-only open cannot have been written
@@ -128,7 +142,7 @@ def test_cli_on_temp_copies_writes_report_and_no_rows():
 def test_cli_without_placement_tables():
     ctx, mh2 = T.make_env()
     sqlite3.connect(ctx.seq_path).close()          # empty file
-    out = Path(tempfile.mkdtemp()) / "r.txt"
+    out = Path(_mkdtemp()) / "r.txt"
     assert R.main(["--db", str(mh2), "--seq-db", str(ctx.seq_path), "--out", str(out)]) == 0
     assert "no placement tables" in out.read_text()
 
@@ -146,7 +160,7 @@ def test_stem_with_every_placement_orphaned_is_headlined():
     con.execute("DELETE FROM nodes WHERE stem_id='COM'")
     con.commit()
     con.close()
-    out = Path(tempfile.mkdtemp()) / "r.txt"
+    out = Path(_mkdtemp()) / "r.txt"
     R.main(["--db", str(mh2), "--seq-db", str(ctx.seq_path), "--out", str(out)])
     assert "stem COM: 2 of 2 placements orphaned  -- check ingest before acting" in out.read_text()
 
@@ -156,7 +170,7 @@ def test_real_mh2_copy_reword_delete_grade_change():
     if not src.exists():
         print("SKIP real-copy: no", src)
         return
-    d = Path(tempfile.mkdtemp(prefix="seqreal_"))
+    d = Path(_mkdtemp(prefix="seqreal_"))
     mh2 = d / "mh2.db"
     shutil.copy(src, mh2)
     ctx = V.Ctx(mh2, d / "mh2_seq.db")

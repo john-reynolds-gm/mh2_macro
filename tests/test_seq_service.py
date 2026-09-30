@@ -17,6 +17,20 @@ import tempfile
 import types
 from pathlib import Path
 
+
+# Integrator: temp dirs (real-DB copies are ~150 MB each) are removed at exit.
+import atexit as _atexit  # noqa: E402
+_TMPDIRS = []
+
+
+def _mkdtemp(**kw):
+    d = tempfile.mkdtemp(**kw)
+    _TMPDIRS.append(d)
+    return d
+
+
+_atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True) for d in _TMPDIRS])
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -301,7 +315,7 @@ def make_mh2(dirpath):
 
 
 def make_env():
-    d = tempfile.mkdtemp(prefix="seqsvc_")
+    d = _mkdtemp(prefix="seqsvc_")
     mh2 = make_mh2(d)
     return V.Ctx(mh2, Path(d) / "mh2_seq.db"), mh2
 

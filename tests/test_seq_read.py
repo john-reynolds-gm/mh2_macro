@@ -16,6 +16,20 @@ import traceback
 from collections import Counter
 from pathlib import Path
 
+
+# Integrator: temp dirs (real-DB copies are ~150 MB each) are removed at exit.
+import atexit as _atexit  # noqa: E402
+_TMPDIRS = []
+
+
+def _mkdtemp(**kw):
+    d = tempfile.mkdtemp(**kw)
+    _TMPDIRS.append(d)
+    return d
+
+
+_atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True) for d in _TMPDIRS])
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -44,7 +58,7 @@ def con():
     if "con" not in _CACHE:
         if not Path(config.DB).exists():
             raise Skip("no real mh2.db")
-        dst = Path(tempfile.mkdtemp()) / "mh2.db"
+        dst = Path(_mkdtemp()) / "mh2.db"
         shutil.copy(config.DB, dst)
         _CACHE["con"] = R.connect_ro(dst)
     return _CACHE["con"]

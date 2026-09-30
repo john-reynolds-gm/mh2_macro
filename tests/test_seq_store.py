@@ -9,6 +9,20 @@ import sys
 import tempfile
 from pathlib import Path
 
+
+# Integrator: temp dirs (real-DB copies are ~150 MB each) are removed at exit.
+import atexit as _atexit  # noqa: E402
+_TMPDIRS = []
+
+
+def _mkdtemp(**kw):
+    d = tempfile.mkdtemp(**kw)
+    _TMPDIRS.append(d)
+    return d
+
+
+_atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True) for d in _TMPDIRS])
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -17,7 +31,7 @@ from mh2 import seq_store as S  # noqa: E402
 
 
 def fresh():
-    d = tempfile.mkdtemp(prefix="seqstore_")
+    d = _mkdtemp(prefix="seqstore_")
     con = S.connect(Path(d) / "mh2_seq.db")
     S.ensure_schema(con)
     return con
@@ -80,7 +94,7 @@ def test_ensure_schema_seven_tables_and_review_tables_untouched():
     if not src.exists():
         print("SKIP real-copy half: no", src)
         return
-    d = tempfile.mkdtemp()
+    d = _mkdtemp()
     cp = Path(d) / "mh2_seq.db"
     shutil.copy(src, cp)
     raw = sqlite3.connect(cp)
