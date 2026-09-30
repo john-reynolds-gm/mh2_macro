@@ -638,6 +638,15 @@ test("renderHeader: grade picker text, demo badge, owner banner", () => {
   M.demo.source = "mh2.db"; assert.ok(A.renderFooter(M).includes("data built from mh2.db"));
 });
 
+test("sequenceToCsv: order, teacher labels, quoting, formula guard", () => {
+  const v = viewWith([{ calibration: "deep", period_estimate: 1.5, node_text: 'He said "hi", ok', differentiation_note: "line1\nline2" }, { calibration: null, period_estimate: null, node_text: "=SUM(A1)" }]);
+  const rows = A.sequenceToCsv(v).split("\r\n");
+  assert.strictEqual(rows[0], "module,module_title,slot,slot_label,node_id,node_text,stem,calibration,teacher_label,periods,note,status");
+  assert.ok(rows[1].startsWith('1,M1 Place value,1,,N-0,"He said ""hi"", ok",Stem,Deep,Know it,1.5,"line1'));
+  assert.ok(rows[2].includes("'=SUM(A1)"));
+  assert.strictEqual(A.sequenceToCsv(null), rows[0] + "\r\n");
+});
+
 /* ------------------------------------------------ stub-DOM smoke run ---- */
 
 function makeDoc() {
@@ -786,6 +795,9 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   await act("show-all-hidden"); assert.ok(R.slice.innerHTML.includes("TIM-0011"));
   await act("stem-collapse", { id: "TIM" }); assert.ok(R.slice.innerHTML.includes("hidden while collapsed")); await act("goto-stem", { id: "TIM" }); assert.ok(!R.slice.innerHTML.includes("hidden while collapsed"));
   await act("cs-hide", { id: "TIM:c22eed5f" }); assert.ok(R.toolbar.innerHTML.includes("concept/skills")); await act("show-all-hidden");
+  await act("stems-collapse-all"); assert.strictEqual((R.slice.innerHTML.match(/hidden while collapsed/g) || []).length, 2);
+  await act("stems-expand-all"); assert.ok(!R.slice.innerHTML.includes("hidden while collapsed"));
+  await act("export-csv"); assert.ok(app.ui.lastCsv.includes("WHO-0010") && app.ui.lastCsv.split("\r\n").length > 4);
   // -- Esc closes drawer, then sheet
   assert.ok(app.getState().node);
   assert.ok(app.ui.editing); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.ui.editing, null);      // an open inline edit closes first

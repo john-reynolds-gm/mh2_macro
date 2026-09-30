@@ -43,7 +43,7 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .5; }
 .grow { flex: 1 1 auto; }
 .muted { color: var(--muted); }
-.lbl { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 4px; }
+.lbl { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: #5a5f6e; margin-right: 4px; }
 
 /* focus ring, as in the audit page */
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
@@ -141,7 +141,7 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .c-id { font-size: 11px; color: var(--muted); font-weight: 600; }
 .c-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; }
 .c-pills, .c-badges { display: flex; flex-wrap: wrap; gap: 3px; }
-.gp { display: inline-block; font-size: 10.5px; padding: 0 6px; border-radius: 999px; background: var(--chip-bg); color: var(--muted); font-weight: 600; white-space: nowrap; }
+.gp { display: inline-block; font-size: 10.5px; padding: 0 6px; border-radius: 999px; background: var(--chip-bg); color: #5a5f6e; font-weight: 600; white-space: nowrap; }
 .gp.cur { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-soft-bd); }
 .c-actions { display: flex; gap: 4px; padding: 3px 8px 6px; border-top: 1px solid var(--border); }
 .cbtn { font-size: 11.5px; padding: 1px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); }
@@ -180,11 +180,9 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .gsub { font-size: 11.5px; color: var(--muted); font-style: italic; margin: 2px 0 6px; }
 .gblock { margin-bottom: 8px; }
 .glabel { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 3px; }
-.gbar { position: relative; display: flex; height: 12px; border-radius: 999px; background: var(--chip-bg); overflow: visible; }
+.gbar { position: relative; height: 12px; border-radius: 999px; background: var(--chip-bg); }
+.gbar .segs { display: flex; width: 100%; height: 100%; border-radius: 999px; overflow: hidden; }
 .gbar .seg { height: 100%; }
-.gbar .seg:first-child { border-radius: 999px 0 0 999px; }
-.gbar .seg:last-child { border-radius: 0 999px 999px 0; }
-.gbar .seg:only-child { border-radius: 999px; }
 .seg-deep { background: var(--deep); } .seg-functional { background: var(--functional); } .seg-illuminating { background: var(--illuminating); }
 .tick { position: absolute; top: -4px; width: 2px; height: 20px; background: var(--text); opacity: .75; }
 .glegend { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 11.5px; color: var(--text); }
@@ -267,7 +265,7 @@ select.mini { padding: 2px 6px; font-size: 12px; max-width: 190px; }
 .drawer-h h2 { font-size: 15px; }
 .drawer-body { padding: 0 0 40px; }
 .d-cs { background: var(--accent-soft); border-bottom: 1px solid var(--accent-soft-bd); padding: 10px 14px; }
-.d-k { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.d-k { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: #5a5f6e; }
 .d-cs-t { font-weight: 650; margin: 2px 0; }
 .d-goal { white-space: pre-line; font-size: 13px; }
 .d-node, .d-place, .d-else, .d-strip, .d-sec { padding: 10px 14px; border-bottom: 1px solid var(--border); }
@@ -581,6 +579,28 @@ function lensIsDefault(state, slice) {
   return encodeState(Object.assign({}, state, { node: null, compare: [], sheet: false }), slice) === "";
 }
 
+/* ---- export: the ordered sequence as CSV (pure) ------------------------ */
+
+function csvCell(v) {
+  var t = v === null || v === undefined ? "" : String(v);
+  if (/^[=+\-@]/.test(t)) t = "'" + t;                       // keep spreadsheets from reading text as a formula
+  return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+}
+
+/** One row per placement, in module / slot / placement order. */
+function sequenceToCsv(view) {
+  var rows = [["module", "module_title", "slot", "slot_label", "node_id", "node_text", "stem", "calibration", "teacher_label", "periods", "note", "status"]];
+  ((view && view.modules) || []).forEach(function (m) {
+    m.slots.forEach(function (s) {
+      s.placements.forEach(function (p) {
+        rows.push([m.position, m.title, s.position, s.label, p.node_id || p.node_id_seen, p.node_text, p.stem_name,
+          p.calibration ? CAL_LABEL[p.calibration] : "", p.calibration ? CAL_TEACHER[p.calibration] : "", p.period_estimate, p.differentiation_note, p.status]);
+      });
+    });
+  });
+  return rows.map(function (r) { return r.map(csvCell).join(","); }).join("\r\n") + "\r\n";
+}
+
 /* ---- small state reducers (return a NEW state; tested in node) --------- */
 
 function toggleCompare(state, key) {
@@ -793,7 +813,7 @@ function hintReason(h) {
   if (!h) return "";
   if (h.unit && h.unit !== "period") return "in " + h.unit + "s; not converted";
   if (h.basis === "ungraded_multi_grade") return "estimate covers several grades";
-  if (h.qualifier === "part_of") return "≤ " + fmtNum(h.high !== null && h.high !== undefined ? h.high : h.low);
+  if (h.qualifier === "part_of") return "\u2264 " + fmtNum(h.high !== null && h.high !== undefined ? h.high : h.low);
   return "";
 }
 
@@ -825,13 +845,13 @@ function byOrder(a, b) { return a.order_key - b.order_key; }
 
 function nowIso() { return new Date().toISOString(); }
 function gshort(g) { return GRADE_SHORT[g] || g; }
-function pct(x) { return x === null || x === undefined ? "–" : String(Math.round(x * 1000) / 10) + "%"; }
+function pct(x) { return x === null || x === undefined ? "\u2013" : String(Math.round(x * 1000) / 10) + "%"; }
 function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
 function firstLine(s) { return String(s || "").split("\n")[0]; }
 
 /** "Also placed in G1 · M3 Place value; G3 · M1 ..." from PlacedRef[]. */
 function placedElsewhereText(refs) {
-  return (refs || []).map(function (r) { return gshort(r.grade) + " · " + r.module_title; }).join("; ");
+  return (refs || []).map(function (r) { return gshort(r.grade) + " \u00b7 " + r.module_title; }).join("; ");
 }
 
 /* ========================================================================
@@ -1459,11 +1479,11 @@ class DemoApi {
         detail: "Node no longer in the ladder as placed; was: " + p.node_text_seen + " (" + (p.ladder_file_seen || "unknown file") + ")" });
     }
     if (p.status === "grade_changed") {
-      b.push({ code: "grade_changed", tier: "structural", label: "was " + p.grade_kind_seen + " → now " + p.state_now, refs: [], partners: [],
+      b.push({ code: "grade_changed", tier: "structural", label: "was " + p.grade_kind_seen + " \u2192 now " + p.state_now, refs: [], partners: [],
         detail: "The grade ruling changed since this was placed" });
     }
     if (p.status !== "orphaned" && p.is_bridge) {
-      b.push({ code: "bridge", tier: "structural", label: "bridge · " + (p.state_now || p.grade_kind_seen), refs: [], partners: [],
+      b.push({ code: "bridge", tier: "structural", label: "bridge \u00b7 " + (p.state_now || p.grade_kind_seen), refs: [], partners: [],
         detail: "Placed outside this grade's inventory on purpose" });
     }
     v.badges = b;
@@ -1558,7 +1578,7 @@ function gradePills(grades, cur) {
 function gradeOptionLabel(gi, M) {
   var placed = gi.sequence ? gi.sequence.n_placements : 0;
   if (gi.grade === M.grade && M.seqView) placed = M.seqView.guardrail ? M.seqView.guardrail.n : placed;
-  return gi.short + " · " + gi.owed_nodes + " owed · " + placed + " placed";
+  return gi.short + " \u00b7 " + gi.owed_nodes + " owed \u00b7 " + placed + " placed";
 }
 
 function renderHeader(state, M) {
@@ -1569,7 +1589,7 @@ function renderHeader(state, M) {
   var ks = M.gradesInfo ? M.gradesInfo.kind_source : (M.slice && M.slice.kind_source);
   var last = (M.slice && M.slice.ladders_last_read) || (M.gradesInfo && M.gradesInfo.ladders_last_read) || "unknown";
   var stamp = '<span class="stamp" title="Kind source: ' + esc(ks) + "; ladders last read: " + esc(last) + '">Ladders read ' +
-    esc(String(last).slice(0, 16)) + " · kinds: " + (ks === "grade_type" ? "grade rulings" : "fallback (kind pending)") + "</span>";
+    esc(String(last).slice(0, 16)) + " \u00b7 kinds: " + (ks === "grade_type" ? "grade rulings" : "fallback (kind pending)") + "</span>";
   var who = "";
   if (M.whoami) {
     who = '<span class="who">Signed in as <b>' + esc(M.whoami.user) + "</b></span>";
@@ -1593,7 +1613,7 @@ function renderHeader(state, M) {
 function renderBanner(state, M) {
   var out = "", seq = seqOf(M);
   if (seq && M.whoami && M.whoami.user && seq.owner && seq.owner !== M.whoami.user) {
-    out += '<div class="banner owner">You are editing <b>' + esc(seq.owner) + "</b>’s sequence.</div>";
+    out += '<div class="banner owner">You are editing <b>' + esc(seq.owner) + "</b>\u2019s sequence.</div>";
   }
   if (M.demo.on && !M.demo.persisted) {
     out += '<div class="banner warn">Changes will not be kept after reload.</div>';
@@ -1631,13 +1651,13 @@ function renderStemsMenu(state, M) {
     });
   });
   var open = isOpen(M, "stemsmenu", false);
-  return '<span class="menu-wrap">' + button("Stems" + (nh ? " (" + nh + " hidden)" : "") + " ▾", { action: "disclose", id: "stemsmenu" }, { cls: "tbtn", pressed: open, aria: "Show or hide stems and concept/skills" }) +
-    (open ? '<div class="menu-panel" role="group" aria-label="Stems">' + rows + '<div class="menu-foot">' + button("Show all", { action: "show-all-hidden" }, { cls: "linklike" }) + "</div></div>" : "") + "</span>";
+  return '<span class="menu-wrap">' + button("Stems" + (nh ? " (" + nh + " hidden)" : "") + " \u25be", { action: "disclose", id: "stemsmenu" }, { cls: "tbtn", pressed: open, aria: "Show or hide stems and concept/skills" }) +
+    (open ? '<div class="menu-panel" role="group" aria-label="Stems">' + rows + '<div class="menu-foot">' + button("Show all hidden", { action: "show-all-hidden" }, { cls: "linklike" }) + " " + button("Expand all", { action: "stems-expand-all" }, { cls: "linklike" }) + " " + button("Collapse all", { action: "stems-collapse-all" }, { cls: "linklike" }) + "</div></div>" : "") + "</span>";
 }
 
 function renderViewsControls(state, M) {
   var views = M.views || [], ui = M.ui, sel = ui.selectedViewId;
-  var opts = '<option value="">Saved views…</option>' + views.map(function (v) {
+  var opts = '<option value="">Saved views\u2026</option>' + views.map(function (v) {
     return '<option value="' + esc(v.view_id) + '"' + (String(v.view_id) === String(sel) ? " selected" : "") + ">" + esc(v.name) + "</option>";
   }).join("");
   var selView = views.filter(function (v) { return String(v.view_id) === String(sel); })[0];
@@ -1646,9 +1666,9 @@ function renderViewsControls(state, M) {
     out += '<input type="text" class="view-name" maxlength="80" placeholder="View name" value="' + esc(ui.viewMode === "rename" && selView ? selView.name : "") + '"' + da({ action: "view-name" }) + fk("view-name") + ' aria-label="View name">' +
       button("Save", { action: "view-commit" }, { cls: "tbtn primary" }) + button("Cancel", { action: "view-cancel" }, { cls: "tbtn" });
   } else if (ui.viewMode === "delete" && selView) {
-    out += '<span class="confirm-inline">Delete “' + esc(selView.name) + "”? " + button("Yes, delete", { action: "view-delete-yes" }, { cls: "tbtn danger" }) + button("Keep", { action: "view-cancel" }, { cls: "tbtn" }) + "</span>";
+    out += '<span class="confirm-inline">Delete \u201c' + esc(selView.name) + "\u201d? " + button("Yes, delete", { action: "view-delete-yes" }, { cls: "tbtn danger" }) + button("Keep", { action: "view-cancel" }, { cls: "tbtn" }) + "</span>";
   } else {
-    out += button("Save as…", { action: "view-save" }, { cls: "tbtn" }) +
+    out += button("Save as\u2026", { action: "view-save" }, { cls: "tbtn" }) +
       button("Rename", { action: "view-rename" }, { cls: "tbtn", disabled: !selView }) +
       button("Delete", { action: "view-delete" }, { cls: "tbtn", disabled: !selView });
   }
@@ -1663,7 +1683,7 @@ function renderToolbar(state, M) {
   return '<div class="tb-row"><span class="tb-group" role="group" aria-label="View toggles">' + toggles + "</span>" +
     renderStemsMenu(state, M) + renderViewsControls(state, M) +
     button("Reset view", { action: "reset-view" }, { cls: "tbtn", disabled: lensIsDefault(state, M.slice) }) +
-    '<span class="grow"></span><span class="counts" aria-live="polite">shown <b>' + vis.counts.shown_chips + "</b> of " + total + " chips · " +
+    '<span class="grow"></span><span class="counts" aria-live="polite">shown <b>' + vis.counts.shown_chips + "</b> of " + total + " chips \u00b7 " +
     vis.counts.shown_cs + " concept/skills</span></div>";
 }
 
@@ -1681,12 +1701,12 @@ function renderChip(n, state, M) {
   var sb = (M.seqView && M.seqView.slice_badges && M.seqView.slice_badges[n.source_key]) || [];
   var kind = (n.badges || []).filter(function (b) { return b.code !== "shared_code" || state.pairings; }).map(badgeHtml).join("");
   var pills = "";
-  if (ph) pills += '<span class="pill here" title="Placed in this sequence: ' + esc(ph.module_title) + ", slot " + esc(ph.slot_position) + '">M' + esc(ph.module_position) + " · " + esc(ph.slot_position) + "</span>";
+  if (ph) pills += '<span class="pill here" title="Placed in this sequence: ' + esc(ph.module_title) + ", slot " + esc(ph.slot_position) + '">M' + esc(ph.module_position) + " \u00b7 " + esc(ph.slot_position) + "</span>";
   if (ph && ph.is_bridge) pills += '<span class="pill bridge">bridge</span>';
   var inCmp = state.compare.indexOf(n.source_key) >= 0, full = state.compare.length >= COMPARE_MAX && !inCmp;
   var act = "";
   if (!ph) act += button("+ Place", { action: "place-chip", id: n.source_key }, { cls: "cbtn", aria: "Place " + n.node_id + " in the sequence", title: "Place in the target module" });
-  act += button(inCmp ? "✓ compare" : "⊕ compare", { action: "toggle-compare", id: n.source_key },
+  act += button(inCmp ? "\u2713 compare" : "\u2295 compare", { action: "toggle-compare", id: n.source_key },
     { cls: "cbtn", pressed: inCmp, disabled: full, aria: (inCmp ? "Remove " : "Add ") + n.node_id + (inCmp ? " from" : " to") + " compare", title: full ? "Compare holds at most 4" : "Compare up to 4 nodes" });
   return '<li class="chip-li"><div class="' + cls.join(" ") + '" data-node="' + esc(n.source_key) + '">' +
     '<button type="button" class="chip-body"' + da({ action: "open-node", id: n.source_key }) + fk("chip:" + n.source_key) + ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '">' +
@@ -1705,7 +1725,7 @@ function renderStrip(c, state, M) {
     goal = '<div class="goal' + (open ? "" : " clamp") + '">' + esc(c.goal) + "</div>" +
       (long ? button(open ? "less" : "more", { action: "goal-toggle", id: c.cs_id }, { cls: "linklike", aria: (open ? "Collapse" : "Expand") + " the goal" }) : "");
   }
-  var chips = c.nodes.map(function (n, i) { return (i ? '<li class="arrow" aria-hidden="true">→</li>' : "") + renderChip(n, state, M); }).join("");
+  var chips = c.nodes.map(function (n, i) { return (i ? '<li class="arrow" aria-hidden="true">\u2192</li>' : "") + renderChip(n, state, M); }).join("");
   return '<div class="cs" data-cs="' + esc(c.cs_id) + '"><div class="cs-h"><div class="cs-title">' + esc(c.label_display) + "</div>" +
     button("Hide", { action: "cs-hide", id: c.cs_id }, { cls: "linklike", aria: "Hide concept/skill " + c.label_display }) + "</div>" + goal +
     '<ol class="strip">' + chips + "</ol></div>";
@@ -1730,13 +1750,13 @@ function renderSlice(state, M) {
     var stems = ss.stems.map(function (st, i) {
       var stat = stemStats(full[st.stem_id], M), isC = !!collapsed[st.stem_id];
       var head = '<header class="stem-h"><h3>' + esc(st.stem_name) + "</h3>" +
-        '<span class="stem-stat">' + stat.inGrade + " in grade · " + stat.unplaced + " owed unplaced</span><span class=\"grow\"></span>" +
-        button("▲", { action: "stem-move", id: st.stem_id, val: "-1" }, { cls: "ibtn", aria: "Move stem " + st.stem_name + " up", title: "Move stem up", disabled: i === 0, focus: "stem:" + st.stem_id + ":up" }) +
-        button("▼", { action: "stem-move", id: st.stem_id, val: "1" }, { cls: "ibtn", aria: "Move stem " + st.stem_name + " down", title: "Move stem down", disabled: i === ss.stems.length - 1, focus: "stem:" + st.stem_id + ":down" }) +
+        '<span class="stem-stat">' + stat.inGrade + " in grade \u00b7 " + stat.unplaced + " owed unplaced</span><span class=\"grow\"></span>" +
+        button("\u25b2", { action: "stem-move", id: st.stem_id, val: "-1" }, { cls: "ibtn", aria: "Move stem " + st.stem_name + " up", title: "Move stem up", disabled: i === 0, focus: "stem:" + st.stem_id + ":up" }) +
+        button("\u25bc", { action: "stem-move", id: st.stem_id, val: "1" }, { cls: "ibtn", aria: "Move stem " + st.stem_name + " down", title: "Move stem down", disabled: i === ss.stems.length - 1, focus: "stem:" + st.stem_id + ":down" }) +
         button(isC ? "Expand" : "Collapse", { action: "stem-collapse", id: st.stem_id }, { cls: "tbtn sm", pressed: !isC, aria: (isC ? "Expand " : "Collapse ") + st.stem_name }) +
         button("Hide", { action: "stem-hide", id: st.stem_id }, { cls: "tbtn sm", aria: "Hide stem " + st.stem_name }) + "</header>";
       var body = isC
-        ? '<div class="stem-collapsed">' + plural(st.concept_skills.length, "concept/skill") + " · " + plural(st.concept_skills.reduce(function (a, c) { return a + c.nodes.length; }, 0), "chip") + " hidden while collapsed.</div>"
+        ? '<div class="stem-collapsed">' + plural(st.concept_skills.length, "concept/skill") + " \u00b7 " + plural(st.concept_skills.reduce(function (a, c) { return a + c.nodes.length; }, 0), "chip") + " hidden while collapsed.</div>"
         : st.concept_skills.map(function (c) { return renderStrip(c, state, M); }).join("");
       return '<section class="stem" data-stem="' + esc(st.stem_id) + '">' + head + body + "</section>";
     }).join("");
@@ -1769,21 +1789,21 @@ function renderGuardrailBars(g) {
       var val = countMode ? g.counts[l] + " " + (g.counts[l] === 1 ? "placement" : "placements") : fmtNum(g.periods[l]) + " periods";
       var ref = countMode ? g.count_target[l] : (g.show_time_targets ? g.time_target[l] : null);
       return '<span class="lg"><i class="sw seg-' + l + '"></i>' + CAL_LABEL[l] + ' <span class="teach">(' + CAL_TEACHER[l] + ")</span> <b>" + esc(val) + "</b> " +
-        (share === null || share === undefined ? "" : "· " + pct(share)) + (ref !== null && ref !== undefined ? ' <span class="ref">ref ' + pct(ref) + "</span>" : "") + "</span>";
+        (share === null || share === undefined ? "" : "\u00b7 " + pct(share)) + (ref !== null && ref !== undefined ? ' <span class="ref">ref ' + pct(ref) + "</span>" : "") + "</span>";
     }).join("");
   }
   var cCap = g.n_calibrated > 0
-    ? "Calibrated " + g.n_calibrated + " of " + g.n + " placements · unset " + g.counts.unset
-    : (g.n > 0 ? "Nothing calibrated yet · unset " + g.counts.unset : "No placements yet");
+    ? "Calibrated " + g.n_calibrated + " of " + g.n + " placements \u00b7 unset " + g.counts.unset
+    : (g.n > 0 ? "Nothing calibrated yet \u00b7 unset " + g.counts.unset : "No placements yet");
   var tCap = g.n > 0
-    ? "Periods known for " + g.n_timed + " of " + g.n + " placements · total " + fmtNum(g.total_periods) + " periods" + (g.show_time_targets ? "" : " (reference marks shown at ≥ " + Math.round(g.time_mark_min_coverage * 100) + "% coverage)")
+    ? "Periods known for " + g.n_timed + " of " + g.n + " placements \u00b7 total " + fmtNum(g.total_periods) + " periods" + (g.show_time_targets ? "" : " (reference marks shown at \u2265 " + Math.round(g.time_mark_min_coverage * 100) + "% coverage)")
     : "No placements yet";
   return '<div class="gsub">Reference marks, not quotas</div>' +
     '<div class="gblock"><div class="glabel">Placements by level</div>' +
-    '<div class="gbar" role="img" aria-label="' + esc(cCap) + '">' + seg(g.count_share) + ticks(g.count_target, "tick-count") + "</div>" +
+    '<div class="gbar" role="img" aria-label="' + esc(cCap) + '"><span class="segs">' + seg(g.count_share) + "</span>" + ticks(g.count_target, "tick-count") + "</div>" +
     '<div class="glegend">' + legend(true) + '</div><div class="gcap">' + esc(cCap) + "</div></div>" +
     '<div class="gblock"><div class="glabel">Time by level</div>' +
-    '<div class="gbar" role="img" aria-label="' + esc(tCap) + '">' + seg(g.time_share) + (g.show_time_targets ? ticks(g.time_target, "tick-time") : "") + "</div>" +
+    '<div class="gbar" role="img" aria-label="' + esc(tCap) + '"><span class="segs">' + seg(g.time_share) + "</span>" + (g.show_time_targets ? ticks(g.time_target, "tick-time") : "") + "</div>" +
     '<div class="glegend">' + legend(false) + '</div><div class="gcap">' + esc(tCap) + "</div></div>";
 }
 
@@ -1819,7 +1839,7 @@ function renderAttention(state, M) {
   if (!items.length) return "";
   var open = isOpen(M, "attention", true), body = "", lastMod = null;
   items.forEach(function (it) {
-    if (it.module_id !== lastMod) { body += '<div class="att-mod">M' + esc(it.module_position) + " · " + esc(it.module_title) + "</div>"; lastMod = it.module_id; }
+    if (it.module_id !== lastMod) { body += '<div class="att-mod">M' + esc(it.module_position) + " \u00b7 " + esc(it.module_title) + "</div>"; lastMod = it.module_id; }
     var acts = "", detail = "";
     if (it.status === "orphaned") {
       detail = '<div class="att-line"><b>Orphaned.</b> This node is no longer in the ladder as it was placed.</div>' +
@@ -1827,13 +1847,13 @@ function renderAttention(state, M) {
       if (it.suggestions && it.suggestions.length) {
         detail += '<div class="att-sugs">' + it.suggestions.map(function (s) {
           return '<div class="att-sug"><div class="cols"><div><span class="lbl">was</span><br>' + esc(it.node_text_seen) + '</div><div><span class="lbl">now</span><br>' + esc(s.node_text) + "</div></div>" +
-            '<div class="att-why">' + esc(s.node_id) + " · " + esc(REASON_TEXT[s.reason] || s.reason) + " · " + Math.round(s.ratio * 1000) / 10 + "% similar</div>" +
+            '<div class="att-why">' + esc(s.node_id) + " \u00b7 " + esc(REASON_TEXT[s.reason] || s.reason) + " \u00b7 " + Math.round(s.ratio * 1000) / 10 + "% similar</div>" +
             button("Re-attach", { action: "reattach", id: it.placement_id, key: s.source_key }, { cls: "tbtn primary sm", aria: "Re-attach to " + s.node_id }) + "</div>";
         }).join("") + "</div>";
       } else detail += '<div class="att-none">No close match found.</div>';
       acts = button("Remove", { action: "remove-direct", id: it.placement_id }, { cls: "tbtn sm danger" });
     } else {
-      detail = '<div class="att-line"><b>Grade ruling changed:</b> was ' + esc(kindLabel(it.grade_kind_seen)) + " → now " + esc(kindLabel(it.state_now)) + ".</div>" +
+      detail = '<div class="att-line"><b>Grade ruling changed:</b> was ' + esc(kindLabel(it.grade_kind_seen)) + " \u2192 now " + esc(kindLabel(it.state_now)) + ".</div>" +
         '<div class="att-was">' + esc(it.node_text_seen) + "</div>";
       acts = button("Keep (acknowledge)", { action: "acknowledge", id: it.placement_id }, { cls: "tbtn primary sm" }) + button("Remove", { action: "remove-direct", id: it.placement_id }, { cls: "tbtn sm danger" });
     }
@@ -1846,14 +1866,14 @@ function renderAttention(state, M) {
 /* ---- rail: modules, slots, placements ------------------------------------ */
 
 function moduleSummaryText(g) {
-  return "D " + g.counts.deep + " · F " + g.counts.functional + " · I " + g.counts.illuminating + " · unset " + g.counts.unset + " · " + fmtNum(g.total_periods) + " periods";
+  return "D " + g.counts.deep + " \u00b7 F " + g.counts.functional + " \u00b7 I " + g.counts.illuminating + " \u00b7 unset " + g.counts.unset + " \u00b7 " + fmtNum(g.total_periods) + " periods";
 }
 
 function renderCalibration(p) {
   return '<div class="seg-ctl" role="group" aria-label="Calibration: Deep is Know it, Functional is Use it, Illuminating is See it" title="Know it / Use it / See it">' +
     CALIBRATIONS.map(function (l) {
       return button(CAL_LABEL[l], { action: "set-cal", id: p.placement_id, val: l }, { cls: "segb seg-" + l, pressed: p.calibration === l, title: CAL_TEACHER[l], focus: "cal:" + p.placement_id + ":" + l });
-    }).join("") + button("—", { action: "set-cal", id: p.placement_id, val: "" }, { cls: "segb", pressed: !p.calibration, aria: "Calibration not set", title: "Not set", focus: "cal:" + p.placement_id + ":none" }) + "</div>";
+    }).join("") + button("\u2014", { action: "set-cal", id: p.placement_id, val: "" }, { cls: "segb", pressed: !p.calibration, aria: "Calibration not set", title: "Not set", focus: "cal:" + p.placement_id + ":none" }) + "</div>";
 }
 
 function renderPeriods(p) {
@@ -1894,7 +1914,7 @@ function renderPlacement(p, M, ctx) {
       button("Save note", { action: "note-save", id: p.placement_id }, { cls: "tbtn primary sm" }) + button("Cancel", { action: "note-cancel" }, { cls: "tbtn sm" }) + "</div>"
     : button(p.differentiation_note ? "Note: " + esc(firstLine(p.differentiation_note)) : "Add note", { action: "note-edit", id: p.placement_id }, { cls: "notebtn", focus: "noteb:" + p.placement_id, title: p.differentiation_note || "Add a differentiation note", aria: p.differentiation_note ? "Edit note" : "Add a note" });
   return '<div class="pl' + (p.status && p.status !== "ok" ? " pl-warn" : "") + '" data-pl="' + esc(p.placement_id) + '"' + fk("pl:" + p.placement_id) + ' tabindex="-1">' +
-    '<div class="pl-top"><span class="pl-id">' + esc(p.node_id || p.node_id_seen) + " · " + esc(p.stem_name) + "</span>" + statusChip + badges + elsewhere + "</div>" +
+    '<div class="pl-top"><span class="pl-id">' + esc(p.node_id || p.node_id_seen) + " \u00b7 " + esc(p.stem_name) + "</span>" + statusChip + badges + elsewhere + "</div>" +
     '<div class="pl-text">' + esc(p.node_text) + "</div>" + renderCalibration(p) + renderPeriods(p) + '<div class="pl-note">' + note + "</div>" +
     '<div class="pl-tools">' + (ctx.multi ? button("Ungroup", { action: "ungroup", id: p.placement_id }, { cls: "tbtn sm", title: "Give this node a slot of its own" }) : "") +
     coPlaceSelect(p, M) +
@@ -1911,13 +1931,13 @@ function renderSlot(s, mod, M, flat) {
     ? '<input type="text" class="slot-label-in" maxlength="120" value="' + esc(s.label || "") + '"' + da({ action: "slot-label", id: s.slot_id }) + fk("slotlabel:" + s.slot_id) + ' aria-label="Slot label">'
     : button(s.label ? esc(s.label) : (multi ? "Add label (co-placed)" : "Add label"), { action: "slot-label-edit", id: s.slot_id }, { cls: "linklike slot-label", focus: "slotl:" + s.slot_id, aria: "Edit slot label" });
   var tip = "Moves across module boundaries at the ends";
-  var moveTo = '<select class="mini"' + da({ action: "slot-move-to", id: s.slot_id }) + ' aria-label="Move slot to module"><option value="">Move to module…</option>' +
+  var moveTo = '<select class="mini"' + da({ action: "slot-move-to", id: s.slot_id }) + ' aria-label="Move slot to module"><option value="">Move to module\u2026</option>' +
     others.map(function (m) { return '<option value="' + esc(m.module_id) + '">M' + esc(m.position) + " " + esc(m.title) + "</option>"; }).join("") + "</select>";
-  return '<div class="slot' + (multi ? " multi" : "") + '" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="0" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' +
-    '<div class="slot-h"><span class="slot-pos">Slot ' + esc(s.position) + (multi ? " · co-placed" : "") + "</span>" + label + '<span class="grow"></span>' +
-    button("▲", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. " + tip, disabled: firstOfAll, focus: "slot:" + s.slot_id + ":up" }) +
-    button("▼", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. " + tip, disabled: lastOfAll, focus: "slot:" + s.slot_id + ":down" }) +
-    moveTo + button("Merge into slot above", { action: "slot-merge", id: s.slot_id }, { cls: "tbtn sm", disabled: firstOfAll, title: "Co-place this slot's nodes with the slot above it" }) + "</div>" +
+  return '<div class="slot' + (multi ? " multi" : "") + '" role="group" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="0" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' +
+    '<div class="slot-h"><span class="slot-pos">Slot ' + esc(s.position) + (multi ? " \u00b7 co-placed" : "") + "</span>" + label + '<span class="grow"></span>' +
+    button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. " + tip, disabled: firstOfAll, focus: "slot:" + s.slot_id + ":up" }) +
+    button("\u25bc", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. " + tip, disabled: lastOfAll, focus: "slot:" + s.slot_id + ":down" }) +
+    (others.length ? moveTo : "") + button("Merge into slot above", { action: "slot-merge", id: s.slot_id }, { cls: "tbtn sm", disabled: firstOfAll, title: "Co-place this slot's nodes with the slot above it" }) + "</div>" +
     s.placements.map(function (p) { return renderPlacement(p, M, { multi: multi }); }).join("") + "</div>";
 }
 
@@ -1927,13 +1947,13 @@ function renderModule(mod, M, flat, isFirst, isLast, target) {
     ? '<input type="text" class="mod-title-in" maxlength="120" value="' + esc(mod.title) + '"' + da({ action: "module-title", id: mod.module_id }) + fk("modtitle:" + mod.module_id) + ' aria-label="Module title">'
     : '<h3 class="mod-title" title="Double-click to rename"' + da({ action: "module-edit-dbl", id: mod.module_id }) + ">" + esc(mod.title) + "</h3>" + button("Edit", { action: "module-edit", id: mod.module_id }, { cls: "linklike", aria: "Rename module " + mod.title, focus: "modedit:" + mod.module_id });
   var isT = target && target.module_id === mod.module_id;
-  return '<section class="module' + (isT ? " target" : "") + '" data-kind="module" data-id="' + esc(mod.module_id) + '"' + fk("module:" + mod.module_id) + ' tabindex="0" aria-label="Module ' + esc(mod.position) + ": " + esc(mod.title) + '. Alt plus arrow up or down moves it.">' +
+  return '<section class="module' + (isT ? " target" : "") + '" role="group" data-kind="module" data-id="' + esc(mod.module_id) + '"' + fk("module:" + mod.module_id) + ' tabindex="0" aria-label="Module ' + esc(mod.position) + ": " + esc(mod.title) + '. Alt plus arrow up or down moves it.">' +
     '<header class="mod-h"><span class="mod-pos">M' + esc(mod.position) + "</span>" + title + '<span class="grow"></span>' +
-    button("▲", { action: "module-move", id: mod.module_id, val: "up" }, { cls: "ibtn", aria: "Move module up", title: "Move module up", disabled: isFirst, focus: "module:" + mod.module_id + ":up" }) +
-    button("▼", { action: "module-move", id: mod.module_id, val: "down" }, { cls: "ibtn", aria: "Move module down", title: "Move module down", disabled: isLast, focus: "module:" + mod.module_id + ":down" }) + "</header>" +
+    button("\u25b2", { action: "module-move", id: mod.module_id, val: "up" }, { cls: "ibtn", aria: "Move module up", title: "Move module up", disabled: isFirst, focus: "module:" + mod.module_id + ":up" }) +
+    button("\u25bc", { action: "module-move", id: mod.module_id, val: "down" }, { cls: "ibtn", aria: "Move module down", title: "Move module down", disabled: isLast, focus: "module:" + mod.module_id + ":down" }) + "</header>" +
     '<div class="mod-sub"><label class="target-pick"><input type="radio" name="target-module" value="' + esc(mod.module_id) + '"' + (isT ? " checked" : "") + da({ action: "target-module", id: mod.module_id }) + "> Place into this module</label>" +
     '<span class="mod-sum">' + esc(moduleSummaryText(mod.guardrail)) + "</span></div>" +
-    (mod.slots.length ? mod.slots.map(function (s) { return renderSlot(s, mod, M, flat); }).join("") : '<div class="mod-empty">Empty. Use “+ Place” on a chip.</div>') +
+    (mod.slots.length ? mod.slots.map(function (s) { return renderSlot(s, mod, M, flat); }).join("") : '<div class="mod-empty">Empty. Use \u201c+ Place\u201d on a chip.</div>') +
     '<footer class="mod-f">' + button("Remove module", { action: "module-remove", id: mod.module_id }, { cls: "tbtn sm danger", disabled: mod.slots.length > 0, title: mod.slots.length ? "Only an empty module can be removed" : "Remove this empty module" }) + "</footer></section>";
 }
 
@@ -1947,11 +1967,11 @@ function renderPrompt(state, M) {
     var n = M.index[k]; if (!n) return;
     if (n.requires_confirm) {
       needBridge = true;
-      lines += '<p class="pr-line"><b>' + esc(n.node_id) + "</b> is not in " + esc(gl) + "’s inventory (" + esc(kindLabel(n.state)) + "; its grades: " + esc((n.grades.length ? n.grades.map(gshort).join(", ") : "none recorded")) + "). Place it as a bridge?</p>";
+      lines += '<p class="pr-line"><b>' + esc(n.node_id) + "</b> is not in " + esc(gl) + "\u2019s inventory (" + esc(kindLabel(n.state)) + "; its grades: " + esc((n.grades.length ? n.grades.map(gshort).join(", ") : "none recorded")) + "). Place it as a bridge?</p>";
     }
     if (n.placed_elsewhere && n.placed_elsewhere.length) {
       needNote = true;
-      lines += '<p class="pr-line"><b>' + esc(n.node_id) + "</b> — Also placed in " + esc(placedElsewhereText(n.placed_elsewhere)) + ".</p>" +
+      lines += '<p class="pr-line"><b>' + esc(n.node_id) + "</b> \u2014 Also placed in " + esc(placedElsewhereText(n.placed_elsewhere)) + ".</p>" +
         '<label class="pr-note">How is it different in ' + esc(gl) + "? (optional)<textarea rows=\"2\" maxlength=\"1000\"" + da({ action: "prompt-note", id: k }) + ">" + esc((pr.notes && pr.notes[k]) || "") + "</textarea></label>";
     }
   });
@@ -1966,7 +1986,7 @@ function renderHistory(state, M) {
   var open = isOpen(M, "history", false), ev = M.ui.events || [];
   var body = "";
   if (open) {
-    body = ev.length ? '<ul class="events">' + ev.map(function (e) { return "<li><b>" + esc(e.actor) + "</b> · " + esc(String(e.action).replace(/_/g, " ")) + ' · <span class="when">' + esc(String(e.at).replace("T", " ").slice(0, 19)) + "</span></li>"; }).join("") + "</ul>" : '<p class="muted">No changes recorded yet.</p>';
+    body = ev.length ? '<ul class="events">' + ev.map(function (e) { return "<li><b>" + esc(e.actor) + "</b> \u00b7 " + esc(String(e.action).replace(/_/g, " ")) + ' \u00b7 <span class="when">' + esc(String(e.at).replace("T", " ").slice(0, 19)) + "</span></li>"; }).join("") + "</ul>" : '<p class="muted">No changes recorded yet.</p>';
     if (M.ui.eventsNext) body += button("More", { action: "history-more" }, { cls: "tbtn sm" });
   }
   return '<section class="history"><button type="button" class="disc"' + da({ action: "disclose", id: "history" }) + ' aria-expanded="' + (open ? "true" : "false") + '">History</button>' + body + "</section>";
@@ -1989,7 +2009,7 @@ function renderRail(state, M) {
   var head = '<div class="seq-h">' + (ed
     ? '<input type="text" class="mod-title-in" maxlength="120" value="' + esc(seq.title) + '"' + da({ action: "seq-title" }) + fk("seqtitle") + ' aria-label="Sequence title">'
     : "<h2>" + esc(seq.title) + "</h2>" + button("Edit", { action: "seq-edit" }, { cls: "linklike", aria: "Rename the sequence" })) +
-    '<div class="seq-meta">Owner ' + esc(seq.owner) + " · " + plural(mods.length, "module") + "</div></div>";
+    '<div class="seq-meta">Owner ' + esc(seq.owner) + " \u00b7 " + plural(mods.length, "module") + " \u00b7 " + button("Download CSV", { action: "export-csv" }, { cls: "linklike", title: "The ordered sequence as a spreadsheet file" }) + "</div></div>";
   return renderGuardrail(state, M) + renderAttention(state, M) + head + '<div class="modules">' + cards + "</div>" +
     button("+ Add module", { action: "add-module" }, { cls: "tbtn add", focus: "add-module" }) + renderHistory(state, M) + renderDemoFootnote(M);
 }
@@ -2012,7 +2032,7 @@ function renderDrawer(state, M) {
   if (!d) return "";
   var ph = placedOf(M)[d.source_key], seq = seqOf(M), mods = (M.seqView && M.seqView.modules) || [], target = targetModuleOf(M);
   var inCmp = state.compare.indexOf(d.source_key) >= 0, full = state.compare.length >= COMPARE_MAX && !inCmp;
-  var cs = '<div class="d-cs"><div class="d-k">' + esc(d.stem_name) + " · concept/skill</div><div class=\"d-cs-t\">" + esc(d.cs.label_display) + "</div>" +
+  var cs = '<div class="d-cs"><div class="d-k">' + esc(d.stem_name) + " \u00b7 concept/skill</div><div class=\"d-cs-t\">" + esc(d.cs.label_display) + "</div>" +
     (d.cs.goal_missing ? '<div class="goal missing">No goal in ladder</div>' : '<div class="d-goal"><span class="lbl">Goal</span>' + esc(d.cs.goal) + "</div>") + "</div>";
   var rul = d.ruling || {};
   var node = '<div class="d-node"><div class="d-id">' + esc(d.node_id) + '</div><div class="d-text">' + esc(d.node_text) + "</div>" +
@@ -2024,7 +2044,7 @@ function renderDrawer(state, M) {
     (rul.notes ? '<div class="d-line muted">' + esc(rul.notes) + "</div>" : "") + "</div>";
   var place;
   if (ph) {
-    place = '<div class="d-place"><b>In this sequence:</b> M' + esc(ph.module_position) + " · slot " + esc(ph.slot_position) + (ph.is_bridge ? " (bridge)" : "") + " " +
+    place = '<div class="d-place"><b>In this sequence:</b> M' + esc(ph.module_position) + " \u00b7 slot " + esc(ph.slot_position) + (ph.is_bridge ? " (bridge)" : "") + " " +
       button("Show in rail", { action: "show-in-rail", id: ph.placement_id }, { cls: "tbtn sm" }) + "</div>";
   } else if (!seq) {
     place = '<div class="d-place muted">Start the sequence in the rail to place this node.</div>';
@@ -2037,14 +2057,14 @@ function renderDrawer(state, M) {
   var si = d.strip.map(function (s) { return s.source_key; }), me = si.indexOf(d.source_key);
   var strip = '<div class="d-strip"><div class="d-k">Progression</div><div class="mini-strip">' + d.strip.map(function (s) {
     return button(esc(s.node_id), { action: "open-node", id: s.source_key }, { cls: "mini" + (s.is_self ? " self" : "") + (s.in_grade ? "" : " ctx"), aria: "Open " + s.node_id + " (" + kindLabel(s.state) + ")", title: kindLabel(s.state) });
-  }).join('<span class="arrow" aria-hidden="true">→</span>') + "</div>" +
-    '<div class="d-nav">' + button("‹ prev", { action: "open-node", id: me > 0 ? si[me - 1] : "" }, { cls: "tbtn sm", disabled: me <= 0 }) + button("next ›", { action: "open-node", id: me >= 0 && me < si.length - 1 ? si[me + 1] : "" }, { cls: "tbtn sm", disabled: me < 0 || me >= si.length - 1 }) + "</div></div>";
+  }).join('<span class="arrow" aria-hidden="true">\u2192</span>') + "</div>" +
+    '<div class="d-nav">' + button("\u2039 prev", { action: "open-node", id: me > 0 ? si[me - 1] : "" }, { cls: "tbtn sm", disabled: me <= 0 }) + button("next \u203a", { action: "open-node", id: me >= 0 && me < si.length - 1 ? si[me + 1] : "" }, { cls: "tbtn sm", disabled: me < 0 || me >= si.length - 1 }) + "</div></div>";
   var hint = "";
   if (d.period_hint) hint = '<div class="d-sec"><h4>Period hint</h4><div>' + esc(d.period_hint.text) + (hintReason(d.period_hint) ? ' <span class="hint-why">(' + esc(hintReason(d.period_hint)) + ")</span>" : "") + "</div></div>";
   var showAll = !!M.ui.showAllFields;
   var fields = '<div class="d-sec"><h4>Node details</h4>' + d.fields.map(function (f) {
     return '<div class="fld"><h5>' + esc(f.label) + "</h5><ul>" + f.values.map(function (v) { return "<li>" + esc(v) + "</li>"; }).join("") + "</ul></div>";
-  }).join("") + (showAll ? d.fields_empty.map(function (f) { return '<div class="fld empty"><h5>' + esc(f.label) + '</h5><ul><li class="muted">—</li></ul></div>'; }).join("") : "") +
+  }).join("") + (showAll ? d.fields_empty.map(function (f) { return '<div class="fld empty"><h5>' + esc(f.label) + '</h5><ul><li class="muted">\u2014</li></ul></div>'; }).join("") : "") +
     (d.fields_empty.length ? button(showAll ? "Hide empty fields" : "Show all fields (" + d.fields_empty.length + " empty)", { action: "toggle-all-fields" }, { cls: "linklike" }) : "") + "</div>";
   var std = '<div class="d-sec"><h4>Standards</h4>' + (d.standards.length ? '<div class="codes">' + d.standards.map(function (s) {
     return '<span class="code' + (s.shared ? " shared" : "") + '" title="' + esc(s.relation || "") + (s.annotation ? ": " + esc(s.annotation) : "") + '">' + esc(s.code) + (s.shared ? ' <em>shared</em>' : "") + "</span>";
@@ -2056,22 +2076,22 @@ function renderDrawer(state, M) {
   std += "</div>";
   var pair = "";
   if (d.pairings && d.pairings.length) pair = '<div class="d-sec pair-sec"><h4>Pairings (shared standards)</h4>' + d.pairings.map(function (p) {
-    return '<div class="pair"><b>' + esc(p.stem_name) + ":</b> " + esc(p.codes.join(", ")) + " → " + p.nodes.map(function (n) { return nodeLink(n, M); }).join(" ") + "</div>";
+    return '<div class="pair"><b>' + esc(p.stem_name) + ":</b> " + esc(p.codes.join(", ")) + " \u2192 " + p.nodes.map(function (n) { return nodeLink(n, M); }).join(" ") + "</div>";
   }).join("") + "</div>";
   var les = "";
   var sharedLessons = (d.lessons || []).filter(function (l) { return l.shared_with.length; });
   if (sharedLessons.length) les = '<div class="d-sec pair-sec"><h4>Shared EM2 lessons</h4>' + sharedLessons.map(function (l) {
-    return '<div class="pair"><b>' + esc(l.lesson_id) + "</b> → " + l.shared_with.map(function (w) { return esc(w.stem_name) + ": " + w.nodes.map(function (n) { return nodeLink(n, M); }).join(" "); }).join("; ") + "</div>";
+    return '<div class="pair"><b>' + esc(l.lesson_id) + "</b> \u2192 " + l.shared_with.map(function (w) { return esc(w.stem_name) + ": " + w.nodes.map(function (n) { return nodeLink(n, M); }).join(" "); }).join("; ") + "</div>";
   }).join("") + "</div>";
   var stemsInSlice = {};
   M.slice.super_stems.forEach(function (ss) { ss.stems.forEach(function (st) { stemsInSlice[st.stem_id] = true; }); });
   var links = '<div class="d-sec"><h4>Stated links <span class="asc">as captured</span></h4>' + (d.links.length ? '<div class="codes">' + d.links.map(function (l) {
     return l.stem_id && stemsInSlice[l.stem_id] ? button(esc(l.text), { action: "goto-stem", id: l.stem_id }, { cls: "linkchip", title: "Go to this stem in the slice" }) : '<span class="linkchip plain">' + esc(l.text) + "</span>";
   }).join("") + "</div>" : '<div class="muted">None captured.</div>') + "</div>";
-  var refs = '<div class="d-sec"><h4>Product references</h4>' + (d.product_refs.length ? "<ul class=\"refs\">" + d.product_refs.map(function (r) { return "<li>" + esc(r.product || "") + " · " + esc(r.raw_ref) + "</li>"; }).join("") + "</ul>" : '<div class="muted">None.</div>') + "</div>";
+  var refs = '<div class="d-sec"><h4>Product references</h4>' + (d.product_refs.length ? "<ul class=\"refs\">" + d.product_refs.map(function (r) { return "<li>" + esc(r.product || "") + " \u00b7 " + esc(r.raw_ref) + "</li>"; }).join("") + "</ul>" : '<div class="muted">None.</div>') + "</div>";
   return '<div class="drawer-h"><h2 tabindex="-1"' + fk("drawer-h") + ">" + esc(d.node_id) + "</h2><span class=\"grow\"></span>" +
-    button(inCmp ? "✓ In compare" : "⊕ Compare", { action: "toggle-compare", id: d.source_key }, { cls: "tbtn sm", pressed: inCmp, disabled: full }) +
-    button("✕ Close", { action: "close-drawer" }, { cls: "tbtn sm", aria: "Close details", title: "Close (Esc)" }) + "</div>" +
+    button(inCmp ? "\u2713 In compare" : "\u2295 Compare", { action: "toggle-compare", id: d.source_key }, { cls: "tbtn sm", pressed: inCmp, disabled: full }) +
+    button("\u2715 Close", { action: "close-drawer" }, { cls: "tbtn sm", aria: "Close details", title: "Close (Esc)" }) + "</div>" +
     '<div class="drawer-body">' + cs + node + place + els + strip + hint + fields + std + pair + les + links + refs + "</div>";
 }
 
@@ -2079,14 +2099,14 @@ function renderDrawer(state, M) {
 
 function renderTray(state, M) {
   if (!state.compare.length || state.sheet) return "";
-  return '<div class="tray-in"><b>Compare ' + state.compare.length + "/" + COMPARE_MAX + "</b> · " +
+  return '<div class="tray-in"><b>Compare ' + state.compare.length + "/" + COMPARE_MAX + "</b> \u00b7 " +
     state.compare.map(function (k) { var n = M.index[k]; return '<span class="tray-chip">' + esc(n ? n.node_id : k) + "</span>"; }).join("") +
     '<span class="grow"></span>' + button("Open", { action: "open-sheet" }, { cls: "tbtn primary sm" }) + button("Clear", { action: "clear-compare" }, { cls: "tbtn sm" }) + "</div>";
 }
 
 function renderCell(row, cell) {
-  if (row.kind === "flag") return cell ? '<span class="tick-ok" aria-label="yes">✓</span>' : "";
-  if (!cell.length) return '<span class="muted">—</span>';
+  if (row.kind === "flag") return cell ? '<span class="tick-ok" aria-label="yes">\u2713</span>' : "";
+  if (!cell.length) return '<span class="muted">\u2014</span>';
   if (row.key === "state") return cell.map(function (x) { return '<span class="b tier-info">' + esc(kindLabel(x)) + "</span>"; }).join("");
   if (row.key === "grades") return cell.map(function (g) { return '<span class="gp">' + esc(gshort(g)) + "</span>"; }).join(" ");
   if (row.key === "state_codes") return '<span class="codes-inline">' + esc(cell.join(", ")) + "</span>";
@@ -2111,15 +2131,15 @@ function renderSheet(state, M) {
   } else {
     head += '<span class="muted">Start a sequence with a module to co-place these nodes.</span>';
   }
-  head += button("✕ Close", { action: "close-sheet" }, { cls: "tbtn sm", aria: "Close compare", title: "Close (Esc)" }) + "</div>";
-  if (!cmp) return head + '<div class="sheet-body"><p class="muted">Loading…</p></div>';
+  head += button("\u2715 Close", { action: "close-sheet" }, { cls: "tbtn sm", aria: "Close compare", title: "Close (Esc)" }) + "</div>";
+  if (!cmp) return head + '<div class="sheet-body"><p class="muted">Loading\u2026</p></div>';
   var rows = compareRowsView(cmp, ui.cmpHideEmpty !== false, !!ui.cmpSharedFirst);
   var cols = cmp.columns.map(function (c) {
     var p = placed[c.source_key];
     return '<th scope="col" class="cmp-col"><div class="cmp-id">' + button(esc(c.node_id), { action: "open-node", id: c.source_key }, { cls: "nodelink" }) +
-      button("✕", { action: "cmp-remove", id: c.source_key }, { cls: "ibtn", aria: "Remove " + c.node_id + " from compare", title: "Remove from compare" }) + "</div>" +
+      button("\u2715", { action: "cmp-remove", id: c.source_key }, { cls: "ibtn", aria: "Remove " + c.node_id + " from compare", title: "Remove from compare" }) + "</div>" +
       '<div class="cmp-stem">' + esc(c.stem_name) + '</div><div class="cmp-text">' + esc(c.node_text) + '</div><div><span class="b tier-info">' + esc(kindLabel(c.state)) + "</span>" +
-      (p ? ' <span class="pill here">M' + esc(p.module_position) + " · " + esc(p.slot_position) + "</span>" : "") + "</div></th>";
+      (p ? ' <span class="pill here">M' + esc(p.module_position) + " \u00b7 " + esc(p.slot_position) + "</span>" : "") + "</div></th>";
   }).join("");
   var body = rows.map(function (r, i) {
     var prev = rows[i - 1], sep = !prev || prev.group !== r.group;
@@ -2138,14 +2158,14 @@ function renderNotice(M) {
 
 function renderToasts(M) {
   return (M.ui.toasts || []).map(function (t) {
-    return '<div class="toast" role="alert"><span>' + esc(t.text) + "</span>" + button("✕", { action: "dismiss-toast", id: t.id }, { cls: "ibtn", aria: "Dismiss message" }) + "</div>";
+    return '<div class="toast" role="alert"><span>' + esc(t.text) + "</span>" + button("\u2715", { action: "dismiss-toast", id: t.id }, { cls: "ibtn", aria: "Dismiss message" }) + "</div>";
   }).join("");
 }
 
 function renderFooter(M) {
   if (!M.demo || !M.demo.on) return "";
-  return "<span>Demo · data built from " + esc(M.demo.source === "mh2.db" ? "mh2.db" : "fixture") + (M.demo.generatedAt ? " · generated " + esc(String(M.demo.generatedAt).slice(0, 16).replace("T", " ")) : "") +
-    " · " + (M.demo.persisted ? "edits are kept in this browser" : "edits are not kept after reload") + "</span>";
+  return "<span>Demo \u00b7 data built from " + esc(M.demo.source === "mh2.db" ? "mh2.db" : "fixture") + (M.demo.generatedAt ? " \u00b7 generated " + esc(String(M.demo.generatedAt).slice(0, 16).replace("T", " ")) : "") +
+    " \u00b7 " + (M.demo.persisted ? "edits are kept in this browser" : "edits are not kept after reload") + "</span>";
 }
 
 /* ========================================================================
@@ -2447,6 +2467,8 @@ function createApp(env) {
     renderAll();
     return p ? p.then(renderAll) : null;
   });
+  on("click", "stems-expand-all", function () { setState(Object.assign({}, state, { collapsed_stems: [] })); });
+  on("click", "stems-collapse-all", function () { setState(Object.assign({}, state, { collapsed_stems: Object.keys(sliceIds(M.slice).stems) })); });
   on("click", "show-all-hidden", function () { setState(Object.assign({}, state, { hidden_stems: [], hidden_cs: [] })); });
   on("change", "stem-visible", function (d) { setState(Object.assign({}, state, { hidden_stems: d.checked ? state.hidden_stems.filter(function (x) { return x !== d.id; }) : state.hidden_stems.concat([d.id]) })); });
   on("click", "cs-show", function (d) { setState(Object.assign({}, state, { hidden_cs: state.hidden_cs.filter(function (x) { return x !== d.id; }) })); });
@@ -2550,11 +2572,22 @@ function createApp(env) {
     if (r) {
       var s = seqOf(M);
       var r2 = await write(function () { return api.createModule(s.sequence_id, s.rev, "Module 1"); });
-      if (r2) { ui.targetModuleId = r2.result.module_id; notice("Sequence started with Module 1. Use “+ Place” on any chip.", "ok"); renderAll(); }
+      if (r2) { ui.targetModuleId = r2.result.module_id; notice("Sequence started with Module 1. Use \u201c+ Place\u201d on any chip.", "ok"); renderAll(); }
     }
   });
   on("click", "seq-edit", function () { ui.editing = { kind: "seqtitle" }; renderAll(); focusKey("seqtitle"); });
   on("change", "seq-title", function (d) { ui.editing = null; var t = String(d.value || "").trim(); if (!t || t === seqOf(M).title) { renderAll(); return; } return seqWrite(function (sid, rev) { return api.updateSequence(sid, rev, { title: t }); }); });
+  on("click", "export-csv", function () {
+    var csv = sequenceToCsv(M.seqView), name = "grade" + M.grade + "_sequence.csv";
+    ui.lastCsv = csv;
+    if (typeof Blob === "undefined" || typeof URL === "undefined" || !URL.createObjectURL || !doc.createElement) return;
+    try {
+      var a = doc.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = name;
+      doc.body.appendChild(a); a.click(); doc.body.removeChild(a);
+      notice("Downloaded " + name + ".", "ok"); renderAll();
+    } catch (e) { toast("Could not start the download in this browser."); renderAll(); }
+  });
   on("click", "guard-tab", function (d) { ui.guardTab = d.id; renderAll(); });
   on("click", "add-module", async function () {
     var n = ((M.seqView && M.seqView.modules) || []).length + 1;
@@ -2749,7 +2782,7 @@ if (typeof module !== "undefined" && module.exports) {
     renderRail, renderSheet, renderGuardrail, renderAttention, renderToolbar,
     // extras used by the tests
     encodeUrlQuery, decodeGrade, lensOf, applyLens, toggleCompare, toggleCollapse, moveStem, effectiveCollapsed,
-    compareRowsView, indexSlice, hintReason, orderAppend, orderBetween, renumber, roundHalfUp,
+    compareRowsView, sequenceToCsv, csvCell, indexSlice, hintReason, orderAppend, orderBetween, renumber, roundHalfUp,
     renderChip, renderHeader, renderTray, renderPrompt, renderPlacement, renderGuardrailBars, renderNotice, renderFooter,
     createApp, boot, safeStorage, sliceIds, lensIsDefault, stemOrderSort, kindLabel, COMPARE_MAX };
 } else { document.addEventListener("DOMContentLoaded", function () { boot(); }); }
