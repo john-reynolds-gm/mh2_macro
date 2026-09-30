@@ -877,7 +877,8 @@ class DemoApi {
   }
   async removeModule(id, rev) {
     var m = this._module(id); this._checkRev(rev);
-    if (this._slotsOf(id).length) throw this._err(409, "module_not_empty", "Move or remove this module's placements first");
+    var nPl = this._slotsOf(id).reduce(function (a, s) { return a + this._placementsOf(s.slot_id).length; }.bind(this), 0);
+    if (this._slotsOf(id).length) throw this._err(409, "module_not_empty", "Move or remove this module's placements first", { n_placements: nPl });
     m.removed = true;
     return this._commit([{ action: "module_remove", module_id: id }], {});
   }
