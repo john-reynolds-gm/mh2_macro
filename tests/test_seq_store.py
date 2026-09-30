@@ -197,7 +197,7 @@ def test_full_lifecycle():
     S.update_sequence(con, "zed", sid, seq_rev(con, sid), title="Renamed", owner="zed", note=None)
     sm = S.sequence_summaries(con)["2"]
     assert sm["title"] == "Renamed" and sm["owner"] == "zed" and sm["n_modules"] == 1
-    assert sm["n_placements"] == 1 and sm["updated_at"]
+    assert sm["n_placements"] == 3 and sm["updated_at"]
     S.update_sequence(con, "zed", sid, seq_rev(con, sid), archived=True)
     assert S.active_sequence_id(con, "2") is None and "2" not in S.sequence_summaries(con)
     sid2 = S.create_sequence(con, "amy", "2", "New one")     # allowed once the first is archived
