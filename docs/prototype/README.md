@@ -55,10 +55,11 @@ toggles, drawer, compare cap, hash), but layout/CSS has not been eyeballed. Expe
    on all nodes of a concept/skill: mathematical_models (39 c/s), leaves_to_include (31),
    standards_notes (21), strategies (21), additional_notes (14). This looks like merged ladder cells,
    not a real scoping rule. Should the concept/skill box grow this way, or stay Goal-only per the brief (4.1)?
-5. **Goal gaps.** Goal is blank on some nodes (not all) of 6 concept/skills (e.g. MUL "Fluently multiply
-   and divide", EE General Expressions "equivalent expressions"); 18 concept/skills have no Goal at
-   all (0 in PK-5 slices, 1-3 in each of G6-A1 slices). Brief says Goal applies to the whole progression, so the prototype
-   shows it on the C/S; should blanks inherit silently?
+5. **Goal gaps.** 18 nodes have a blank Goal. In 6 concept/skills the Goal is blank on only
+   some nodes (e.g. MUL "Fluently multiply and divide", EE General Expressions "equivalent
+   expressions"); 3 concept/skills have none at all (they appear only in G6-A1 slices). The
+   brief says Goal applies to the whole progression, so the prototype shows the recorded Goal at
+   concept/skill level; should blanks inherit silently?
 6. **Spans.** A strip can contain nodes across 5-6 grades (WHO "Represent, compose, and decompose
    numbers": 6 grades; "Use place value to read and write numbers": 6). In G2 that means most of the
    strip is context. 20 of 35 G2 nodes are also in another grade; 23 of 24 PK nodes are.
