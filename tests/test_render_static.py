@@ -183,3 +183,18 @@ if __name__ == "__main__":
                 fn()
             print(f"  ok  {name}")
     print("all passed")
+
+
+def test_download_ladder_edits_link_lives_in_the_online_only_writer_bar(tmp_path):
+    """The export link sits inside #writer-bar, which renders `hidden` and is
+    unhidden only behind the ONLINE gate -- so a file:// copy shows no link
+    to an API it cannot reach (docs/brief_ladder_edits_export.md)."""
+    con = _sample_db()
+    out = tmp_path / "coverage.html"
+    render_static.render(con, out)
+    html = out.read_text(encoding="utf-8")
+    bar = re.search(r'<div class="writer-bar" id="writer-bar" hidden>(.*?)</div>',
+                    html, re.S)
+    assert bar is not None
+    assert 'href="/api/export/ladder-edits.xlsx"' in bar.group(1)
+    assert html.count("/api/export/ladder-edits.xlsx") == 1

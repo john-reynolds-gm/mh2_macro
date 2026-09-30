@@ -32,9 +32,9 @@ def test_standard_review_round_trip_and_upsert():
     assert row["reviewed_by"] == "jane"
     assert row["reviewed_at"]
 
-    review_store.set_standard_review(con, "K.CC.A.1", "insufficient", "Yellow", "jo")
+    review_store.set_standard_review(con, "K.CC.A.1", "partial_coverage", "Yellow", "jo")
     row = review_store.get_standard_review(con, "K.CC.A.1")
-    assert row["outcome"] == "insufficient"
+    assert row["outcome"] == "partial_coverage"
     assert row["reviewed_by"] == "jo"
 
 

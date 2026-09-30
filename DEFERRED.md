@@ -208,6 +208,17 @@ needs a machine of John's to stay powered on for two weeks; the "don't
 hand-roll auth" ruling still holds and HTTP Basic is not a violation of it
 per R1's own text.
 
+**SUPERSEDED IN DIRECTION, 2026-09-29 — see §8.** IT is provisioning a
+Python web app in Azure. Both hosting shapes described above (Cloudflare
+Tunnel + Access; Fly.io + persistent volume) are set aside as the target,
+and the HTTP Basic / `MH2_AUTH_USERS` credential plan (rev 11 §2.3) is
+superseded **pending IT's answer** on Azure App Service built-in auth
+(Easy Auth / Entra ID). Nothing is deleted: the Fly.io path stays written
+and tested (`tests/test_review_api_auth.py`, `docs/HOSTING.md`) as the
+fallback if Azure stalls, and "do not hand-roll auth" is the ruling that
+survives all three shapes — it is why Easy Auth is the ask rather than
+anything of our own. Do not delete `docs/HOSTING.md` until Azure is live.
+
 ---
 
 ## 4. Known decay risks — watch, don't fix
@@ -402,3 +413,305 @@ Carried forward, genuinely open:
   than solving it, same reasoning as the `DEFERRED.md` distributed-copy item
   above. If binary churn becomes painful before hosting lands, that is a new
   DEFERRED entry, not a reopening of this one.
+
+---
+
+## 8. Azure hosting — rulings (2026-09-29)
+
+Scope of this section: hosting the **standards gap audit tool only** (the
+FastAPI review layer, `review_api.py` + `scripts/render_static.py`). The
+grade/module sequencing tool follows later on the same pattern. The
+Streamlit `app/` tool is **not** in scope and is not being hosted.
+
+### R-H1. Ladders are pulled read-only from SharePoint
+Ladders are fetched at rebuild time via Microsoft Graph. Never uploaded to
+the app, never written back. The Word ladder remains the sole source of
+truth for tagging (§6). Python side is `msal` + HTTP requests to Graph — no
+new language, no new runtime shape.
+
+### R-H2. Config inputs move to SharePoint
+The tagging workbook, `stems.csv`, `mh2_category_to_stems.csv`, and the
+grade normalization worksheet move off John's machine to SharePoint. App
+reads them read-only.
+
+**Which side each one lands on (clarified 2026-09-30).** Three of these are
+pipeline inputs — `rebuild.py` opens them and they are in its pre-flight.
+`mh2_category_to_stems.csv` is **not**: it is read by the serving layer
+(`mh2/coverage.py`'s `build_stem_attribution`, and `app/db.py`), and by no
+step the rebuild runs. The fetch step must land it for the app, not gate a
+rebuild on it — a rebuild that fails over a file the pipeline never reads
+would be coupling the two for no reason, on a host where they need not be
+deployed together. No existence check was added for it anywhere: both
+readers `open()` it directly and the resulting `FileNotFoundError` already
+names the full path, in the tool that actually wanted it.
+
+**Recommended, not yet confirmed:** put these in a folder editable only by
+the pipeline owner, separate from the ladder folder. A stray edit to any of
+them silently changes attribution across many stems, which is a different
+blast radius from editing one ladder.
+
+### R-H3. Neither database is a source of truth
+Writers keep editing Word docs. `mh2.db` is destroyed every rebuild;
+`mh2_seq.db` holds judgments beside the data and never holds tags. Making
+either authoritative would create the forbidden third source of truth
+(§6).
+
+### R-H4. Azure runtime constraints — state these to IT explicitly
+Exactly one instance, one worker, databases on storage that survives
+restarts and redeploys. **No automatic failover** — accepted as a tradeoff
+for an internal tool. This likely conflicts with IT's defaults, so it is
+stated rather than assumed.
+
+Why single-instance, in the terms that actually apply: user count is not
+the constraint. SQLite serializes writes and this tool's writes are single
+small rows; Python `sqlite3` defaults to a 5s busy timeout. The failure mode
+is multiplicity, not load. Multiple instances break it one of two ways —
+separate local DB files per instance (silent divergence of writer
+judgments), or one file on a network share (SQLite locking over SMB/Azure
+Files is unreliable, so corruption rather than divergence). `mh2_seq.db` is
+the only record of writer judgments, which is what makes both intolerable.
+
+**Trigger for an architecture change:** IT mandates scale-out, or only
+network storage is durable. The fallback is moving authored data to a
+managed DB (Azure SQL / PostgreSQL). Do not raise this unless forced — it
+is a real architecture change, not a config change.
+
+### R-H5. Team-triggered rebuilds require safeguards first
+The rebuild button is not exposed until these exist:
+
+1. **Build beside, then swap.** Build into a new file; swap in only on
+   success. **Not currently how it works** — see the verification below.
+2. **Failed build changes nothing.** New ladders (especially 6–9) will
+   surface parser edge cases (§4); a parse failure must leave current data
+   live and name the failing file.
+3. **One rebuild at a time (lock).** Does not currently exist — see below.
+4. **Visible log:** who triggered, when, which files changed, outcome.
+5. **Pre-flight file check:** every `ladder_file` in `stems.csv` present
+   before ingestion starts.
+6. **Change preview** from SharePoint `lastModifiedDateTime` /
+   last-modified-by, showing which ladders changed since the last rebuild.
+
+SharePoint version history covers undo for bad ladder edits. Nothing to
+build there.
+
+### Verified against the live repo, 2026-09-29
+The handoff this section came from carried six claims marked VERIFY. All
+were checked against code, not against other docs:
+
+- **CONFIRMED — rebuild is destructive in place.** `scripts/rebuild.py`
+  unlinks `config.DB` and re-executes the schema; there is no
+  build-beside-then-swap. `mh2_seq.db` is explicitly never unlinked. R-H5.1
+  is therefore unimplemented work, not a description of current behavior.
+- **CONFIRMED — no rebuild lock.** No flock, lockfile, or pidfile anywhere
+  in `scripts/rebuild.py`. Two concurrent runs race on the same
+  unlink-and-recreate. Harmless while one person runs it from a laptop;
+  this is the safeguard that most directly gates R-H5.
+- **CONFIRMED — missing ladder files fail loudly.** `resolve_ladder_files`
+  in `mh2/load_stems.py` raises `SystemExit` on a missing or ambiguous file
+  for any `stems.csv` row with `ladder_drafted=1`, and it runs before
+  ingestion. A missing file does *not* silently turn a stem Red. R-H5.5
+  exists for the `ladder_drafted=1` case; the gap is that `rebuild.py`'s own
+  pre-flight covers only the three workbook files.
+- **CONTRADICTED — there is no coverage cache and no `POST /reload`.** Every
+  route opens a fresh read-only connection per request (`_mh2_con()` /
+  `_seq_con()`). This matches §7's own measurement ("Both rebuild coverage
+  from scratch per request (no cache)"); the handoff's claim was wrong.
+  **Consequence for the IT conversation: drop it.** Multi-worker cache
+  staleness is not a reason for single-instance — R-H4's two real reasons
+  stand on their own, and leading with a stale one weakens them.
+- **CONFIRMED — review writes are upsert, last-writer-wins.**
+  `standard_review` (PK `standard_id`), `standard_color_override` (PK
+  `standard_id`), and `tag_review` (PK `(standard_id, source_key)`) all use
+  `INSERT ... ON CONFLICT ... DO UPDATE` in `mh2/review_store.py`. Only
+  `tag_proposal` preserves history, by design (§7). **Answer for the team
+  lead on two writers on the same standard:** the second silently replaces
+  the first everywhere except proposals. Whether that needs ownership by
+  grade/sheet ([[2.2]]) is a question for the team lead, not a code fix.
+- **CONFIRMED — staleness anchors are named as documented.**
+  `computed_color_at_review` and `computed_color_at_set`, both in
+  `mh2/schema_seq.sql`.
+- **CONFIRMED — the `write_ruling()` risk is real.** `app/db.py`'s
+  `get_connection()` connects to `config.DB`, and `write_ruling()` upserts
+  into `node_standards` in `mh2.db` — destroyed on every rebuild. Out of
+  hosting scope, but it gets more dangerous as rebuilds get more frequent
+  and more people can trigger them. Carried, not fixed.
+- **CORRECTION — `eval/paths.py` is not about file paths.** It is
+  reach-gating logic for scoring generator paths, unrelated to file I/O.
+  All input locations are plain `Path` objects in `config.py` (`LADDERS`,
+  `LADDER_GLOB`, `STEM_WORKBOOK`, `STEM_WORKBOOK_G6`, `TAGGING_WORKBOOK`,
+  `STEMS_CSV`, `CATEGORY_TO_STEMS_CSV`, `GRADE_WORKSHEET`), consumed
+  directly by `open()` / `python-docx` / `pandas`. **There is no fetch
+  abstraction to swap.** R-H1 and R-H2 therefore need a fetch step that
+  lands files into the paths `config.py` already names, rather than a
+  rewrite of the loaders — which is the cheaper shape and should stay that
+  way.
+
+### Figures not carried forward
+Two numbers travelled in the handoff prose without their predicates: "82
+computed-Green-and-flagged rows" as the writers' best starting set, and
+"~455 unattributed PK–5 rows" as the worklist size. Neither is reproduced
+here. §6 records 49 Green-with-flag for PK–5 against a different predicate,
+so the 82 is at minimum scoped differently. Per §6's own ruling, these are
+to be re-measured with literal predicates before being quoted to the team
+lead, and the discrepancy reported rather than reverse-engineered into a
+predicate that hits the number.
+
+### Open with IT
+Answers to these change the deployment, not the design: scale-out disabled
+and worker count settable to one; where DB files physically live (local disk
+vs. Azure Files) and whether they survive redeploys and restarts;
+backup/snapshot schedule; whether the boilerplate accepts a FastAPI /
+`uvicorn` entrypoint rather than assuming Flask or Django; Easy Auth /
+Entra ID instead of HTTP Basic; an Entra ID app registration with Graph
+`Sites.Selected` scoped to one SharePoint site, read-only, and whether that
+same registration can cover user login; and whether a rebuild triggered
+from inside the app is acceptable or batch jobs must run separately. The
+sequencing tool will later use the same pattern — worth saying once, now.
+
+### Phased rollout (PK–5 before 6–9) — compatible with the design
+Undrafted reads Red by ruling and ladder status is a filter, never a colour
+(§6). Drafted status is derived from node counts (§4), so it flips
+automatically when a ladder with nodes appears. Rebuild risk is per stem:
+new 6–9 ladders do not renumber PK–5 nodes, and review records key on
+`(standard_id, source_key)` rather than `node_id`, which is what makes the
+content-hash decay risk in §4 survivable here.
+
+**Still unverified, and do not promise it to the team lead until it is:**
+that review records survive a real rebuild that adds 6–9 ladders. §7
+round-tripped one `standard_review` through `rebuild.py` +
+`reconcile_review.py` on PK–5 data only. The 6–9 case is the one being
+promised and it has not been run.
+
+Talking points that follow from the above: headline Red counts include
+undrafted 6–9 standards, so filter to PK–5 or to drafted to measure real
+progress (if the team always applies the same filter, that is pilot
+feedback for a default view); don't review undrafted rows; undrafted
+resolves as ladders arrive, unattributed is a worklist someone must decide,
+and they are not the same number; the first 6–9 rebuilds are the likeliest
+to fail parsing; each new ladder file name must be registered in
+`stems.csv`, which belongs in the 6–9 team's handoff, not in ours; and
+rebuild when a writer says their edits are done, because SharePoint
+autosave means a mid-edit rebuild ingests half-finished work.
+
+### Writer workflow, as confirmed — and the one gap
+Review in the app; **record judgments, not edits** (mark reviewed, override
+colour as a separate layer with the computed colour untouched, propose a
+tag with an outcome and rationale — none of this changes coverage); edit
+the Word doc in SharePoint, which is the only step that changes coverage;
+rebuild; then clear overrides and judgments the rebuild made redundant,
+which is detectable because the override stores the computed colour at the
+time it was set (`computed_color_at_set`, verified above).
+
+Message for the team lead: **the app is where you decide what needs fixing;
+the Word doc is where you fix it.** A standing override is legitimate only
+when a writer is confident coverage exists that tagging does not capture.
+
+**Gap: step 3 has no UI support.** `GET /api/worklist` exists, grouped by
+ladder file, with no consuming screen ([[7]]). Until that session lands,
+writers keep their own edit lists by hand. Recommend building it before
+wider rollout — the workflow's only coverage-changing step is the one step
+the tool does not support.
+
+### Landed 2026-09-29 — hardening, and what it deferred
+
+R-H5.1/5.2 (build beside, swap on success), R-H5.3 (flock), R-H5.4
+(`data/reports/rebuild_log.tsv`), R-H5.5 (pre-flight over every consumed
+input), R-H4's `MH2_DATA_DIR`, and §6's `write_ruling()` reroute are all
+in. Verified end to end against a full copy of real `data/` under
+`MH2_DATA_DIR`, not only against fixtures: a clean run swaps and passes
+`PRAGMA integrity_check`; a run failed mid-pipeline (corrupted grade
+worksheet) left `mh2.db` byte-identical and logged
+`failed:loading grade ruling into node_grade`.
+
+Follow-up, 2026-09-30: `candidate_ruling` gained `node_id_seen`,
+`node_text_seen` and `ladder_file_seen` (written on both branches, so a
+rejection carries an anchor even though it raises no proposal — done as a
+schema line while the table still held 0 rows, rather than as a migration
+against live writer judgment later); `CATEGORY_TO_STEMS_CSV` came out of
+the rebuild pre-flight, since it is read by `mh2/coverage.py` and
+`app/db.py` and by no step the rebuild runs; and the read-path rerouting
+gained a test that observes a non-zero tally across a rebuild *and* a real
+`reconcile_review` run, replacing a check that had compared 0 against 0.
+
+Carried forward, each with a trigger:
+
+- **`candidate_ruling` has no staleness reconciliation.**
+  `reconcile_review.py` reports staleness for `tag_review`,
+  `standard_review` and `standard_color_override` against rebuilt ladders;
+  it knows nothing about `candidate_ruling`.
+
+  *Wording corrected 2026-09-30.* This previously said such a ruling is
+  "stranded silently rather than reported", implying detection was the
+  gap. It is not. `source_key` is `stem_id` + a hash of normalized node
+  text (`mh2/ingest_ladders.py`, `source_key()`), so rewording a node
+  mints a new key and retires the old one; staleness is therefore fully
+  detectable by membership against
+  `node_lookup.build_source_key_lookup`, exactly as
+  `reconcile_tag_reviews` already does it. Stale rulings are **detectable
+  but not yet detected**, and the report would need to be actionable when
+  they are — which is why the `*_seen` anchor columns landed first
+  (2026-09-30): `tag_review`'s stale-row report prints `ladder_file_seen`
+  and `node_text_seen` so a writer can find the node in a Word document,
+  and until those columns existed a stale `candidate_ruling` row could
+  have been reported only as a `standard_id` and an opaque `source_key`.
+
+  **Trigger:** the first rebuild that changes PK–5 node text after writers
+  have ruled on candidates — or sooner, if the 6–9 ladders land first,
+  since they arrive with the most node churn.
+- **A failed rebuild leaves `mh2.db.building` on disk** (~160 MB on
+  current data). Deliberate — it is the evidence of what failed, and the
+  next run unlinks it before starting. **Trigger:** disk pressure on the
+  host, or more than one stale build file ever existing at once.
+- **The rebuild lock is POSIX-only** (`fcntl.flock`). Covers a Mac laptop
+  and a Linux App Service, which is every host currently contemplated.
+  **Trigger:** IT provisions a Windows host; then `msvcrt.locking`, and
+  not before.
+- **No end-to-end test of a *successful* full rebuild.** The success path
+  was verified by hand (above) but not pinned by a test: a real rebuild
+  needs the true source workbooks, which are not in the repo.
+  `tests/test_rebuild_hardening.py` pins the swap, the lock, pre-flight
+  and the log; the twelve-step pipeline itself is unpinned.
+  **Trigger:** the fetch step lands (R-H1/R-H2) and inputs become
+  machine-obtainable, at which point this becomes cheap.
+
+---
+
+## 9. Ladder edits export (2026-09-30)
+
+Brief: `docs/brief_ladder_edits_export.md`. The **Download latest ladder
+edits** link in the writer bar serves `GET /api/export/ladder-edits.xlsx`:
+every open tag proposal (Add) and every `incorrect_tag` review whose node
+still carries the standard (Remove), in ladder order, for the one writer
+who keeps the Word ladders current. The lead enters every suggestion, and
+entering it counts as sign-off; there is no approval state. This is the
+first surface to consume the §7 worklist data. `GET /api/worklist` itself
+still has no screen.
+
+**Removals are now checked.** `mh2/ladder_edits.removal_state()` classifies
+each `incorrect_tag` as removed / still tagged / node reworded against the
+current `mh2.db`. `reconcile_review.py` reports all three. The state is
+derived, never stored: §5.2 still holds and no `tag_review` row is modified.
+Accepted consequence: a tag typed back into the ladder after removal
+resurfaces as a Remove row, because the judgment still stands.
+
+**Verified against real data, 2026-09-30:** against the real `mh2.db` and
+a scratch copy of `mh2_seq.db` with four added rows, the export took ~94ms.
+A Remove for `4.NBT.B.4` showed the ladder's own spelling, `4.NBT.4`,
+through the alias path. The copy also held three real open proposals of
+John's from 2026-09-30. Two of them (#2/#3, `K.CC.A.1` on
+`COU:64aadc1fe4cda757`) are the same proposal twice. They predate the
+route's `open_proposal_exists` guard, and the export folds them into one
+row. The rows themselves are untouched; withdraw one if it was a test.
+
+Carried forward:
+
+- **No "applied, waiting for rebuild" mark.** Between an edit and the next
+  rebuild, the keeper re-sees edits already made. For now the download's
+  header states the date the ladders were last read into the tool
+  (`MAX(ingest_log.ts)` in `mh2.db`), and the keeper's Done column covers
+  one download. The rebuild cadence is expected to be about weekly but is
+  not settled, and the keeper, not John, owns it.
+  **Trigger:** rebuilds turn out to run less than weekly, or the keeper
+  reports re-doing or losing track of edits across downloads. Then add a
+  keeper-set `applied` state, cleared by reconcile, that the export shows
+  and does not count.

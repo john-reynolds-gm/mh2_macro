@@ -103,6 +103,34 @@ def retire_standard_override(con: sqlite3.Connection, standard_id: str) -> None:
     con.commit()
 
 
+# --------------------------------------------------------------- standard_status
+
+def get_standard_status(con: sqlite3.Connection, standard_id: str) -> dict | None:
+    row = con.execute(
+        "SELECT * FROM standard_status WHERE standard_id = ?", (standard_id,)
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def list_standard_statuses(con: sqlite3.Connection) -> dict[str, dict]:
+    return {r["standard_id"]: dict(r)
+            for r in con.execute("SELECT * FROM standard_status")}
+
+
+def set_standard_status(con: sqlite3.Connection, standard_id: str, status: str,
+                         set_by: str) -> None:
+    con.execute(
+        "INSERT INTO standard_status (standard_id, status, set_by, set_at)"
+        " VALUES (?,?,?,?)"
+        " ON CONFLICT(standard_id) DO UPDATE SET"
+        " status=excluded.status,"
+        " set_by=excluded.set_by,"
+        " set_at=excluded.set_at",
+        (standard_id, status, set_by, _now()),
+    )
+    con.commit()
+
+
 # --------------------------------------------------------------- tag_review
 
 def get_tag_review(con: sqlite3.Connection, standard_id: str, source_key: str) -> dict | None:
@@ -192,6 +220,18 @@ def update_proposal_state(con: sqlite3.Connection, proposal_id: int, state: str,
     con.commit()
 
 
+def open_proposal_exists(con: sqlite3.Connection, standard_id: str,
+                          source_key: str) -> bool:
+    """Is there already an unresolved proposal for this tag? Guards against
+    a second 'accept' on the same candidate raising a duplicate instruction
+    to edit the same ladder in the same way."""
+    return con.execute(
+        "SELECT 1 FROM tag_proposal WHERE standard_id = ? AND source_key = ?"
+        " AND state = 'open' LIMIT 1",
+        (standard_id, source_key),
+    ).fetchone() is not None
+
+
 def get_tag_proposal(con: sqlite3.Connection, proposal_id: int) -> dict | None:
     row = con.execute(
         "SELECT * FROM tag_proposal WHERE proposal_id = ?", (proposal_id,)
@@ -204,8 +244,70 @@ def list_open_proposals(con: sqlite3.Connection) -> list[dict]:
         "SELECT * FROM tag_proposal WHERE state = 'open'")]
 
 
+def list_pending_proposals_for_standard(con: sqlite3.Connection,
+                                        standard_id: str) -> list[dict]:
+    """Proposals for one standard that the ladder has not absorbed yet:
+    'open' (waiting on a ladder edit + rebuild) and 'needs_attention' (the
+    proposed node vanished on rebuild -- still unresolved, so it must stay
+    visible rather than silently drop out). Oldest first."""
+    return [dict(r) for r in con.execute(
+        "SELECT * FROM tag_proposal WHERE standard_id = ?"
+        " AND state IN ('open','needs_attention') ORDER BY proposal_id",
+        (standard_id,))]
+
+
 def list_proposals(con: sqlite3.Connection, state: str | None = None) -> list[dict]:
     if state is None:
         return [dict(r) for r in con.execute("SELECT * FROM tag_proposal")]
     return [dict(r) for r in con.execute(
         "SELECT * FROM tag_proposal WHERE state = ?", (state,))]
+
+
+# ---------------------------------------------------------- candidate_ruling
+
+def get_candidate_ruling(con: sqlite3.Connection, source_key: str,
+                          standard_id: str) -> dict | None:
+    row = con.execute(
+        "SELECT * FROM candidate_ruling WHERE source_key = ? AND standard_id = ?",
+        (source_key, standard_id),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def list_candidate_rulings(con: sqlite3.Connection) -> dict[tuple[str, str], dict]:
+    """(source_key, standard_id) -> ruling row, for the whole table.
+
+    Returned whole rather than filtered because the review tool's callers
+    aggregate over the entire suggested-candidate pool (under 1,000 rows) in
+    one pass, and they live in mh2.db while this table lives in mh2_seq.db --
+    there is no join to push down.
+    """
+    return {(r["source_key"], r["standard_id"]): dict(r)
+            for r in con.execute("SELECT * FROM candidate_ruling")}
+
+
+def set_candidate_ruling(con: sqlite3.Connection, source_key: str, standard_id: str,
+                          ruling: str, ruled_by: str, node_id_seen: str | None = None,
+                          node_text_seen: str | None = None,
+                          ladder_file_seen: str | None = None) -> None:
+    con.execute(
+        "INSERT INTO candidate_ruling (source_key, standard_id, ruling,"
+        " node_id_seen, node_text_seen, ladder_file_seen, ruled_by, ruled_at)"
+        " VALUES (?,?,?,?,?,?,?,?)"
+        " ON CONFLICT(source_key, standard_id) DO UPDATE SET"
+        " ruling=excluded.ruling,"
+        " node_id_seen=excluded.node_id_seen,"
+        " node_text_seen=excluded.node_text_seen,"
+        " ladder_file_seen=excluded.ladder_file_seen,"
+        " ruled_by=excluded.ruled_by,"
+        " ruled_at=excluded.ruled_at",
+        (source_key, standard_id, ruling, node_id_seen, node_text_seen,
+         ladder_file_seen, ruled_by, _now()),
+    )
+    con.commit()
+
+
+def candidate_ruling_reviewers(con: sqlite3.Connection) -> list[str]:
+    return [r[0] for r in con.execute(
+        "SELECT DISTINCT ruled_by FROM candidate_ruling"
+        " WHERE ruled_by IS NOT NULL ORDER BY ruled_by")]

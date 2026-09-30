@@ -75,12 +75,12 @@ def test_standard_detail_on_red_zero_tag_standard_does_not_404(client):
 
 def test_review_write_works_on_red_zero_tag_standard(client):
     resp = client.post("/api/standards/K.MD.B.3/review",
-                        json={"outcome": "insufficient", "reviewed_by": "jane"})
+                        json={"outcome": "not_covered", "reviewed_by": "jane"})
     assert resp.status_code == 200
     assert resp.json()["computed_color_at_review"] == "Red"
 
     row = {r["standard_id"]: r for r in client.get("/api/audit").json()}["K.MD.B.3"]
-    assert row["review_state"] == "insufficient"
+    assert row["review_state"] == "not_covered"
 
 
 def test_standard_review_write_then_read_back(client):
@@ -173,3 +173,62 @@ def test_proposal_create_and_withdraw(client):
     resp = client.post(f"/api/proposals/{proposal_id}/withdraw", json={})
     assert resp.status_code == 200
     assert resp.json()["withdrawn"] is True
+
+
+def test_open_proposal_shows_in_standard_detail_without_changing_color(client):
+    before = client.get("/api/standards/K.MD.B.3").json()
+    assert before["proposals"] == []
+
+    resp = client.post("/api/proposals", json={
+        "standard_id": "K.MD.B.3", "source_key": "COM::count more",
+        "node_text_seen": "count more", "proposed_by": "jane",
+        "rationale": "covers it",
+    })
+    pid = resp.json()["proposal_id"]
+
+    detail = client.get("/api/standards/K.MD.B.3").json()
+    assert detail["color"] == before["color"] == "Red"
+    assert detail["tags"] == []
+    [p] = detail["proposals"]
+    assert p["proposal_id"] == pid and p["state"] == "open"
+    assert p["stem_id"] == "COM" and p["node_text"] is not None
+
+    client.post(f"/api/proposals/{pid}/withdraw", json={})
+    assert client.get("/api/standards/K.MD.B.3").json()["proposals"] == []
+
+
+def test_proposal_already_in_ladder_is_not_shown_twice(client):
+    # COM::count more is already a real tag on K.CC.A.1 -- an unreconciled
+    # proposal for it must not appear beside the tag it duplicates.
+    client.post("/api/proposals", json={
+        "standard_id": "K.CC.A.1", "source_key": "COM::count more",
+        "node_text_seen": "count more", "proposed_by": "jane",
+    })
+    detail = client.get("/api/standards/K.CC.A.1").json()
+    assert len(detail["tags"]) == 1
+    assert detail["proposals"] == []
+
+
+def test_duplicate_open_proposal_rejected(client):
+    body = {"standard_id": "K.MD.B.3", "source_key": "COM::count more",
+            "node_text_seen": "count more", "proposed_by": "jane"}
+    assert client.post("/api/proposals", json=body).status_code == 200
+    assert client.post("/api/proposals", json=body).status_code == 409
+
+
+def test_proposal_node_text_stamped_server_side(client):
+    # No node_text_seen from the client: the picker already identifies the
+    # node, so the snapshot comes from the node lookup.
+    resp = client.post("/api/proposals", json={
+        "standard_id": "K.MD.B.3", "source_key": "COM::count more",
+        "proposed_by": "jane"})
+    assert resp.status_code == 200
+    [p] = client.get("/api/standards/K.MD.B.3").json()["proposals"]
+    assert p["node_text_seen"] == p["node_text"]
+
+
+def test_proposal_unknown_node_without_text_rejected(client):
+    resp = client.post("/api/proposals", json={
+        "standard_id": "K.MD.B.3", "source_key": "COM::no such node",
+        "proposed_by": "jane"})
+    assert resp.status_code == 400

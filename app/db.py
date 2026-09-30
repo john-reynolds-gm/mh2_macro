@@ -3,20 +3,28 @@ db.py — Review page data access.
 
 Every query here is read-heavy and cheap (the CA/TX/FL suggested-candidate
 pool is under 1,000 rows). Nothing is precomputed into a separate table:
-status is always derived live from `node_standards` / `node_standards_parsed`
-at query time, per the build brief — never from a workbook's static column.
+status is always derived live at query time from `node_standards_parsed`
+and from `candidate_ruling`, per the build brief — never from a workbook's
+static column.
 
-The one write path, `write_ruling()`, upserts into `node_standards` (layer 3,
-authoritative, never touched by a rebuild). It never writes to
-`node_standards_parsed` or `candidates` — both are regenerable pipeline
-output and stay untouched by review actions.
+The one write path, `write_ruling()`, records the reviewer's judgment in
+`mh2_seq.db` — the durable review database. It writes NOTHING to `mh2.db`,
+which `scripts/rebuild.py` destroys and rebuilds from data/source on every
+run; a ruling stored there would be silently lost at the next rebuild.
+(This docstring previously claimed `node_standards` was "authoritative,
+never touched by a rebuild". That was false from the moment rebuild.py
+started unlinking the database, and the write path has been moved rather
+than the claim repaired.)
+
+The tags themselves are not written anywhere: they live in the Word
+ladders, which stay the single source of truth (§6). An accepted candidate
+raises a `tag_proposal` — an instruction to a human to go edit that ladder.
 """
 
 import csv
 import json
 import sqlite3
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import streamlit as st
@@ -24,6 +32,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
+from mh2 import node_lookup, review_store  # noqa: E402
 
 PRIORITY_STATES = ["CA", "TX", "FL"]
 
@@ -33,6 +42,18 @@ def get_connection():
     con = sqlite3.connect(str(config.DB), check_same_thread=False)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
+    return con
+
+
+@st.cache_resource
+def get_seq_connection():
+    """mh2_seq.db — durable review state, the database a rebuild never
+    destroys. Schema is ensured here so the tool works on a checkout that
+    has not run a rebuild yet, same as review_api.py's `_seq_con()`."""
+    con = sqlite3.connect(str(config.SEQ_DB), check_same_thread=False)
+    con.row_factory = sqlite3.Row
+    con.execute("PRAGMA foreign_keys = ON")
+    review_store.ensure_schema(con, config.SCHEMA_SEQ)
     return con
 
 
@@ -72,24 +93,34 @@ def domain_tree(_con, version: int):
 
 
 def _ruled_totals_by_stem(con):
+    """stem_id -> (ruled, total) over the suggested-candidate pool.
+
+    The tally is assembled in Python rather than by SQL `GROUP BY` because
+    `ruled` now comes from `candidate_ruling` in the other database. Rulings
+    are keyed on `source_key`, so node_ids are translated through
+    `node_lookup` — the one sanctioned place that query is issued.
+    """
     rows = con.execute("""
-        SELECT n.stem_id,
-               COUNT(*) AS total,
-               SUM(CASE WHEN ns.source = 'human'
-                         AND ns.status IN ('accepted','rejected')
-                        THEN 1 ELSE 0 END) AS ruled
+        SELECT n.stem_id, c.node_id, c.standard_code
         FROM candidates c
         JOIN nodes n ON n.node_id = c.node_id
         LEFT JOIN node_standards_parsed nsp
                ON nsp.node_id = c.node_id AND nsp.standard_code = c.standard_code
               AND nsp.state = c.state
-        LEFT JOIN node_standards ns
-               ON ns.node_id = c.node_id AND ns.standard_id = c.standard_code
         WHERE c.auto_surface = 1 AND c.state IN ('CA','TX','FL')
           AND nsp.node_id IS NULL
-        GROUP BY n.stem_id
     """).fetchall()
-    return {r["stem_id"]: (r["ruled"] or 0, r["total"] or 0) for r in rows}
+    nodes = node_lookup.build_node_lookup(con)
+    ruled_keys = set(review_store.list_candidate_rulings(get_seq_connection()))
+
+    totals: dict[str, list[int]] = {}
+    for r in rows:
+        tally = totals.setdefault(r["stem_id"], [0, 0])
+        tally[1] += 1
+        info = nodes.get(r["node_id"])
+        if info and (info.source_key, r["standard_code"]) in ruled_keys:
+            tally[0] += 1
+    return {stem_id: (ruled, total) for stem_id, (ruled, total) in totals.items()}
 
 
 @st.cache_data
@@ -193,7 +224,8 @@ def suggested_pool(_con, version: int, stem_id: str = None,
     the 'From the ladder' chips, already trusted, not up for review.
 
     Each row carries the live ruling (None / 'accepted' / 'rejected') read
-    from `node_standards`, joined at query time, never cached separately.
+    from `candidate_ruling` in mh2_seq.db and attached below — not joined,
+    because it is a different database — and never cached separately.
     """
     con = _con
     states = states or PRIORITY_STATES
@@ -213,8 +245,7 @@ def suggested_pool(_con, version: int, stem_id: str = None,
         SELECT c.node_id, n.concept_skill, c.state, c.standard_code,
                c.strength, c.combined_score, c.grade_offset, c.evidence_json,
                c.browse_rank, std.text AS standard_text, std.grade,
-               mr.relevance AS rerank_relevance, mr.rerank_rank,
-               ns.status AS ruled_status, ns.reviewed_by, ns.reviewed_at
+               mr.relevance AS rerank_relevance, mr.rerank_rank
         FROM candidates c
         JOIN nodes n ON n.node_id = c.node_id
         LEFT JOIN node_standards_parsed nsp
@@ -224,16 +255,21 @@ def suggested_pool(_con, version: int, stem_id: str = None,
         LEFT JOIN model_reranks mr
                ON mr.node_id = c.node_id AND mr.state = c.state
               AND mr.standard_code = c.standard_code
-        LEFT JOIN node_standards ns
-               ON ns.node_id = c.node_id AND ns.standard_id = c.standard_code
         WHERE {' AND '.join(where)} AND nsp.node_id IS NULL
         ORDER BY c.node_id, c.state,
                  CASE WHEN mr.rerank_rank IS NOT NULL THEN mr.rerank_rank ELSE 999 END,
                  c.combined_score DESC
     """
     rows = _rows(con, sql, params)
+    nodes = node_lookup.build_node_lookup(con)
+    rulings = review_store.list_candidate_rulings(get_seq_connection())
     for r in rows:
-        r["ruled"] = r["ruled_status"] in ("accepted", "rejected") and r["reviewed_by"] is not None
+        info = nodes.get(r["node_id"])
+        ruling = rulings.get((info.source_key, r["standard_code"])) if info else None
+        r["ruled_status"] = ruling["ruling"] if ruling else None
+        r["reviewed_by"] = ruling["ruled_by"] if ruling else None
+        r["reviewed_at"] = ruling["ruled_at"] if ruling else None
+        r["ruled"] = ruling is not None
     return rows
 
 
@@ -316,28 +352,43 @@ def pane_header_tag(rows_for_state: list) -> tuple:
 # ------------------------------------------------------------------ write
 
 def write_ruling(con, node_id: str, standard_id: str, ruling: str, reviewer: str):
-    """Upsert into node_standards — layer 3, authoritative, durable across a
-    rebuild. `ruling` is 'accepted' or 'rejected'. Never touches layer 1/2."""
+    """Record a ruling on a suggested candidate. `ruling` is 'accepted' or
+    'rejected'. Writes to mh2_seq.db only — `con` is the mh2.db connection,
+    read here solely to translate node_id into the `source_key` the ruling
+    is keyed on.
+
+    'accepted' additionally raises a `tag_proposal`: the ruling records the
+    judgment, the proposal is the instruction to add the tag to the Word
+    ladder, which is the only place a tag actually exists (§6). A second
+    accept does not raise a duplicate — the open proposal already says it.
+
+    Both branches store what the reviewer was looking at (node id, node
+    text, ladder file). A rejection needs it most: it raises no proposal to
+    carry an anchor of its own, and it is the ruling that goes on quietly
+    suppressing a suggestion.
+    """
     assert ruling in ("accepted", "rejected")
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    con.execute("""
-        INSERT INTO node_standards
-            (node_id, standard_id, relation, source, status, reviewed_by, reviewed_at)
-        VALUES (?, ?, 'aligned', 'human', ?, ?, ?)
-        ON CONFLICT(node_id, standard_id) DO UPDATE SET
-            status = excluded.status,
-            source = 'human',
-            reviewed_by = excluded.reviewed_by,
-            reviewed_at = excluded.reviewed_at
-    """, (node_id, standard_id, ruling, reviewer, now))
-    con.commit()
+    info = node_lookup.build_node_lookup(con).get(node_id)
+    if info is None:
+        raise ValueError(f"no such node_id in mh2.db: {node_id!r}")
+
+    seq = get_seq_connection()
+    review_store.set_candidate_ruling(
+        seq, info.source_key, standard_id, ruling, reviewer,
+        node_id_seen=node_id, node_text_seen=info.node_text,
+        ladder_file_seen=info.source_file)
+    if ruling == "accepted" and not review_store.open_proposal_exists(
+            seq, standard_id, info.source_key):
+        review_store.create_tag_proposal(
+            seq, standard_id=standard_id, source_key=info.source_key,
+            node_text_seen=info.node_text, proposed_by=reviewer,
+            node_id_seen=node_id, ladder_file=info.source_file)
 
 
 def known_reviewers(con):
-    rows = con.execute(
-        "SELECT DISTINCT reviewed_by FROM node_standards"
-        " WHERE reviewed_by IS NOT NULL ORDER BY reviewed_by").fetchall()
-    return [r[0] for r in rows]
+    """Reviewer names seen in `candidate_ruling`. `con` (mh2.db) is unused —
+    kept so app/review.py's call site does not change."""
+    return review_store.candidate_ruling_reviewers(get_seq_connection())
 
 
 # ------------------------------------------------------------- gap pool

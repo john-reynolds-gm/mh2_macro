@@ -26,16 +26,17 @@ from __future__ import annotations
 import os
 import secrets
 import sqlite3
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
 import config
-from mh2 import node_lookup, review_store
+from mh2 import ladder_edits, node_lookup, review_store
 from mh2.coverage import GREEN_MATCH, build_rows, build_tags_by_standard
 
 _security = HTTPBasic(auto_error=False)
@@ -140,6 +141,7 @@ def audit():
     try:
         reviews = review_store.list_standard_reviews(seq)
         overrides = review_store.list_standard_overrides(seq)
+        statuses = review_store.list_standard_statuses(seq)
     finally:
         seq.close()
 
@@ -148,9 +150,12 @@ def audit():
         d = _row_out(row)
         review = reviews.get(row.code)
         override = overrides.get(row.code)
+        status = statuses.get(row.code)
         d["review_state"] = review["outcome"] if review else "unreviewed"
         d["effective_color"] = override["writer_color"] if override else row.color
         d["has_override"] = override is not None
+        d["writer_status"] = status["status"] if status else None
+        d["writer_status_by"] = status["set_by"] if status else None
         out.append(d)
     return out
 
@@ -180,6 +185,8 @@ def standard_detail(standard_id: str):
         standard_review = review_store.get_standard_review(seq, standard_id)
         override = review_store.get_standard_override(seq, standard_id)
         tag_reviews = review_store.list_tag_reviews_for_standard(seq, standard_id)
+        writer_status = review_store.get_standard_status(seq, standard_id)
+        pending = review_store.list_pending_proposals_for_standard(seq, standard_id)
     finally:
         seq.close()
 
@@ -193,16 +200,37 @@ def standard_detail(standard_id: str):
             "grade_match": t.grade_match, "note": t.note,
             "source_key": source_key,
             "node_text": info.node_text if info else None,
+            "stem_id": info.stem_id if info else None,
             "ladder_file": info.source_file if info else None,
             "review": tag_reviews.get(source_key) if source_key else None,
+        })
+
+    # A proposal is shown beside the real tags until a rebuild puts its node
+    # into node_standards. One whose source_key already appears among the
+    # tags has landed but not been reconciled yet (--skip-review-reconcile);
+    # showing it twice would contradict the ladder, so it is dropped here.
+    # Never affects color -- only the ladder does.
+    tagged_keys = {t["source_key"] for t in tag_out if t["source_key"]}
+    node_by_key = {info.source_key: info for info in node_by_id.values()}
+    proposals_out = []
+    for p in pending:
+        if p["source_key"] in tagged_keys:
+            continue
+        info = node_by_key.get(p["source_key"])
+        proposals_out.append({
+            **p,
+            "node_text": info.node_text if info else None,
+            "stem_id": info.stem_id if info else None,
         })
 
     return {
         "standard_id": standard_id,
         "color": _color(tags),
         "tags": tag_out,
+        "proposals": proposals_out,
         "standard_review": standard_review,
         "override": override,
+        "writer_status": writer_status,
     }
 
 
@@ -256,10 +284,33 @@ def worklist():
     }
 
 
+@app.get("/api/export/ladder-edits.xlsx")
+def export_ladder_edits():
+    """The ladder keeper's download: every tag to add or remove, as Excel.
+    A snapshot derived from current state on each call -- nothing about the
+    download itself is recorded (docs/brief_ladder_edits_export.md)."""
+    mh2 = _mh2_con()
+    seq = _seq_con()
+    try:
+        edits = ladder_edits.build_ladder_edits(mh2, seq)
+        ladders_read = ladder_edits.ladders_last_read(mh2)
+    finally:
+        mh2.close()
+        seq.close()
+
+    today = date.today().isoformat()
+    body = ladder_edits.write_xlsx(edits, exported_on=today, ladders_read=ladders_read)
+    return Response(
+        content=body,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition":
+                 f'attachment; filename="ladder_edits_{today}.xlsx"'})
+
+
 # ---------------------------------------------------------------------- writes
 
 class StandardReviewIn(BaseModel):
-    outcome: Literal["confirmed", "insufficient"]
+    outcome: Literal["confirmed", "partial_coverage", "not_covered"]
     reviewed_by: str
     note: str | None = None
 
@@ -330,10 +381,25 @@ def retire_override(standard_id: str):
     return {"standard_id": standard_id, "retired": True}
 
 
+class StandardStatusIn(BaseModel):
+    status: Literal["review_complete", "in_progress", "not_yet_reviewed"]
+    set_by: str
+
+
+@app.post("/api/standards/{standard_id}/status")
+def set_standard_status(standard_id: str, body: StandardStatusIn):
+    seq = _seq_con()
+    try:
+        review_store.set_standard_status(seq, standard_id, body.status, body.set_by)
+    finally:
+        seq.close()
+    return {"standard_id": standard_id, "status": body.status}
+
+
 class TagReviewIn(BaseModel):
     standard_id: str
     source_key: str
-    outcome: Literal["confirmed", "insufficient", "wrong_node"]
+    outcome: Literal["confirmed", "partial_coverage", "incorrect_tag"]
     reviewed_by: str
     note: str | None = None
 
@@ -374,7 +440,11 @@ def clear_tag_review(standard_id: str, source_key: str):
 class ProposalIn(BaseModel):
     standard_id: str
     source_key: str
-    node_text_seen: str
+    # Snapshot of the node's wording, so the ladder editor can find it even if
+    # it is later reworded. Stamped server-side from the node lookup, like
+    # app/db.py's write_ruling(); the client value is only a fallback for a
+    # source_key the lookup does not know.
+    node_text_seen: str | None = None
     proposed_by: str
     rationale: str | None = None
 
@@ -387,10 +457,16 @@ def create_proposal(body: ProposalIn):
     finally:
         mh2.close()
 
+    node_text_seen = info.node_text if info else body.node_text_seen
+    if not node_text_seen:
+        raise HTTPException(400, f"unknown node {body.source_key!r} and no node_text_seen given")
+
     seq = _seq_con()
     try:
+        if review_store.open_proposal_exists(seq, body.standard_id, body.source_key):
+            raise HTTPException(409, "an open proposal for this node already exists")
         proposal_id = review_store.create_tag_proposal(
-            seq, body.standard_id, body.source_key, body.node_text_seen,
+            seq, body.standard_id, body.source_key, node_text_seen,
             body.proposed_by,
             node_id_seen=info.node_id if info else None,
             ladder_file=info.source_file if info else None,

@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
-from mh2 import node_lookup, review_store  # noqa: E402
+from mh2 import ladder_edits, node_lookup, review_store  # noqa: E402
 from mh2.coverage import GREEN_MATCH, build_tags_by_standard  # noqa: E402
 
 
@@ -100,6 +100,21 @@ def reconcile_tag_reviews(seq_con: sqlite3.Connection, node_by_key: dict) -> lis
     return changed
 
 
+def reconcile_removals(seq_con: sqlite3.Connection, tags_by_standard: dict,
+                        node_by_key: dict) -> list[dict]:
+    """Has each 'incorrect_tag' judgment been acted on in the ladder? Same
+    classification the ladder-edits export uses (ladder_edits.removal_state).
+    Reports only -- the tag_review row is never modified (§5.2), so the
+    state is re-derived on every run rather than stored."""
+    events = []
+    for row in review_store.list_all_tag_reviews(seq_con):
+        if row["outcome"] != "incorrect_tag":
+            continue
+        state, _ = ladder_edits.removal_state(row, node_by_key, tags_by_standard)
+        events.append({"kind": state, "row": row})
+    return events
+
+
 def reconcile_standard_reviews(seq_con: sqlite3.Connection, tags_by_standard: dict) -> list[dict]:
     """§5.3 / FLAG 3. Reports staleness; never modifies the row."""
     stale = []
@@ -127,7 +142,8 @@ def reconcile_overrides(seq_con: sqlite3.Connection, tags_by_standard: dict) -> 
 
 
 def _write_report(out_path: Path, proposal_events, changed_tag_reviews,
-                   stale_standard_reviews, override_findings) -> None:
+                   stale_standard_reviews, override_findings,
+                   removal_events) -> None:
     lines = []
 
     landed = [e for e in proposal_events if e["kind"] == "landed"]
@@ -171,6 +187,19 @@ def _write_report(out_path: Path, proposal_events, changed_tag_reviews,
         lines.append(f"  {r['standard_id']:20s} {r['source_key']:40s} "
                      f"ladder_file={r['ladder_file_seen']!r} node_text={r['node_text_seen']!r}")
 
+    for kind, title in (
+            (ladder_edits.REMOVED, "removed from the ladder (done)"),
+            (ladder_edits.STILL_TAGGED, "still tagged (outstanding work)"),
+            (ladder_edits.NEEDS_ATTENTION, "node reworded or removed")):
+        events = [e for e in removal_events if e["kind"] == kind]
+        lines.append("")
+        lines.append(f"=== tag_review incorrect_tag: {title} -- never modified ===")
+        lines.append(f"{len(events)} rows")
+        for e in events:
+            r = e["row"]
+            lines.append(f"  {r['standard_id']:20s} {r['source_key']:40s} "
+                         f"ladder_file={r['ladder_file_seen']!r}")
+
     lines.append("")
     lines.append("=== standard_review: may be stale (rollup color changed since review) ===")
     lines.append(f"{len(stale_standard_reviews)} rows")
@@ -210,13 +239,14 @@ def run(mh2_db_path: Path, seq_db_path: Path, out_dir: Path) -> Path:
     proposal_events = reconcile_proposals(mh2_con, seq_con, tags_by_standard,
                                            node_by_id, node_by_key)
     changed_tag_reviews = reconcile_tag_reviews(seq_con, node_by_key)
+    removal_events = reconcile_removals(seq_con, tags_by_standard, node_by_key)
     stale_standard_reviews = reconcile_standard_reviews(seq_con, tags_by_standard)
     override_findings = reconcile_overrides(seq_con, tags_by_standard)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "review_reconcile.txt"
     _write_report(out_path, proposal_events, changed_tag_reviews,
-                  stale_standard_reviews, override_findings)
+                  stale_standard_reviews, override_findings, removal_events)
 
     landed_n = sum(1 for e in proposal_events if e["kind"] == "landed")
     print(f"proposals: {landed_n} landed, "
@@ -224,6 +254,10 @@ def run(mh2_db_path: Path, seq_db_path: Path, out_dir: Path) -> Path:
           f"{sum(1 for e in proposal_events if e['kind'] == 'needs_attention')} needs_attention, "
           f"{sum(1 for e in proposal_events if e['kind'] == 'open')} still open")
     print(f"tag_review referring to changed content: {len(changed_tag_reviews)}")
+    print("incorrect_tag removals: "
+          + ", ".join(f"{sum(1 for e in removal_events if e['kind'] == k)} {k}"
+                      for k in (ladder_edits.REMOVED, ladder_edits.STILL_TAGGED,
+                                ladder_edits.NEEDS_ATTENTION)))
     print(f"standard_review possibly stale: {len(stale_standard_reviews)}")
     print(f"overrides redundant: {len(override_findings['redundant'])}  "
           f"conflicts: {len(override_findings['conflicts'])}")

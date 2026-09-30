@@ -110,6 +110,23 @@ def row_dict(r: coverage.StandardRow) -> dict:
     }
 
 
+def build_node_stems(con: sqlite3.Connection,
+                      rows: list[coverage.StandardRow]) -> dict[str, str]:
+    """node_id -> stem_id for every node any row's tags point at -- lets the
+    page show a tag's owning stem name (via stem_names) instead of the
+    opaque node_id. Sibling lookup to build_node_lookup, same node_id set;
+    kept separate rather than folded into one dict so build_node_lookup's
+    existing str-keyed return shape (pinned by tests) doesn't change."""
+    node_ids = sorted({t.node_id for r in rows for t in r.tags})
+    if not node_ids:
+        return {}
+    placeholders = ",".join("?" * len(node_ids))
+    found = dict(con.execute(
+        f"SELECT node_id, stem_id FROM nodes WHERE node_id IN ({placeholders})",
+        node_ids))
+    return {nid: found[nid] for nid in node_ids if found.get(nid)}
+
+
 def build_node_lookup(con: sqlite3.Connection,
                        rows: list[coverage.StandardRow]) -> dict[str, str]:
     """node_id -> node_text for every node any row's tags point at (brief
@@ -143,12 +160,23 @@ def summary_counts(rows: list[coverage.StandardRow]) -> dict[str, int]:
     drafted_ok = sum(1 for r in rows if r.ladder_status == "drafted" and r.color != "Red")
     undrafted = sum(1 for r in rows if r.ladder_status == "undrafted")
     unattributed = sum(1 for r in rows if r.ladder_status == "unattributed")
+    # For the header progress bar: color totals across every ladder status,
+    # with Red split into "drafted" (a worklist item -- someone missed this)
+    # vs. everything else (nothing to do yet), same split as drafted_red
+    # above but expressed against the full Red total rather than just drafted.
+    green = sum(1 for r in rows if r.color == "Green")
+    yellow = sum(1 for r in rows if r.color == "Yellow")
+    red_other = sum(1 for r in rows if r.color == "Red" and r.ladder_status != "drafted")
     return {
         "total": len(rows),
         "drafted_red": drafted_red,
         "drafted_ok": drafted_ok,
         "undrafted": undrafted,
         "unattributed": unattributed,
+        "green": green,
+        "yellow": yellow,
+        "red_drafted": drafted_red,
+        "red_other": red_other,
     }
 
 
@@ -171,8 +199,8 @@ _PAGE_TEMPLATE = """<!doctype html>
   --text: #1a1d23; --muted: #6b7080; --muted-2: #8a8f9c;
   --accent: #3457d5; --accent-fg: #ffffff; --accent-soft: #eaeefc; --accent-soft-bd: #c3ccf3;
   --green-bg: #e6f4ea; --green-fg: #1e7a37; --green-bd: #b3ddbf;
-  --yellow-bg: #fdf1d6; --yellow-fg: #93690a; --yellow-bd: #efd694;
-  --red-bg: #fbe6e4; --red-fg: #ab2f24; --red-bd: #f0bab2;
+  --yellow-bg: #fdf1d6; --yellow-fg: #f5a300; --yellow-bd: #efd694;
+  --red-bg: #fbe6e4; --red-fg: #ab2f24; --red-bd: #f0bab2; --red-other-fg: #e2776b;
   --chip-bg: #eef0f3; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
   --shadow-sm: 0 1px 2px rgba(20, 24, 33, .05);
   --shadow-md: 0 2px 8px rgba(20, 24, 33, .06), 0 1px 2px rgba(20, 24, 33, .04);
@@ -192,6 +220,25 @@ header {
 h1 { font-size: 17px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 6px; }
 #summary { color: var(--muted); font-size: 13px; }
 #summary b { color: var(--text); font-weight: 650; }
+.summary-total { margin-bottom: 8px; }
+.progress-bar { display: flex; width: 100%; max-width: 640px; height: 12px;
+  border-radius: 999px; overflow: hidden; background: var(--panel); }
+.progress-seg { height: 100%; margin-right: 2px; }
+.progress-seg:last-child { margin-right: 0; }
+.progress-seg.green { background: var(--green-fg); }
+.progress-seg.yellow { background: var(--yellow-fg); }
+.progress-seg.red-drafted { background: var(--red-fg); }
+.progress-seg.red-other { background-color: var(--red-other-fg);
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 3px, rgba(255,255,255,0) 3px 7px); }
+.progress-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.progress-legend .item { display: inline-flex; align-items: center; gap: 6px; }
+.progress-legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.progress-legend .swatch.green { background: var(--green-fg); }
+.progress-legend .swatch.yellow { background: var(--yellow-fg); }
+.progress-legend .swatch.red-drafted { background: var(--red-fg); }
+.progress-legend .swatch.red-other { background-color: var(--red-other-fg);
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 2px, rgba(255,255,255,0) 2px 4px); }
+.progress-legend b { color: var(--text); font-weight: 650; }
 .tabs { display: flex; gap: 4px; margin: 14px 0 0; flex-wrap: wrap; }
 .tab {
   padding: 7px 14px; border: 1px solid transparent; border-bottom: none;
@@ -245,7 +292,7 @@ thead th:last-child { border-top-right-radius: var(--radius-lg); }
 tbody tr:last-child td:first-child { border-bottom-left-radius: var(--radius-lg); }
 tbody tr:last-child td:last-child { border-bottom-right-radius: var(--radius-lg); }
 th { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-2);
-  position: sticky; top: 137px; background: #fbfbfc; z-index: 3; }
+  position: sticky; top: var(--header-h, 137px); background: #fbfbfc; z-index: 3; }
 tr.row { cursor: pointer; transition: background .1s ease; }
 tr.row:hover { background: #f7f8fb; }
 tr.row:last-child td, tr.detail:last-child td { border-bottom: none; }
@@ -259,6 +306,8 @@ td.grade { white-space: nowrap; width: 4ch; color: var(--muted); }
 .color-Red { background: var(--red-fg); border-color: var(--red-fg); }
 .ladder-status { font-size: 12.5px; color: var(--muted); }
 .ladder-status.drafted { color: var(--text); font-weight: 550; }
+.writer-status-cell { font-size: 12.5px; white-space: nowrap; }
+.writer-status-name { font-size: 11px; color: var(--muted-2); margin-top: 2px; }
 tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: inset 0 1px 0 var(--border); }
 .detail-section { margin-bottom: 14px; }
 .detail-section h4 { margin: 0 0 6px; font-size: 10.5px; font-weight: 650; text-transform: uppercase;
@@ -277,6 +326,10 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 .writer-bar { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
 .writer-bar input { padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12.5px; }
 #api-status { color: var(--muted); }
+#download-edits { margin-left: auto; padding: 5px 13px; border: 1px solid var(--accent);
+  border-radius: var(--radius-sm); background: var(--panel); color: var(--accent);
+  font-weight: 600; text-decoration: none; }
+#download-edits:hover { background: var(--accent-soft); }
 .override-marker { margin-left: 5px; font-size: 11px; color: var(--accent); }
 .reviewed-badge { margin-left: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
   background: var(--chip-bg); color: var(--muted); }
@@ -300,6 +353,11 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 .write-status { font-size: 12px; color: var(--muted); }
 .current-state { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
 .tag-block .write-row { margin-top: 8px; margin-bottom: 0; }
+.tag-block.proposed { border-style: dashed; background: #fafbfc; box-shadow: none; }
+.tag-block.proposed .node-text { color: var(--muted); }
+.pending-badge { margin-left: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: var(--yellow-bg); color: #8a5a00; border: 1px solid var(--yellow-bd); }
+.pending-badge.attention { background: #fde8e8; color: #a12020; border-color: #f3c0c0; }
 </style>
 </head>
 <body>
@@ -309,6 +367,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
   <div class="writer-bar" id="writer-bar" hidden>
     <label>Writer name <input id="writer-name" type="text" placeholder="your name" autocomplete="off"></label>
     <span id="api-status"></span>
+    <a id="download-edits" href="/api/export/ladder-edits.xlsx" download
+       title="Excel list of every standard to add to or remove from a ladder node">Download latest ladder edits</a>
   </div>
   <div class="tabs" id="tabs"></div>
 </header>
@@ -328,6 +388,10 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     <div class="chip-row" id="ladder-filter"></div>
   </div>
   <div class="filter-group">
+    <div class="label">Writer status</div>
+    <div class="chip-row" id="writer-status-filter"></div>
+  </div>
+  <div class="filter-group">
     <div class="label">&nbsp;</div>
     <div class="chip-row">
       <label class="chip" id="flagged-chip"><input type="checkbox" id="flagged-only">Flagged only <span class="n" id="flagged-n"></span></label>
@@ -343,7 +407,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 <main>
   <table>
     <thead>
-      <tr><th>Standard</th><th>Text</th><th>Grade</th><th>Ladder status</th></tr>
+      <tr><th>Standard</th><th>Text</th><th>Grade</th><th>Ladder status</th><th>Writer status</th></tr>
     </thead>
     <tbody id="rows"></tbody>
   </table>
@@ -353,6 +417,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 
 <script id="rows-data" type="application/json">__ROWS_JSON__</script>
 <script id="nodes-data" type="application/json">__NODES_JSON__</script>
+<script id="node-stems-data" type="application/json">__NODE_STEMS_JSON__</script>
 <script id="stem-names-data" type="application/json">__STEM_NAMES_JSON__</script>
 <script id="grade-order-data" type="application/json">__GRADE_ORDER_JSON__</script>
 <script id="summary-data" type="application/json">__SUMMARY_JSON__</script>
@@ -363,6 +428,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 (function () {
   var ROWS = JSON.parse(document.getElementById('rows-data').textContent);
   var NODES = JSON.parse(document.getElementById('nodes-data').textContent);
+  var NODE_STEMS = JSON.parse(document.getElementById('node-stems-data').textContent);
   var STEM_NAMES = JSON.parse(document.getElementById('stem-names-data').textContent);
   var GRADE_ORDER = JSON.parse(document.getElementById('grade-order-data').textContent);
   var SUMMARY = JSON.parse(document.getElementById('summary-data').textContent);
@@ -437,6 +503,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
           review_state: row.review_state,
           effective_color: row.effective_color,
           has_override: row.has_override,
+          writer_status: row.writer_status,
+          writer_status_by: row.writer_status_by,
         };
       });
       apiStatus('');
@@ -457,6 +525,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
         review_state: detail.standard_review ? detail.standard_review.outcome : 'unreviewed',
         effective_color: detail.override ? detail.override.writer_color : (row ? row.color : null),
         has_override: !!detail.override,
+        writer_status: detail.writer_status ? detail.writer_status.status : null,
+        writer_status_by: detail.writer_status ? detail.writer_status.set_by : null,
       };
       renderAll();
     });
@@ -481,6 +551,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     grades: {},     // empty object = no filter (all pass)
     colors: {},     // empty object = no filter (all pass)
     ladders: {},
+    writerStatuses: {},
     flaggedOnly: false,
     taggedOnly: false,
     search: '',
@@ -506,11 +577,49 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     return STEM_NAMES[id] || id;
   }
 
+  // D3: tag.stem_id is present only on the fetched detail (online); the
+  // embedded NODE_STEMS lookup (node_id -> stem_id) is the offline fallback,
+  // same pattern as node_text/NODES above.
+  function tagStemLabel(tag) {
+    var stemId = (tag.stem_id !== undefined && tag.stem_id !== null)
+      ? tag.stem_id : NODE_STEMS[tag.node_id];
+    return (stemId && STEM_NAMES[stemId]) || tag.node_id;
+  }
+
+  var OUTCOME_LABELS = {
+    confirmed: 'confirmed',
+    partial_coverage: 'partial coverage',
+    not_covered: 'not covered',
+    incorrect_tag: 'incorrect tag',
+  };
+  function outcomeLabel(o) {
+    return OUTCOME_LABELS[o] || o;
+  }
+
+  var WRITER_STATUS_LABELS = {
+    review_complete: 'Review complete',
+    in_progress: 'In progress',
+    not_yet_reviewed: 'Not yet reviewed',
+  };
+  function writerStatusLabel(s) {
+    return WRITER_STATUS_LABELS[s] || s;
+  }
+
+  // Same default-bucketing convention as effectiveColor: no row (or a row
+  // explicitly set back to not_yet_reviewed) reads identically as the
+  // default, both for the column display and for the filter.
+  function effectiveWriterStatus(r) {
+    var a = auditIndex[r.code];
+    return (a && a.writer_status) || 'not_yet_reviewed';
+  }
+
   function passesAllExcept(r, dim) {
     if (dim !== 'sheet' && r.sheet !== state.sheet) return false;
     if (dim !== 'grade' && Object.keys(state.grades).length && !state.grades[r.grade]) return false;
     if (dim !== 'color' && Object.keys(state.colors).length && !state.colors[effectiveColor(r)]) return false;
     if (dim !== 'ladder' && Object.keys(state.ladders).length && !state.ladders[r.ladder_status]) return false;
+    if (dim !== 'writerStatus' && Object.keys(state.writerStatuses).length
+      && !state.writerStatuses[effectiveWriterStatus(r)]) return false;
     if (dim !== 'flagged' && state.flaggedOnly && !r.flagged) return false;
     if (dim !== 'tagged' && state.taggedOnly && !r.tagged_in_sheet) return false;
     if (dim !== 'search' && state.search) {
@@ -548,7 +657,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     });
   }
 
-  function renderChipGroup(containerId, options, counts, activeMap, onToggle, outOfScope) {
+  function renderChipGroup(containerId, options, counts, activeMap, onToggle, outOfScope, labelFn) {
     var el = document.getElementById(containerId);
     el.innerHTML = '';
     options.forEach(function (opt) {
@@ -561,7 +670,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
       box.onchange = function () { onToggle(opt, box.checked); };
       label.appendChild(box);
       label.appendChild(document.createTextNode(
-        opt + ' '));
+        (labelFn ? labelFn(opt) : opt) + ' '));
       var n = document.createElement('span');
       n.className = 'n';
       n.textContent = '(' + (counts[opt] || 0) + ')';
@@ -594,6 +703,13 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
         renderAll();
       });
 
+    var writerStatuses = ['not_yet_reviewed', 'in_progress', 'review_complete'];
+    renderChipGroup('writer-status-filter', writerStatuses, facetCounts('writerStatus', effectiveWriterStatus),
+      state.writerStatuses, function (s, on) {
+        if (on) { state.writerStatuses[s] = true; } else { delete state.writerStatuses[s]; }
+        renderAll();
+      }, null, writerStatusLabel);
+
     var flaggedCount = ROWS.filter(function (r) { return passesAllExcept(r, 'flagged') && r.flagged; }).length;
     var taggedCount = ROWS.filter(function (r) { return passesAllExcept(r, 'tagged') && r.tagged_in_sheet; }).length;
     document.getElementById('flagged-n').textContent = '(' + flaggedCount + ')';
@@ -606,7 +722,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 
   function tagReviewLine(tag) {
     if (!tag.review) return '';
-    return '<div class="current-state">tag review: <b>' + esc(tag.review.outcome) + '</b> by '
+    return '<div class="current-state">tag review: <b>' + esc(outcomeLabel(tag.review.outcome)) + '</b> by '
       + esc(tag.review.reviewed_by) + (tag.review.note ? ' — ' + esc(tag.review.note) : '') + '</div>';
   }
 
@@ -615,7 +731,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     // (online); the embedded NODES lookup is the offline fallback.
     var text = (tag.node_text !== undefined) ? tag.node_text : NODES[tag.node_id];
     var html = '<div class="tag-block">'
-      + '<div><span class="node-id">' + esc(tag.node_id) + '</span> '
+      + '<div><span class="node-id">' + esc(tagStemLabel(tag)) + '</span> '
       + '<span class="meta">' + esc(tag.tier) + (tag.is_leaf ? ' · leaf' : '') + ' · grade-match: ' + esc(tag.grade_match) + '</span></div>'
       + '<div class="node-text">' + esc(text || '(node text unavailable)') + '</div>'
       + '<div class="meta">' + esc(tag.note) + '</div>'
@@ -627,16 +743,41 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     return html;
   }
 
+  // A proposal the ladder has not absorbed yet. Shown among the tags but
+  // visibly distinct, and never counted toward color: once a rebuild puts
+  // the node into the ladder it arrives as an ordinary tag and the
+  // proposal closes (reconcile_review), so this block simply stops coming.
+  function proposalBlock(p) {
+    var attention = p.state === 'needs_attention';
+    var stemLabel = (p.stem_id && STEM_NAMES[p.stem_id]) || p.source_key.split(':')[0];
+    var badge = attention
+      ? '<span class="pending-badge attention" title="the proposed node was not found after the last rebuild">proposed — node no longer in ladder</span>'
+      : '<span class="pending-badge" title="recorded in the app; not yet in the Word ladder">proposed — not yet in ladder</span>';
+    var html = '<div class="tag-block proposed">'
+      + '<div><span class="node-id">' + esc(stemLabel) + '</span>' + badge + '</div>'
+      + '<div class="node-text">' + esc(p.node_text || p.node_text_seen) + '</div>'
+      + '<div class="meta">proposed by ' + esc(p.proposed_by) + ' · ' + esc((p.proposed_at || '').slice(0, 10))
+      + (p.ladder_file ? ' · ' + esc(p.ladder_file) : '') + '</div>'
+      + (p.rationale ? '<div class="meta">rationale: ' + esc(p.rationale) + '</div>' : '')
+      + (p.resolved_note ? '<div class="meta">' + esc(p.resolved_note) + '</div>' : '')
+      + '<div class="proposal-write-mount" data-proposal-id="' + esc(p.proposal_id) + '"></div>'
+      + '</div>';
+    return html;
+  }
+
   function renderDetail(r) {
     var detail = detailCache[r.code];
     var tags = (ONLINE && detail && !detail.error) ? detail.tags : r.tags;
+    var proposals = (ONLINE && detail && !detail.error && detail.proposals) ? detail.proposals : [];
 
     var html = '<div class="detail-section"><h4>Full text</h4><div>' + esc(r.text) + '</div></div>';
     html += '<div class="detail-section"><h4>Stem' + (r.stem_ids.length > 1 ? 's' : '') + '</h4><div>'
       + (r.stem_ids.length ? esc(r.stem_ids.map(stemDisplayName).join(', ')) : '(none)')
       + '</div></div>';
-    html += '<div class="detail-section"><h4>Tags (' + tags.length + ')</h4>'
+    html += '<div class="detail-section"><h4>Tags (' + tags.length + ')'
+      + (proposals.length ? ' · ' + proposals.length + ' proposed' : '') + '</h4>'
       + (tags.length ? tags.map(nodeExpansion).join('') : '<div class="meta">no tags in any ladder</div>')
+      + proposals.map(proposalBlock).join('')
       + '</div>';
     if (r.reasons.length) {
       html += '<div class="detail-section"><h4>Reasons</h4><ul class="reason-list">'
@@ -653,6 +794,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
       } else {
         html += '<div class="detail-section write-section standard-write-mount"></div>';
         html += '<div class="detail-section write-section propose-write-mount"></div>';
+        html += '<div class="detail-section write-section writer-status-write-mount"></div>';
       }
     }
     return html;
@@ -674,7 +816,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     var reviewCurrent = document.createElement('div');
     reviewCurrent.className = 'current-state';
     reviewCurrent.textContent = reviewState
-      ? ('reviewed as ' + reviewState.outcome + ' by ' + reviewState.reviewed_by
+      ? ('reviewed as ' + outcomeLabel(reviewState.outcome) + ' by ' + reviewState.reviewed_by
          + (reviewState.note ? ' — ' + reviewState.note : ''))
       : 'not yet reviewed';
     reviewWrap.appendChild(reviewCurrent);
@@ -682,8 +824,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     var reviewRow = document.createElement('div');
     reviewRow.className = 'write-row';
     var outcomeSel = document.createElement('select');
-    ['confirmed', 'insufficient'].forEach(function (o) {
-      var opt = document.createElement('option'); opt.value = o; opt.textContent = o;
+    ['confirmed', 'partial_coverage', 'not_covered'].forEach(function (o) {
+      var opt = document.createElement('option'); opt.value = o; opt.textContent = outcomeLabel(o);
       outcomeSel.appendChild(opt);
     });
     if (reviewState) outcomeSel.value = reviewState.outcome;
@@ -766,6 +908,46 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     mount.appendChild(overrideWrap);
   }
 
+  var WRITER_STATUS_OPTIONS = ['not_yet_reviewed', 'in_progress', 'review_complete'];
+
+  function mountWriterStatusControls(mount, r, detail) {
+    if (!mount) return;
+    mount.innerHTML = '';
+    var enabled = !!writerName();
+
+    var wrap = document.createElement('div');
+    wrap.innerHTML = '<h4>Writer status</h4>';
+    var current = detail.writer_status;
+    var currentEl = document.createElement('div');
+    currentEl.className = 'current-state';
+    currentEl.textContent = current
+      ? (writerStatusLabel(current.status) + ' by ' + current.set_by)
+      : (writerStatusLabel('not_yet_reviewed') + ' (default)');
+    wrap.appendChild(currentEl);
+
+    var row = document.createElement('div');
+    row.className = 'write-row';
+    var sel = document.createElement('select');
+    WRITER_STATUS_OPTIONS.forEach(function (o) {
+      var opt = document.createElement('option'); opt.value = o; opt.textContent = writerStatusLabel(o);
+      sel.appendChild(opt);
+    });
+    sel.value = current ? current.status : 'not_yet_reviewed';
+    var btn = document.createElement('button');
+    btn.textContent = 'Save status';
+    btn.disabled = !enabled;
+    btn.onclick = function () {
+      apiSend('POST', '/api/standards/' + encodeURIComponent(r.code) + '/status', {
+        status: sel.value, set_by: writerName(),
+      }).then(function () { return refreshDetail(r.code); })
+        .catch(function (err) { alert('Save failed: ' + err.message); });
+    };
+    row.appendChild(sel);
+    row.appendChild(btn);
+    wrap.appendChild(row);
+    mount.appendChild(wrap);
+  }
+
   function mountTagWriteControls(mount, r, detail, sourceKey) {
     if (!mount || !sourceKey) return;
     mount.innerHTML = '';
@@ -774,8 +956,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     var row = document.createElement('div');
     row.className = 'write-row';
     var sel = document.createElement('select');
-    ['confirmed', 'insufficient', 'wrong_node'].forEach(function (o) {
-      var opt = document.createElement('option'); opt.value = o; opt.textContent = o;
+    ['confirmed', 'partial_coverage', 'incorrect_tag'].forEach(function (o) {
+      var opt = document.createElement('option'); opt.value = o; opt.textContent = outcomeLabel(o);
       sel.appendChild(opt);
     });
     if (tag && tag.review) sel.value = tag.review.outcome;
@@ -861,8 +1043,6 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
       });
     };
 
-    var textInput = document.createElement('textarea');
-    textInput.placeholder = 'node text you saw';
     var rationaleInput = document.createElement('textarea');
     rationaleInput.placeholder = 'rationale (optional)';
     var btn = document.createElement('button');
@@ -870,26 +1050,43 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     btn.disabled = !enabled;
     btn.onclick = function () {
       var sourceKey = nodeSel.value;
-      if (!sourceKey || !textInput.value.trim()) {
-        alert('a node and node text are required.'); return;
+      if (!sourceKey) {
+        alert('choose a node to propose.'); return;
       }
       apiSend('POST', '/api/proposals', {
         standard_id: r.code, source_key: sourceKey,
-        node_text_seen: textInput.value.trim(), proposed_by: writerName(),
+        proposed_by: writerName(),
         rationale: rationaleInput.value || null,
       }).then(function () {
-        apiStatus('proposal recorded');
-        stemSel.value = '';
-        nodeSel.innerHTML = '';
-        nodeSel.appendChild(new Option('-- choose a stem first --', ''));
-        nodeSel.disabled = true;
-        textInput.value = ''; rationaleInput.value = '';
+        apiStatus('proposal recorded — shown under Tags until the ladder is updated');
+        return refreshDetail(r.code);
       }).catch(function (err) { alert('Propose failed: ' + err.message); });
     };
     row.appendChild(stemSel);
     row.appendChild(nodeSel);
-    row.appendChild(textInput);
     row.appendChild(rationaleInput);
+    row.appendChild(btn);
+    mount.appendChild(row);
+  }
+
+  function mountProposalWithdrawControls(mount, r, proposalId) {
+    if (!mount) return;
+    mount.innerHTML = '';
+    var row = document.createElement('div');
+    row.className = 'write-row';
+    var btn = document.createElement('button');
+    btn.className = 'secondary';
+    btn.textContent = 'Withdraw proposal';
+    btn.disabled = !writerName();
+    btn.onclick = function () {
+      if (!confirm('Withdraw this proposal?')) return;
+      apiSend('POST', '/api/proposals/' + encodeURIComponent(proposalId) + '/withdraw', {
+        resolved_note: 'withdrawn by ' + writerName(),
+      }).then(function () {
+        apiStatus('proposal withdrawn');
+        return refreshDetail(r.code);
+      }).catch(function (err) { alert('Withdraw failed: ' + err.message); });
+    };
     row.appendChild(btn);
     mount.appendChild(row);
   }
@@ -907,12 +1104,16 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
       var ec = effectiveColor(r);
       var a = auditIndex[r.code];
       var badges = ((a && a.has_override) ? '<span class="override-marker" title="writer override; computed color: ' + esc(r.color) + '">&#9733;</span>' : '')
-        + ((a && a.review_state && a.review_state !== 'unreviewed') ? '<span class="reviewed-badge">' + esc(a.review_state) + '</span>' : '');
+        + ((a && a.review_state && a.review_state !== 'unreviewed') ? '<span class="reviewed-badge">' + esc(outcomeLabel(a.review_state)) + '</span>' : '');
+      var writerStatusCell = (a && a.writer_status)
+        ? (esc(writerStatusLabel(a.writer_status)) + '<div class="writer-status-name">' + esc(a.writer_status_by) + '</div>')
+        : '';
       tr.innerHTML = '<td class="code"><span class="color-chip color-' + ec + '" title="' + esc(ec) + '"></span>'
         + esc(r.code) + badges + '</td>'
         + '<td class="text">' + esc(truncate(r.text, 110)) + '</td>'
         + '<td class="grade">' + esc(r.grade) + '</td>'
-        + '<td class="ladder-status ' + r.ladder_status + '">' + r.ladder_status + '</td>';
+        + '<td class="ladder-status ' + r.ladder_status + '">' + r.ladder_status + '</td>'
+        + '<td class="writer-status-cell">' + writerStatusCell + '</td>';
       tr.onclick = function () {
         state.openCode = (state.openCode === r.code) ? null : r.code;
         renderRows();
@@ -922,7 +1123,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
         var dtr = document.createElement('tr');
         dtr.className = 'detail';
         var td = document.createElement('td');
-        td.colSpan = 4;
+        td.colSpan = 5;
         td.innerHTML = renderDetail(r);
         dtr.appendChild(td);
         tbody.appendChild(dtr);
@@ -933,8 +1134,12 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
           if (detail && !detail.error) {
             mountStandardWriteControls(td.querySelector('.standard-write-mount'), r, detail);
             mountProposeControls(td.querySelector('.propose-write-mount'), r);
+            mountWriterStatusControls(td.querySelector('.writer-status-write-mount'), r, detail);
             Array.prototype.forEach.call(td.querySelectorAll('.tag-write-mount'), function (mount) {
               mountTagWriteControls(mount, r, detail, mount.getAttribute('data-source-key'));
+            });
+            Array.prototype.forEach.call(td.querySelectorAll('.proposal-write-mount'), function (mount) {
+              mountProposalWithdrawControls(mount, r, mount.getAttribute('data-proposal-id'));
             });
           }
         }
@@ -942,19 +1147,48 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     });
   }
 
+  // Part-to-whole meter: the bar's full width is SUMMARY.total; each segment
+  // is a share of it. Red is split in two -- red-drafted is a worklist item
+  // (a drafted stem someone missed), red-other (undrafted/unattributed) is
+  // nothing to do yet -- same tone family plus a diagonal hatch so the split
+  // still reads without relying on color alone.
+  var SUMMARY_SEGMENTS = [
+    { key: 'green', field: 'green', label: 'covered' },
+    { key: 'yellow', field: 'yellow', label: 'partial coverage' },
+    { key: 'red-drafted', field: 'red_drafted', label: 'red on a drafted stem — worklist' },
+    { key: 'red-other', field: 'red_other', label: 'red, nothing to do yet' },
+  ];
+
   function renderSummary() {
+    var total = SUMMARY.total;
+    var bar = '', legend = '';
+    SUMMARY_SEGMENTS.forEach(function (s) {
+      var count = SUMMARY[s.field];
+      var pct = total ? (count / total * 100) : 0;
+      var titleText = count + ' ' + s.label + ' (' + pct.toFixed(1) + '%)';
+      bar += '<div class="progress-seg ' + s.key + '" style="width:' + pct.toFixed(2) + '%" '
+        + 'title="' + esc(titleText) + '"></div>';
+      legend += '<span class="item"><span class="swatch ' + s.key + '"></span>'
+        + '<b>' + count + '</b>&nbsp;' + esc(s.label) + ' (' + pct.toFixed(0) + '%)</span>';
+    });
     document.getElementById('summary').innerHTML =
-      '<b>' + SUMMARY.total + '</b> standards owed &middot; '
-      + '<b>' + SUMMARY.drafted_red + '</b> red on a drafted stem (worklist) &middot; '
-      + '<b>' + SUMMARY.drafted_ok + '</b> covered on a drafted stem &middot; '
-      + '<b>' + SUMMARY.undrafted + '</b> undrafted (nothing to do yet) &middot; '
-      + '<b>' + SUMMARY.unattributed + '</b> unattributed';
+      '<div class="summary-total"><b>' + total + '</b> standards owed</div>'
+      + '<div class="progress-bar" role="img" aria-label="Standards coverage: '
+      + esc(SUMMARY_SEGMENTS.map(function (s) { return SUMMARY[s.field] + ' ' + s.label; }).join(', ')) + '">'
+      + bar + '</div>'
+      + '<div class="progress-legend">' + legend + '</div>';
+  }
+
+  function syncHeaderHeight() {
+    var header = document.querySelector('header');
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
   }
 
   function renderAll() {
     renderTabs();
     renderFilters();
     renderRows();
+    syncHeaderHeight();
   }
 
   document.getElementById('search').oninput = function (e) {
@@ -973,6 +1207,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     state.grades = {};
     state.colors = {};
     state.ladders = {};
+    state.writerStatuses = {};
     state.flaggedOnly = false;
     state.taggedOnly = false;
     state.search = '';
@@ -989,6 +1224,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     nameInput.oninput = function (e) { setWriterName(e.target.value); renderAll(); };
   }
 
+  window.addEventListener('resize', syncHeaderHeight);
+
   renderSummary();
   renderAll();
   if (ONLINE) fetchAudit();
@@ -1002,6 +1239,7 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
 def render(con: sqlite3.Connection, out_path: Path) -> list[coverage.StandardRow]:
     rows = coverage.build_rows(con, band=None)
     nodes = build_node_lookup(con, rows)
+    node_stems = build_node_stems(con, rows)
     stem_names = node_lookup.build_stem_names(con)
     grade_order = dict(con.execute("SELECT grade, ord FROM grade_order"))
 
@@ -1012,6 +1250,7 @@ def render(con: sqlite3.Connection, out_path: Path) -> list[coverage.StandardRow
     html = _PAGE_TEMPLATE
     html = html.replace("__ROWS_JSON__", _json_for_script(data))
     html = html.replace("__NODES_JSON__", _json_for_script(nodes))
+    html = html.replace("__NODE_STEMS_JSON__", _json_for_script(node_stems))
     html = html.replace("__STEM_NAMES_JSON__", _json_for_script(stem_names))
     html = html.replace("__GRADE_ORDER_JSON__", _json_for_script(grade_order))
     html = html.replace("__TABS_JSON__", _json_for_script(list(coverage.TABS)))

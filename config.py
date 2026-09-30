@@ -10,12 +10,18 @@ Layout convention:
     data/reports/  output meant for humans to open.
 """
 
+import os
 from pathlib import Path
 
 # Repo root = the folder containing this file.
 ROOT = Path(__file__).resolve().parent
 
-DATA = ROOT / "data"
+# MH2_DATA_DIR relocates the whole data tree off the repo, for hosts where
+# the repo is redeployed but the databases must survive it. Deliberately ONE
+# variable: everything below stays relative to DATA, so build and source
+# cannot be pointed at separate places -- which would make "which of them
+# does RERANK_CACHE follow?" a live question rather than a settled one.
+DATA = Path(os.environ.get("MH2_DATA_DIR") or ROOT / "data").resolve()
 SOURCE = DATA / "source"
 BUILD = DATA / "build"
 REPORTS = DATA / "reports"

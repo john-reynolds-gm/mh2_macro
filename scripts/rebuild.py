@@ -1,8 +1,11 @@
 """
-rebuild.py — delete the database and build it again from data/source.
+rebuild.py — build the database again from data/source, beside the live one.
 
-This is the safe default. data/build is disposable by design: if anything
-looks wrong, delete it and run this. Nothing in data/source is ever modified.
+The build goes into a temporary file and is swapped into place only once
+every step has succeeded, so a parse failure partway through leaves the
+current database serving rather than a half-populated one. data/build is
+disposable by design: if anything looks wrong, delete it and run this.
+Nothing in data/source is ever modified.
 
     python scripts/rebuild.py
     python scripts/rebuild.py --skip-reconcile
@@ -11,10 +14,15 @@ looks wrong, delete it and run this. Nothing in data/source is ever modified.
 """
 
 import argparse
+import fcntl
+import getpass
+import os
 import sqlite3
 import subprocess
 import sys
+import time
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -22,6 +30,39 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
 from mh2.load_standards import find_standard_alias_collisions  # noqa: E402
 from mh2.normalize import resolve_standard_alias  # noqa: E402
+
+BUILD_DB_NAME = "mh2.db.building"
+LOCK_NAME = ".rebuild.lock"
+REBUILD_LOG_NAME = "rebuild_log.tsv"
+
+# Every declared input a run actually consumes -- and nothing else. Adding a
+# file the pipeline never opens would couple the rebuild to another tool's
+# inputs, so a file missing for the app would block a rebuild that was going
+# to succeed, on a host where the two need not even be deployed together.
+# (CATEGORY_TO_STEMS_CSV is the example: it belongs to the serving layer,
+# read by mh2/coverage.py and app/db.py, never by any step below.)
+#
+# PREDICTIONS and RERANK_CACHE are absent for a different reason: both are
+# legitimately missing on a clean checkout and their loaders already skip
+# cleanly (mh2/load_predictions.py:531, mh2/load_reranks.py:92 -- verified,
+# not assumed).
+REQUIRED_INPUTS = (
+    config.STEM_WORKBOOK, config.STEM_WORKBOOK_G6, config.TAGGING_WORKBOOK,
+    config.STEMS_CSV, config.GRADE_WORKSHEET,
+    config.ALL_STATES_CSV, config.SCORED_ALIGNMENTS_CSV,
+    config.LESSON_METADATA_CSV, config.CCSS_ALIGNMENT_GUIDE_CSV,
+    config.LEARNOSITY_COMBINED_CSV,
+)
+
+
+class StepFailed(SystemExit):
+    """A step exited non-zero. Subclasses SystemExit so the process still
+    exits with a message rather than a traceback, and carries the step label
+    so the rebuild log can name what failed."""
+
+    def __init__(self, label: str, message: str | None = None):
+        super().__init__(message or f"FAILED: {label}")
+        self.label = label
 
 
 def _is_ccss_leaf(code: str) -> bool:
@@ -255,82 +296,171 @@ def run(label: str, args: list[str]) -> None:
     print(f"\n=== {label}")
     result = subprocess.run([sys.executable, *args], cwd=config.ROOT)
     if result.returncode != 0:
-        sys.exit(f"FAILED: {label}")
+        raise StepFailed(label)
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--skip-reconcile", action="store_true")
-    ap.add_argument("--skip-candidates", action="store_true")
-    ap.add_argument("--skip-review-reconcile", action="store_true")
-    args = ap.parse_args()
+def acquire_lock():
+    """One rebuild at a time. Returns the held file object, which the caller
+    must keep alive for the whole run -- closing it releases the lock.
 
-    config.ensure_dirs()
+    Advisory and non-blocking: a second rebuild exits immediately rather
+    than queueing, because the useful thing to tell someone who just pressed
+    a button is that a rebuild is already running.
 
-    missing = [p.name for p in (config.STEM_WORKBOOK, config.STEM_WORKBOOK_G6,
-                                 config.TAGGING_WORKBOOK)
-               if not p.exists()]
+    fcntl is POSIX-only, which covers a Mac laptop and a Linux App Service.
+    A Windows host would need msvcrt.locking; that abstraction is not built
+    until something actually needs it.
+    """
+    lock_path = config.BUILD / LOCK_NAME
+    handle = open(lock_path, "w")
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        raise SystemExit(
+            f"Another rebuild is already running (lock held on {lock_path}).\n"
+            "Wait for it to finish. If you are certain nothing is running, "
+            "delete that file and try again.")
+    return handle
+
+
+def preflight() -> None:
+    """Check every input in REQUIRED_INPUTS before the schema is created,
+    naming all the missing ones at once. Twelve minutes into a rebuild is
+    the wrong place to learn that a file is absent -- and it is the exact
+    failure mode a SharePoint fetch step will introduce later.
+    """
+    missing = [p for p in REQUIRED_INPUTS if not p.exists()]
     if missing:
-        sys.exit("Missing source files in data/source/workbooks: " + ", ".join(missing))
+        raise StepFailed("pre-flight", "Missing required input files:\n  "
+                         + "\n  ".join(str(p) for p in missing))
+
+
+def swap_into_place(build_db: Path, live_db: Path) -> None:
+    """Replace live_db with build_db atomically.
+
+    os.replace is atomic within a filesystem, and any reader that already
+    has the old database open keeps reading it until it closes -- it holds
+    the inode, not the name.
+
+    It moves the .db and nothing else. Nothing in this project sets WAL, so
+    journal_mode is SQLite's default 'delete' and there are no -wal/-shm
+    sidecars to orphan by moving one file of three. That is checked rather
+    than assumed: if it ever changes, the damage would be silent.
+    """
+    con = sqlite3.connect(build_db)
+    try:
+        mode = con.execute("PRAGMA journal_mode").fetchone()[0]
+    finally:
+        con.close()
+    sidecars = [p for p in (build_db.with_name(build_db.name + "-wal"),
+                            build_db.with_name(build_db.name + "-shm"))
+                if p.exists()]
+    if mode.lower() == "wal" or sidecars:
+        raise StepFailed(
+            "swap",
+            f"{build_db.name} is journal_mode={mode} with sidecars "
+            f"{[p.name for p in sidecars]}. Moving the .db alone would orphan "
+            "them -- checkpoint and remove the sidecars before swapping.")
+    os.replace(build_db, live_db)
+
+
+def ladders_ingested(db_path: Path) -> int:
+    """Distinct ladder files represented in `nodes`; 0 if the build never got
+    far enough to have any."""
+    if not db_path.exists():
+        return 0
+    try:
+        con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        try:
+            return con.execute(
+                "SELECT COUNT(DISTINCT source_file) FROM nodes").fetchone()[0]
+        finally:
+            con.close()
+    except sqlite3.Error:
+        return 0
+
+
+def append_rebuild_log(outcome: str, seconds: float, n_ladders: int) -> None:
+    """One line per run, append-only, never rewritten, no rotation.
+
+    A file and not a table on purpose: mh2.db is destroyed on every rebuild,
+    and putting pipeline history into mh2_seq.db would make that database
+    about operations rather than about writer judgment (R-H3).
+    """
+    actor = (os.environ.get("MH2_REBUILD_ACTOR") or getpass.getuser())
+    actor = actor.replace("\t", " ").replace("\n", " ").strip()
+    path = config.REPORTS / REBUILD_LOG_NAME
+    write_header = not path.exists()
+    with open(path, "a", encoding="utf-8") as fh:
+        if write_header:
+            fh.write("timestamp_utc\tactor\toutcome\tseconds\tladders\n")
+        fh.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')}\t"
+                 f"{actor}\t{outcome}\t{seconds:.1f}\t{n_ladders}\n")
+
+
+def build(args, build_db: Path) -> None:
+    preflight()
+
+    # Build beside the live database, never into it: every failure below
+    # leaves config.DB exactly as it was.
+    if build_db.exists():
+        build_db.unlink()
 
     print("=== creating schema")
-    if config.DB.exists():
-        config.DB.unlink()
-    sqlite3.connect(config.DB).executescript(config.SCHEMA.read_text())
-    print(f"    {config.DB}")
+    sqlite3.connect(build_db).executescript(config.SCHEMA.read_text())
+    print(f"    {build_db}")
 
-    # mh2_seq.db holds durable human review decisions (Session C) and must
-    # survive this unlink-and-rebuild -- created if absent, never deleted.
+    # mh2_seq.db holds durable human review decisions (Session C). It is
+    # never rebuilt, never swapped -- created if absent, otherwise left
+    # alone, including when this run fails.
     print("=== ensuring review database (mh2_seq.db)")
     sqlite3.connect(config.SEQ_DB).executescript(config.SCHEMA_SEQ.read_text())
     print(f"    {config.SEQ_DB}")
 
+    db = str(build_db)
+
     run("loading standards + stem workbook",
-        ["-m", "mh2.load_standards", "--db", str(config.DB),
+        ["-m", "mh2.load_standards", "--db", db,
          "--project", str(config.SOURCE)])
 
     run("loading stems.csv (ladder <-> workbook stem mapping)",
-        ["-m", "mh2.load_stems", "--db", str(config.DB),
+        ["-m", "mh2.load_stems", "--db", db,
          "--csv", str(config.STEMS_CSV), "--ladders", str(config.LADDERS)])
 
     run("ingesting ladders",
-        ["-m", "mh2.ingest_ladders", "--db", str(config.DB),
+        ["-m", "mh2.ingest_ladders", "--db", db,
          "--glob", config.LADDER_GLOB])
 
     run("parsing node standards cells",
-        ["-m", "mh2.parse_node_standards", "--db", str(config.DB),
+        ["-m", "mh2.parse_node_standards", "--db", db,
          "--ladders", str(config.LADDERS)])
 
     run("loading grade ruling into node_grade",
-        ["-m", "mh2.load_grade_ruling", "--db", str(config.DB),
+        ["-m", "mh2.load_grade_ruling", "--db", db,
          "--worksheet", str(config.GRADE_WORKSHEET)])
 
     run("loading layer 1 (standard_lessons, crosswalk, tag status)",
-        ["-m", "mh2.load_layer1", "--db", str(config.DB)])
+        ["-m", "mh2.load_layer1", "--db", db])
 
     run("loading Path C predictions (step 8)",
-        ["-m", "mh2.load_predictions", "--db", str(config.DB),
+        ["-m", "mh2.load_predictions", "--db", db,
          "--predictions", str(config.PREDICTIONS)])
 
     run("loading reranks (step 7 browse list; cache-only, no API calls)",
-        ["-m", "mh2.load_reranks", "--db", str(config.DB),
+        ["-m", "mh2.load_reranks", "--db", db,
          "--cache", str(config.RERANK_CACHE)])
 
     if not args.skip_candidates:
         run("generating candidates (step 6, Paths 0/A/B)",
-            ["-m", "mh2.candidates", "--db", str(config.DB)])
+            ["-m", "mh2.candidates", "--db", db])
 
     if not args.skip_reconcile:
         run("reconciling workbook vs ladders",
-            ["-m", "mh2.reconcile", "--db", str(config.DB),
+            ["-m", "mh2.reconcile", "--db", db,
              "--out", str(config.REPORTS)])
 
-    if not args.skip_review_reconcile:
-        run("reconciling review state vs rebuilt ladders",
-            ["-m", "mh2.reconcile_review", "--db", str(config.DB),
-             "--seq-db", str(config.SEQ_DB), "--out", str(config.REPORTS)])
-
-    con = sqlite3.connect(config.DB)
+    con = sqlite3.connect(build_db)
     print("\n=== row counts")
     for table in ("standards", "concepts", "concept_standards", "nodes",
                   "node_standards", "node_standards_parsed",
@@ -378,7 +508,54 @@ def main() -> None:
         print(f"    width {width}   {widths[width]}")
 
     con.close()
+
+    swap_into_place(build_db, config.DB)
+    print(f"\n=== swapped into place: {config.DB}")
+
+    if not args.skip_review_reconcile:
+        # Deliberately AFTER the swap, and against config.DB rather than the
+        # build file. This is the one step that mutates durable state: it
+        # writes tag_proposal transitions into mh2_seq.db. Run in sequence
+        # with the others -- which is the obvious reading -- a later swap
+        # failure would leave mh2_seq.db reconciled against a database that
+        # never went live. Durable state only ever reflects what is serving.
+        run("reconciling review state vs rebuilt ladders",
+            ["-m", "mh2.reconcile_review", "--db", str(config.DB),
+             "--seq-db", str(config.SEQ_DB), "--out", str(config.REPORTS)])
+
     print(f"\nDone. Database: {config.DB}\nReports: {config.REPORTS}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--skip-reconcile", action="store_true")
+    ap.add_argument("--skip-candidates", action="store_true")
+    ap.add_argument("--skip-review-reconcile", action="store_true")
+    args = ap.parse_args()
+
+    config.ensure_dirs()
+
+    # Taken before any work and held for the whole run. Nothing below this
+    # point may return without releasing it.
+    lock = acquire_lock()
+    started = time.monotonic()
+    build_db = config.BUILD / BUILD_DB_NAME
+    outcome = "ok"
+    try:
+        build(args, build_db)
+    except StepFailed as exc:
+        outcome = f"failed:{exc.label}"
+        raise
+    except BaseException:
+        outcome = "failed:unexpected-error"
+        raise
+    finally:
+        # On success the count comes from the database now serving; on
+        # failure from the half-built file, which says how far it got.
+        append_rebuild_log(
+            outcome, time.monotonic() - started,
+            ladders_ingested(config.DB if outcome == "ok" else build_db))
+        lock.close()
 
 
 if __name__ == "__main__":

@@ -164,6 +164,23 @@ start from the 82 computed-Green-and-flagged rows, and see whether the
 grouped node picker (§1.2) is enough to propose a tag without opening the
 ladder document.
 
+## Environment variables
+
+Deployment-agnostic: these mean the same thing on Fly, on Azure App
+Service, or on a laptop. Everything here is optional — unset, each falls
+back to the behaviour this runbook already describes.
+
+| Variable | Effect when set |
+|---|---|
+| `MH2_DATA_DIR` | Absolute path to the `data/` tree. `data/source`, `data/build` (both databases), `data/reports` and the rerank cache all move with it. Set this when the databases must live on storage that survives a redeploy, rather than inside the deployed repo. Unset, everything stays at `<repo>/data` exactly as before. |
+| `MH2_REBUILD_ACTOR` | Name recorded in the `actor` column of `data/reports/rebuild_log.tsv`. Set it to the person who pressed the button once a rebuild can be triggered from outside a shell; unset, the log records the OS user, which is the right answer for a laptop run. |
+| `MH2_AUTH_USERS` | Covered in §2 and §4 above — not repeated here. |
+
+`MH2_DATA_DIR` is deliberately the only path variable. `data/build` cannot
+be pointed somewhere separate from `data/source`, which keeps "which of the
+two does the rerank cache follow?" a settled question instead of a live
+one.
+
 ## What this deliberately does not do
 
 - No React UI, no Session E edit-pass surface (§2.2) — unbuilt, per rev 11.
