@@ -26,9 +26,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config  # noqa: E402
 
 from mh2.load_grade_ruling import (  # noqa: E402
-    VALID_GRADES, build_lookup, parse_default_grades, parse_is_leaf,
-    resolve_nodes, seed_grade_order,
+    VALID_GRADES, blank_to_none, build_lookup, derive_kinds,
+    parse_default_grades, parse_is_leaf, resolve_nodes, seed_grade_order,
 )
+from mh2.grade_split_review import build_rows, propose  # noqa: E402
 
 
 def worksheet(rows):
@@ -211,6 +212,148 @@ def test_rerun_is_idempotent():
         "SELECT COUNT(*) FROM node_grade_ruling").fetchone()[0] == 1
     assert con.execute(
         "SELECT COUNT(*) FROM node_grade").fetchone()[0] == 1
+
+
+# ------------------------------------- ruling_type / node_grade_kind (additive)
+
+def full_worksheet(rows):
+    """Like worksheet() but with the optional sequencer columns."""
+    return pd.DataFrame(rows, columns=[
+        "raw_value", "default_grades", "is_leaf", "notes", "ruling_type",
+        "needs_writer_review", "states_mentioned", "ccss_default_grades"])
+
+
+def entry(rtype, grades, ccss=None, notes=None):
+    return {"raw_value": "r", "default_grades": grades, "is_leaf": False,
+            "notes": notes, "ruling_type": rtype, "ccss_default_grades": ccss}
+
+
+def test_blank_to_none_never_invents_a_value():
+    assert blank_to_none(float("nan")) is None
+    assert blank_to_none("  ") is None
+    assert blank_to_none(None) is None
+    assert blank_to_none(" span ") == "span"
+
+
+def test_build_lookup_carries_optional_columns_and_nulls_blanks():
+    df = full_worksheet([
+        ["4 (5 for SC)", "4, 5", "False", "5 for SC", "state_conditional",
+         False, "SC", None],
+        ["7, 8", "7, 8", "False", None, None, None, None, None]])
+    lookup = build_lookup(df)
+    a = lookup[list(lookup)[0]]
+    assert (a["ruling_type"], a["needs_writer_review"],
+            a["states_mentioned"]) == ("state_conditional", 0, "SC")
+    b = lookup[list(lookup)[1]]
+    assert (b["ruling_type"], b["needs_writer_review"],
+            b["states_mentioned"]) == (None, None, None)
+
+
+def test_build_lookup_still_works_with_the_four_column_worksheet():
+    lookup = build_lookup(worksheet([["1", "1", "False", None]]))
+    assert lookup["1"]["ruling_type"] is None
+
+
+def test_ccss_default_grades_must_be_subset_of_default_grades():
+    df = full_worksheet([["4 (5 for SC)", "4, 5", "False", None,
+                          "state_conditional", False, "SC", "3"]])
+    try:
+        build_lookup(df)
+    except SystemExit as e:
+        assert "not a subset" in str(e)
+    else:
+        raise AssertionError("expected SystemExit")
+
+
+def test_derive_kinds_single_span_and_unconfirmed():
+    assert derive_kinds(entry("single", ["4"])) == [
+        ("4", "core", "ruling_type=single")]
+    assert [k for _, k, _ in derive_kinds(entry("span", ["3", "4", "5"]))] \
+        == ["span"] * 3
+    for rtype in ("state_conditional", "range_prose", "alternative",
+                  "unparsed"):
+        kinds = derive_kinds(entry(rtype, ["3", "4"]))
+        assert [k for _, k, _ in kinds] == ["unconfirmed"] * 2
+
+
+def test_derive_kinds_no_rows_for_leaf_out_of_band_or_blank():
+    for rtype in ("leaf", "out_of_band", None):
+        assert derive_kinds(entry(rtype, ["6"])) == []
+
+
+def test_derive_kinds_uses_ccss_default_grades_when_ruled():
+    kinds = derive_kinds(entry("state_conditional", ["3", "4"], ccss=["4"]))
+    assert [(g, k) for g, k, _ in kinds] == [("3", "state_extension"),
+                                             ("4", "core")]
+
+
+def test_kind_table_is_written_and_node_grade_is_unchanged():
+    con = fresh_db()
+    seed_grade_order(con)
+    add_node(con, "N1", "4 (5 for SC)")
+    add_node(con, "N2", "3")
+    add_node(con, "N3", "LEAF 6")
+    lookup = {
+        "4 (5 for sc)": {**entry("state_conditional", ["4", "5"]),
+                         "raw_value": "4 (5 for SC)",
+                         "states_mentioned": "SC",
+                         "needs_writer_review": 0},
+        "3": {**entry("single", ["3"]), "raw_value": "3"},
+        "leaf 6": {**entry("leaf", ["6"]), "raw_value": "LEAF 6",
+                   "is_leaf": True},
+    }
+    counts, n_grade_rows = resolve_nodes(con, lookup)
+    assert n_grade_rows == 4           # 2 + 1 + 1, same as before the change
+    assert con.execute("SELECT COUNT(*) FROM node_grade").fetchone()[0] == 4
+    kinds = dict(((n, g), k) for n, g, k in con.execute(
+        "SELECT node_id, grade, kind FROM node_grade_kind"))
+    assert kinds == {("N1", "4"): "unconfirmed", ("N1", "5"): "unconfirmed",
+                     ("N2", "3"): "core"}
+    assert con.execute(
+        "SELECT ruling_type, needs_writer_review, states_mentioned"
+        " FROM node_grade_ruling WHERE node_id = 'N1'"
+    ).fetchone() == ("state_conditional", 0, "SC")
+
+
+def test_kind_table_rerun_is_idempotent():
+    con = fresh_db()
+    seed_grade_order(con)
+    add_node(con, "N1", "3")
+    lookup = {"3": {**entry("single", ["3"]), "raw_value": "3"}}
+    resolve_nodes(con, lookup)
+    resolve_nodes(con, lookup)
+    assert con.execute(
+        "SELECT COUNT(*) FROM node_grade_kind").fetchone()[0] == 1
+
+
+# --------------------------------------------------- grade_split_review
+
+def test_review_parses_state_extension_from_notes():
+    e = entry("state_conditional", ["3", "4"], notes="3 for some states")
+    default, ext, conf, _ = propose(e)
+    assert default == ["4"]
+    assert ext == {"some states": "3"}
+    assert conf == "parsed"
+
+
+def test_review_does_not_mistake_OK_or_FL_for_grades():
+    e = entry("state_conditional", ["5", "6"], notes="5 for FL, TX, OK")
+    default, ext, conf, _ = propose(e)
+    assert default == ["6"]
+    assert ext == {"FL": "5", "TX": "5", "OK": "5"}
+
+
+def test_review_range_prose_is_a_guess_with_no_extension():
+    default, ext, conf, _ = propose(entry("range_prose", ["PK", "K"]))
+    assert (default, ext, conf) == (["PK", "K"], {}, "guess")
+
+
+def test_review_rows_only_cover_open_types_and_carry_node_counts():
+    lookup = {"a": {**entry("span", ["1", "2"]), "raw_value": "a"},
+              "b": {**entry("range_prose", ["6"]), "raw_value": "b"}}
+    rows = build_rows(lookup, {"b": 7})
+    assert [(r["raw_value"], r["node_count"], r["john_ruling"])
+            for r in rows] == [("b", 7, "")]
 
 
 if __name__ == "__main__":

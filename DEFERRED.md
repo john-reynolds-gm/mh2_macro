@@ -103,6 +103,27 @@ outside the denominator.
 **Related:** `FL.6.DP.1.6` and the two welded gaps codes absorb silently.
 **Trigger:** the Other States scope decision (2.1).
 
+### 1.9 Core vs state-extension grades (sequencer input)
+**What:** `node_grade` folds state extensions into `default_grades` (`4 (3 for
+some states)` -> grades 3, 4), so it cannot say which grade is the CCSS
+placement. Added, purely additively: `node_grade_ruling.ruling_type`,
+`needs_writer_review`, `states_mentioned` (copied from the worksheet, blank ->
+NULL), and a new table `node_grade_kind (node_id, grade, kind, basis)` with
+kind `core | span | state_extension | unconfirmed`. `single` -> core, `span`
+-> span, `state_conditional` / `range_prose` / `alternative` / `unparsed` ->
+`unconfirmed` until John rules; leaf / out_of_band / blank get no rows.
+**The audit does not read `node_grade_kind`** (or the new columns). Section 6
+stands: the audit reads a range, the sequencer a placement.
+**Review sheet:** `docs/review/grade_split_review.csv` (30 rows, regenerate with
+`python -m mh2.grade_split_review`) proposes the split per raw value, parsed
+from `notes`. Only the 16 `state_conditional` rows are `parsed`; the rest are
+`guess`. Nothing in it is loaded. To apply a ruling, add a
+`ccss_default_grades` column to the worksheet; the loader then marks those
+grades core and the rest of `default_grades` state_extension.
+**Schema:** existing databases need a rebuild (new columns are in
+`CREATE TABLE`, not `ALTER`).
+**Trigger:** the Grade Sequencing Tool reads placement.
+
 ---
 
 ## 2. Scope decisions left open
