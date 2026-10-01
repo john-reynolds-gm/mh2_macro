@@ -489,6 +489,38 @@ CREATE TABLE IF NOT EXISTS node_grade_ruling (
     canon_key   TEXT,
     resolution  TEXT NOT NULL,
     is_leaf     INTEGER NOT NULL DEFAULT 0,
-    notes       TEXT
+    notes       TEXT,
+    -- The three columns below are copied verbatim from the worksheet for the
+    -- Grade Sequencing Tool. NULL = blank on the sheet (or no worksheet match);
+    -- never a default. The audit does not read them.
+    ruling_type         TEXT,     -- span | single | state_conditional | range_prose
+                                  -- | alternative | unparsed | leaf | out_of_band
+    needs_writer_review INTEGER,  -- 0/1
+    states_mentioned    TEXT      -- e.g. 'FL, OK, TX'
 );
 CREATE INDEX IF NOT EXISTS ix_ngr_resolution ON node_grade_ruling(resolution);
+
+-- What kind of grade claim each node_grade row is. FOR THE GRADE SEQUENCING
+-- TOOL ONLY: the coverage audit must not read this table -- the audit reads
+-- node_grade as a range, the sequencer reads a placement, and the two are not
+-- to be unified (DEFERRED.md section 6).
+-- Rebuilt by mh2.load_grade_ruling; one row per node_grade row whose
+-- ruling_type supports a deterministic answer, no row otherwise.
+-- `kind`:
+--   core            — ruling_type 'single', or a grade named in the worksheet's
+--                     optional ccss_default_grades column
+--   span            — ruling_type 'span' (every grade of the span)
+--   state_extension — in default_grades but outside ccss_default_grades
+--   unconfirmed     — state_conditional / range_prose / alternative / unparsed
+--                     with no ccss_default_grades ruling yet. Not a guess at
+--                     core-vs-extension; see docs/review/grade_split_review.csv
+-- leaf, out_of_band and blank-ruling_type nodes get no rows.
+-- `basis` records which rule produced the row.
+CREATE TABLE IF NOT EXISTS node_grade_kind (
+    node_id TEXT NOT NULL REFERENCES nodes(node_id) ON DELETE CASCADE,
+    grade   TEXT NOT NULL REFERENCES grade_order(grade),
+    kind    TEXT NOT NULL
+            CHECK (kind IN ('core', 'span', 'state_extension', 'unconfirmed')),
+    basis   TEXT NOT NULL,
+    PRIMARY KEY (node_id, grade)
+);

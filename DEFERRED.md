@@ -103,6 +103,27 @@ outside the denominator.
 **Related:** `FL.6.DP.1.6` and the two welded gaps codes absorb silently.
 **Trigger:** the Other States scope decision (2.1).
 
+### 1.9 Core vs state-extension grades (sequencer input)
+**What:** `node_grade` folds state extensions into `default_grades` (`4 (3 for
+some states)` -> grades 3, 4), so it cannot say which grade is the CCSS
+placement. Added, purely additively: `node_grade_ruling.ruling_type`,
+`needs_writer_review`, `states_mentioned` (copied from the worksheet, blank ->
+NULL), and a new table `node_grade_kind (node_id, grade, kind, basis)` with
+kind `core | span | state_extension | unconfirmed`. `single` -> core, `span`
+-> span, `state_conditional` / `range_prose` / `alternative` / `unparsed` ->
+`unconfirmed` until John rules; leaf / out_of_band / blank get no rows.
+**The audit does not read `node_grade_kind`** (or the new columns). Section 6
+stands: the audit reads a range, the sequencer a placement.
+**Review sheet:** `docs/review/grade_split_review.csv` (30 rows, regenerate with
+`python -m mh2.grade_split_review`) proposes the split per raw value, parsed
+from `notes`. Only the 16 `state_conditional` rows are `parsed`; the rest are
+`guess`. Nothing in it is loaded. To apply a ruling, add a
+`ccss_default_grades` column to the worksheet; the loader then marks those
+grades core and the rest of `default_grades` state_extension.
+**Schema:** existing databases need a rebuild (new columns are in
+`CREATE TABLE`, not `ALTER`).
+**Trigger:** the Grade Sequencing Tool reads placement.
+
 ---
 
 ## 2. Scope decisions left open
@@ -309,6 +330,11 @@ Listed so that revisiting one is a visible decision rather than a drift.
 - **The ladders are the tagging source of truth, not the spreadsheet.**
 - **The tool must not become a third source of truth.** Two sources produced
   this entire finding; a third would kill the premise.
+  **Exception** (2026-09-30, John; applied 2026-10-01): `mh2_seq.db` is
+  authoritative for grade sequences, modules, slots, placements and
+  per-placement attributes only — facts with no Word home. It never holds
+  tags, node content, or grade rulings, and nothing reads it back into
+  `mh2.db`. See `docs/seq_orientation_rev1.md` §2.
 - **One definition.** `coverage.py` owns the denominator and the rollup. No SQL
   in routes. Filter the returned list in Python.
 - **`grade_match` is containment, not equality.** The ladder grade field is a
@@ -455,6 +481,9 @@ Writers keep editing Word docs. `mh2.db` is destroyed every rebuild;
 `mh2_seq.db` holds judgments beside the data and never holds tags. Making
 either authoritative would create the forbidden third source of truth
 (§6).
+**Amended by the §6 exception (2026-10-01):** `mh2_seq.db` is
+authoritative for sequence/placement data only. `mh2.db` remains
+non-authoritative.
 
 ### R-H4. Azure runtime constraints — state these to IT explicitly
 Exactly one instance, one worker, databases on storage that survives

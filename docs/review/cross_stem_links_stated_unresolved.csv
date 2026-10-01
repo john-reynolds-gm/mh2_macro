@@ -1,0 +1,11 @@
+node_id,source_key,from_stem,related_text,match_method,residual_tokens,concept_hints
+ANG-0002,ANG:21d156ad8783a1a2,ANG,Parallel/perpendicular (informal),none,parallel perpendicular,"ANG: Classify angles, and draw angles made of perpendicular lines (containment 0.5, ladder_heading)"
+ANG-0002,ANG:21d156ad8783a1a2,ANG,Congruence-as-superposition,none,congruence superposition,
+ANG-0003,ANG:ed3ea4006096f1d6,ANG,Parallel/perpendicular (informal),none,parallel perpendicular,"ANG: Classify angles, and draw angles made of perpendicular lines (containment 0.5, ladder_heading)"
+ANG-0003,ANG:ed3ea4006096f1d6,ANG,Congruence-as-superposition,none,congruence superposition,
+EST-0004,EST:78ab44af971dfa39,EST,Rounding,none,rounding,"WHO: Round numbers by using place value. (containment 1.0, ladder_heading) | WHO: •	Round numbers to nearest place value unit (containment 1.0, workbook_concept)"
+EST-0005,EST:1b6fcab79b5f3195,EST,Rounding,none,rounding,"WHO: Round numbers by using place value. (containment 1.0, ladder_heading) | WHO: •	Round numbers to nearest place value unit (containment 1.0, workbook_concept)"
+EST-0008,EST:ff00e6fbee476ffc,EST,Rounding,none,rounding,"WHO: Round numbers by using place value. (containment 1.0, ladder_heading) | WHO: •	Round numbers to nearest place value unit (containment 1.0, workbook_concept)"
+EE_GENERAL_EXPRESSIONS-0001,EE_GENERAL_EXPRESSIONS:e55e6e410c7ab1d6,EE_GENERAL_EXPRESSIONS,This has a lot that will overlap with K-5,none,has lot will overlap k 5,
+EE_GENERAL_EXPRESSIONS-0002,EE_GENERAL_EXPRESSIONS:407d4fc8b755ac0d,EE_GENERAL_EXPRESSIONS,This has a lot that will overlap with K-5,none,has lot will overlap k 5,
+EE_ONE_VARIABLE_EQUATIONS_DEG_1-0006,EE_ONE_VARIABLE_EQUATIONS_DEG_1:9e166c2bd7e4f2f7,EE_ONE_VARIABLE_EQUATIONS_DEG_1,Modeling,none,modeling,"FN_QUADRATIC_FUNCTIONS: Model situations with quadratic functions (containment 1.0, workbook_concept) | FN_EXPONENTIAL_FUNCTIONS: Define and use exponential functions to model change (containment 1.0, workbook_concept)"

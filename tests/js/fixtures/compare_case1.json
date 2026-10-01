@@ -1,0 +1,38 @@
+{
+ "grade": "2",
+ "columns": [
+  {"source_key": "COM:58ec03661c5f2d1b", "node_id": "COM-0012", "node_text": "Compare multi-digit numbers using place value relationships.",
+   "stem_id": "COM", "stem_name": "Comparing", "cs_label_display": "Compare and order multi-digit numbers by using a number line.",
+   "goal": "Apply place value understanding to compare numbers", "grades": ["2"], "state": "core", "in_grade": true, "grade_raw": "G2",
+   "period_hint_text": "Instructional Period: | Likely 1 instructional period",
+   "ccss": ["2.NBT.A.4"], "lessons": ["G2-M1-L35"], "state_codes": ["CA.2.NBT.4", "FL.2.NSO.1.3", "TX.2.2D"],
+   "fields": {"specifications": ["Use symbols"]}},
+  {"source_key": "WHO:d65c6bed74a5ba1c", "node_id": "WHO-0010", "node_text": "Compare whole numbers by using place value.",
+   "stem_id": "WHO", "stem_name": "Whole Numbers and Base Ten Structure", "cs_label_display": "Compare and order numbers by using place value.",
+   "goal": null, "grades": ["1", "2", "3", "4"], "state": "span", "in_grade": true, "grade_raw": "1, 2, 3, 4",
+   "period_hint_text": null,
+   "ccss": ["1.NBT.B.3", "2.NBT.A.4", "4.NBT.A.2", "K.CC.C.7"], "lessons": ["G1-M5-L7", "G2-M1-L35", "G4-M1-L9"],
+   "state_codes": ["AK.1.CC.5"], "fields": {"specifications": ["Some place value charts ok"], "misconceptions": ["Comparing by only one digit"]}}
+ ],
+ "field_defs": [{"key": "specifications", "label": "Specifications"}, {"key": "misconceptions", "label": "Misconceptions"}, {"key": "strategies", "label": "Strategies"}],
+ "expect_row_keys": ["stem", "concept_skill", "goal", "grades", "state", "grade_raw", "period_hint",
+   "ccss:1.NBT.B.3", "ccss:2.NBT.A.4", "ccss:4.NBT.A.2", "ccss:K.CC.C.7",
+   "lesson:G1-M5-L7", "lesson:G2-M1-L35", "lesson:G4-M1-L9",
+   "specifications", "misconceptions", "strategies", "state_codes"],
+ "expect_rows": {
+  "stem": {"cells": [["Comparing"], ["Whole Numbers and Base Ten Structure"]], "shared": false, "empty": false},
+  "goal": {"cells": [["Apply place value understanding to compare numbers"], []], "shared": false, "empty": false},
+  "grades": {"cells": [["2"], ["1", "2", "3", "4"]], "shared": false, "empty": false},
+  "state": {"cells": [["core"], ["span"]], "shared": false, "empty": false},
+  "period_hint": {"cells": [["Instructional Period: | Likely 1 instructional period"], []], "shared": false, "empty": false},
+  "ccss:1.NBT.B.3": {"cells": [false, true], "shared": false, "empty": false},
+  "ccss:2.NBT.A.4": {"cells": [true, true], "shared": true, "empty": false},
+  "lesson:G2-M1-L35": {"cells": [true, true], "shared": true, "empty": false},
+  "lesson:G1-M5-L7": {"cells": [false, true], "shared": false, "empty": false},
+  "strategies": {"cells": [[], []], "shared": false, "empty": true},
+  "misconceptions": {"cells": [[], ["Comparing by only one digit"]], "shared": false, "empty": false},
+  "state_codes": {"cells": [["CA.2.NBT.4", "FL.2.NSO.1.3", "TX.2.2D"], ["AK.1.CC.5"]], "shared": false, "empty": false}
+ },
+ "expect_shared_ccss": ["2.NBT.A.4"],
+ "expect_shared_lessons": ["G2-M1-L35"]
+}
