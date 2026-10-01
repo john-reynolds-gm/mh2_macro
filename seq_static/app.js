@@ -1321,6 +1321,14 @@ function renderToolbar(state, M) {
 
 /* ---- slice --------------------------------------------------------------- */
 
+/** Chip label: the node number only ("EE_..._DEG_1-0003" -> "0003"). The stem
+ *  heading above the strip already names the stem; the full ID stays in the
+ *  tooltip and aria-label. Falls back to the full ID if it has no "-NNNN". */
+function chipId(nodeId) {
+  var m = /-(\d+)$/.exec(nodeId || "");
+  return m ? m[1] : (nodeId || "");
+}
+
 function renderChip(n, state, M) {
   var ph = placedOf(M)[n.source_key], cls = ["chip"];
   if (n.state === "off_grade" || n.state === "no_grade") cls.push("ctx");
@@ -1342,7 +1350,7 @@ function renderChip(n, state, M) {
     { cls: "cbtn", pressed: inCmp, disabled: full, aria: (inCmp ? "Remove " : "Add ") + n.node_id + (inCmp ? " from" : " to") + " compare", title: full ? "Compare holds at most 4" : "Compare up to 4 nodes" });
   return '<li class="chip-li"><div class="' + cls.join(" ") + '" data-node="' + esc(n.source_key) + '">' +
     '<button type="button" class="chip-body"' + da({ action: "open-node", id: n.source_key }) + fk("chip:" + n.source_key) + ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '">' +
-    '<span class="c-id">' + esc(n.node_id) + "</span>" +
+    '<span class="c-id" title="' + esc(n.node_id) + '">' + esc(chipId(n.node_id)) + "</span>" +
     '<span class="c-text" title="' + esc(n.node_text) + '">' + esc(n.node_text) + "</span>" +
     '<span class="c-pills">' + gradePills(n.grades, M.grade) + "</span>" +
     '<span class="c-badges">' + pills + kind + sb.map(badgeHtml).join("") + "</span></button>" +
