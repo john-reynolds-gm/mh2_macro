@@ -2,15 +2,27 @@
 0 rows
 
 === tag_proposal: landed_elsewhere (coverage achieved, node differs) ===
-0 rows
+2 rows
+  #2      K.CC.A.1             COU:64aadc1fe4cda757
+  #3      K.CC.A.1             COU:64aadc1fe4cda757
 
 === tag_proposal: needs_attention (source_key reworded or removed) ===
 0 rows
 
 === tag_proposal: still open (outstanding work) ===
-0 rows
+1 rows
+  #4      K.CC.A.3             ADD:97d4b9239c2d0954
 
 === tag_review: referring to changed content (source_key absent from nodes) -- never auto-deleted ===
+0 rows
+
+=== tag_review incorrect_tag: removed from the ladder (done) -- never modified ===
+0 rows
+
+=== tag_review incorrect_tag: still tagged (outstanding work) -- never modified ===
+0 rows
+
+=== tag_review incorrect_tag: node reworded or removed -- never modified ===
 0 rows
 
 === standard_review: may be stale (rollup color changed since review) ===
