@@ -64,7 +64,7 @@ SQL in routes" structural: `seq_api.py` imports neither `sqlite3` nor any
 
 ### 1.1 Open rulings and gates
 
-Every entry is **Provisional (Claude, 2026-09-30), confirm**.
+Every entry is **Ruled (John, 2026-10-01)**: accepted as written, **except O8 and O9**, which John ruled differently. The O8 and O9 rows below are superseded. Read `docs/seq_rulings_rev1.md`, which also has the autosave and `estimate_source` change those rulings need. O4 is applied.
 
 | # | Decision for v1 | One-line reason |
 |---|---|---|
@@ -88,7 +88,7 @@ Every entry is **Provisional (Claude, 2026-09-30), confirm**.
 
 ### 1.2 Other "Assumption (confirm)" items from the design docs, decided
 
-All are **Provisional (Claude, 2026-09-30), confirm**.
+All are **Ruled (John, 2026-10-01): accepted as written**.
 
 | Item | Decision | Reason |
 |---|---|---|

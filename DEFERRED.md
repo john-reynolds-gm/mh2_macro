@@ -330,6 +330,11 @@ Listed so that revisiting one is a visible decision rather than a drift.
 - **The ladders are the tagging source of truth, not the spreadsheet.**
 - **The tool must not become a third source of truth.** Two sources produced
   this entire finding; a third would kill the premise.
+  **Exception** (2026-09-30, John; applied 2026-10-01): `mh2_seq.db` is
+  authoritative for grade sequences, modules, slots, placements and
+  per-placement attributes only — facts with no Word home. It never holds
+  tags, node content, or grade rulings, and nothing reads it back into
+  `mh2.db`. See `docs/seq_orientation_rev1.md` §2.
 - **One definition.** `coverage.py` owns the denominator and the rollup. No SQL
   in routes. Filter the returned list in Python.
 - **`grade_match` is containment, not equality.** The ladder grade field is a
@@ -476,6 +481,9 @@ Writers keep editing Word docs. `mh2.db` is destroyed every rebuild;
 `mh2_seq.db` holds judgments beside the data and never holds tags. Making
 either authoritative would create the forbidden third source of truth
 (§6).
+**Amended by the §6 exception (2026-10-01):** `mh2_seq.db` is
+authoritative for sequence/placement data only. `mh2.db` remains
+non-authoritative.
 
 ### R-H4. Azure runtime constraints — state these to IT explicitly
 Exactly one instance, one worker, databases on storage that survives
