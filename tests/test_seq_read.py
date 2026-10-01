@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import shutil
 import sqlite3
 import sys
@@ -123,7 +124,9 @@ def test_g2_counts_and_states():
     leaves = sorted(n["node_id"] for n in nodes if n["state"] == "leaf")
     assert leaves == ["COU-0024", "MUL-0004"], leaves
     assert sl["kind_source"] == "grade_type"
-    assert sl["ladders_last_read"] == "2026-09-09 15:11:11"
+    # Build-dependent: every rebuild stamps a new ingest time, so check shape only.
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}",
+                        sl["ladders_last_read"] or ""), sl["ladders_last_read"]
 
 
 # 4 -------------------------------------------------------------------------
@@ -352,7 +355,9 @@ def test_field_defs_and_helpers():
     assert [d["key"] for d in defs][:12] == [k for k, _ in R.FIELD_ORDER]
     assert R.cs_id("WHO", "Compare and order numbers by using place value.") == "WHO:7046b922"
     assert R.display_label("Foo  bar (Jane - done)") == "Foo bar"
-    assert R.ladders_last_read(c) == "2026-09-09 15:11:11"
+    # Must equal the DB's own latest ingest stamp, whatever build this is.
+    assert R.ladders_last_read(c) == \
+        c.execute("SELECT MAX(ts) FROM ingest_log").fetchone()[0]
 
 
 # 15 ------------------------------------------------------------------------
