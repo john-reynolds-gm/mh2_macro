@@ -48,3 +48,4 @@ data/source/standards/all_states_debug.csv
 # Notebooks and scripts for experimenting, don't need to be committed
 notebooks/
 
+~$*
