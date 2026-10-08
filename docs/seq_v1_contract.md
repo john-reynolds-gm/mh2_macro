@@ -64,7 +64,7 @@ SQL in routes" structural: `seq_api.py` imports neither `sqlite3` nor any
 
 ### 1.1 Open rulings and gates
 
-Every entry is **Ruled (John, 2026-10-01)**: accepted as written, **except O8 and O9**, which John ruled differently. The O8 and O9 rows below are superseded. Read `docs/seq_rulings_rev1.md`, which also has the autosave and `estimate_source` change those rulings need. O4 is applied.
+Every entry is **Ruled (John, 2026-10-01)**: accepted as written, **except O8 and O9**, which John ruled differently (`docs/seq_rulings_rev1.md`). The O8 and O9 rows below give the ruled behaviour, implemented 2026-10-08 per `docs/brief_seq_o8_o9_autofill.md`. O4 is applied.
 
 | # | Decision for v1 | One-line reason |
 |---|---|---|
@@ -75,8 +75,8 @@ Every entry is **Ruled (John, 2026-10-01)**: accepted as written, **except O8 an
 | **O5** `student_facing_example` | Deferred. Not shown. | It is not stored in `mh2.db` (orientation §10 D5), and ingest is do-not-touch. |
 | **O6** UI stack | Plain JavaScript, no build step, no framework, no CDN, no npm: `seq_static/index.html` + `app.js` (one classic script) + `app.css`. | John reads Python, not TSX. It matches the audit's pattern. The Node toolchain is unavailable here and unwanted on the corporate Mac. |
 | **O7** In-grade rows with no kind row (out_of_band 9, blank 2) | Read state `unknown`, badge "kind pending", counted as owed, and exempt from `grade_changed` when a row later appears. No change to the grade_type branch. | Recommended default. It degrades gracefully. |
-| **O8** Time units | No conversion. `period_estimate` is always in instructional periods. Day/lesson hints are shown verbatim and never prefilled. | Recommended default. Nothing in the repo defines a day or a lesson in periods. |
-| **O9** Un-graded estimate on a multi-grade node; `part_of` | Shown as text, with no prefill (`value = null`). `part_of` is shown as "≤ high". The builder types the number. | Recommended default. The tool does not decide per-grade versus total. |
+| **O8** Time units | 1 lesson = 1 day = 1 period. `period_estimate` is in periods, and a day or lesson hint fills the same number ("1/2 lesson" → 0.5). Units other than these three are not converted. | John's convention: one lesson is that day's math block, which in 6–A1 is the math period. |
+| **O9** Un-graded estimate on a multi-grade node; `part_of` | Per grade: the same number is filled in every grade the node spans. "Part of N" fills N − 0.5 ("part of 1" → 0.5, "part of 2" → 1.5). Group totals, `multiple`, `not_fixed`, `embedded`, `unparsed` and ambiguous notes stay blank. Placing saves the number with `estimate_source = 'ladder'` until the writer edits or confirms it (§3.2.1, §3.5). | A filled-in number beats a blank box. Writers reconcile as they work, and the number is easy to change. |
 | **O10** Flagged vs Pairings | Shared-code badges have `tier: "pairing"` and are shown only when the **Pairings** toggle is on. **Flagged** filters on `tier: "structural"` only. | 22 of 35 G2 nodes carry a shared code. Flagged would pass almost everything. |
 | **O11** Stated-link capture fix | Not done. `node_links` is shown as captured, with the label "as captured". | It is a pipeline change, and ingest is do-not-touch. |
 | **O12** C/S band beyond Goal | Goal only. | Recommended default. Identical fields look like merged Word cells. |
@@ -314,14 +314,19 @@ def period_hint(con, node_id: str, grade: str) -> PeriodHint | None      # §3.2
    - If there are none and the node has exactly one `node_grade` grade, `kept` = those with `e.grade is None`, giving `basis = "single_grade_node"`.
    - If there are still none and the node has more than one grade, `kept` = the un-graded ones, giving `basis = "ungraded_multi_grade"`.
    - If `kept` is empty, return `None`.
-3. Set `value = kept[0].low` only when all of these hold:
-   - `len(kept) == 1`
-   - `basis != "ungraded_multi_grade"`
-   - `qualifier == "exact"`
-   - `unit == "period"`
-   - `"group_total" not in note`
+3. `value` is the autofill number (rulings O8, O9; `seq_read._autofill_value`). Units are ignored: day = lesson = period, 1:1. The basis does not matter, so a multi-grade node's un-graded estimate fills the same number in each grade.
 
-   In every other case `value = None`.
+   | Kept estimate | `value` |
+   |---|---|
+   | `exact` | `low` ("1/2 lesson" → 0.5) |
+   | `range`, closed | `low` ("1-2 periods" → 1) |
+   | `range`, open-ended (`'open_ended' in note`) | `low` ("1+" → 1) |
+   | `part_of` with `high > 0.5` | `high − 0.5` ("part of 1" → 0.5, "part of 2" → 1.5) |
+   | `part_of` with no `high` or `high ≤ 0.5`, or `'group_total' in note` | `None` |
+   | `multiple`, `not_fixed`, `embedded`, `unparsed` | `None` |
+   | more than one kept estimate | `None` |
+
+   `basis` stays in the payload so the UI can say why. The JS never recomputes `value` (R-S10).
 4. `text` = `" · ".join(e.snippet for e in kept)`. `unit`, `qualifier`, `low` and `high` come from `kept[0]`. `n_estimates` = `len(kept)`.
 
 ### 3.3 Shared shapes (TypedDict-style)
@@ -375,8 +380,9 @@ pills.
 This is data model §3 verbatim, with these changes (all additive):
 
 1. The `placement_event.action` CHECK list gains `'slot_update'`, `'slot_move'` and `'slot_merge'`. `'move'` stays in the list but is not used; slot moves log `slot_move`.
-2. No other column or table changes. `placement_schema_meta` version = 1.
-3. The file header comment states that it is applied by `mh2/seq_store.ensure_schema` only, and that `mh2/schema_seq.sql` / `review_store` never read it.
+2. **v2 (2026-10-08, O8/O9):** `placement.estimate_source TEXT CHECK (estimate_source IS NULL OR estimate_source IN ('ladder','builder'))`. `'ladder'` means the estimate was autofilled on place and not yet edited or confirmed; `'builder'` means a person typed or confirmed it; `NULL` means there is no estimate. The action CHECK list gains `'confirm_period'`. `placement_schema_meta` version = 2.
+3. **Migration.** `ensure_schema` creates missing tables from the file, then, if `estimate_source` is missing from `PRAGMA table_info(placement)` or `'confirm_period'` is missing from `placement_event`'s DDL, migrates in one transaction (re-checked under the write lock): `ALTER TABLE placement ADD COLUMN estimate_source …`, existing non-null estimates become `'builder'`, and `placement_event` is rebuilt (rename, create, copy every row with its `event_id`, keep the AUTOINCREMENT high-water mark, drop, recreate indexes), because SQLite cannot alter a CHECK. The fast path is two catalogue reads and takes no write lock.
+4. The file header comment states that it is applied by `mh2/seq_store.ensure_schema` only, and that `mh2/schema_seq.sql` / `review_store` never read it.
 
 ### 3.5 W: `mh2/seq_store.py`
 
@@ -393,11 +399,13 @@ class StaleRevision(Conflict):   code = "stale_revision"   # extra = {"current_r
 class Invalid(SeqError):         status = 422  # code set per case
 class NeedsConfirm(Invalid):     code = "confirm_off_grade_required"  # extra = {"source_keys": [...], "states": {key: state}}
 
-NodeSnap = {source_key, node_id, node_text, source_file, stem_id, concept_skill, state, requires_confirm}
+NodeSnap = {source_key, node_id, node_text, source_file, stem_id, concept_skill, state, requires_confirm,
+            period_hint: PeriodHint|None}
            # built by seq_service from R's NodeFacts; the store copies it into *_seen columns
+           # and autofills the estimate from period_hint.value
 
 def connect(path) -> sqlite3.Connection        # isolation_level=None, row_factory=Row, foreign_keys=ON
-def ensure_schema(con) -> None                 # runs schema_placement.sql (IF NOT EXISTS)
+def ensure_schema(con) -> None                 # runs schema_placement.sql (IF NOT EXISTS), then the v1 -> v2 migration (§3.4)
 
 # sequences
 def create_sequence(con, writer, grade, title, note=None) -> int      # Conflict 'sequence_exists' (extra sequence_id)
@@ -425,6 +433,9 @@ def place_group(con, writer, sequence_id, expected_rev, snaps: list[NodeSnap], *
 def set_attributes(con, writer, placement_id, expected_rev, changes: dict,
                    period_hint_seen: str | None = None) -> None
                 # changes ⊆ {calibration, period_estimate, differentiation_note}; value None clears
+def confirm_estimate(con, writer, placement_id, expected_rev) -> None
+                # 'ladder' -> 'builder', number unchanged; Invalid('invalid') unless the source is 'ladder'
+
 def co_place(con, writer, placement_id, expected_rev, target_slot_id) -> None
 def ungroup(con, writer, placement_id, expected_rev) -> int   # new slot_id; Invalid 'already_alone'
 def remove_placement(con, writer, placement_id, expected_rev, reason=None) -> None
@@ -450,7 +461,7 @@ def delete_view(con, owner, view_id) -> None
 
 - **`writer` is always the second positional argument.** No function accepts a `*_by` or `*_at` parameter. Timestamps are `datetime.now(timezone.utc).isoformat(timespec="seconds")`.
 - **Revisions.** Every mutating function except the saved-view functions runs in one `BEGIN IMMEDIATE … COMMIT`, with `ROLLBACK` on any exception.
-  - `set_attributes` checks `placement.rev == expected_rev`.
+  - `set_attributes` and `confirm_estimate` check `placement.rev == expected_rev`.
   - Every other function checks `grade_sequence.rev == expected_rev` for the sequence that owns the row, then bumps `grade_sequence.rev` by 1.
   - Every updated row also gets `rev = rev + 1`.
   - A mismatch raises `StaleRevision` and changes nothing.
@@ -459,7 +470,7 @@ def delete_view(con, owner, view_id) -> None
   2. revision (`StaleRevision`);
   3. business rules (`Conflict` / `Invalid` / `NeedsConfirm`).
 - **Events.** Exactly one `placement_event` row per call, with changed fields only in `before_json`/`after_json`. `place_group` writes one `place` event per placement. A renumber adds one `renumber` event.
-  - Action names: `sequence_create`/`sequence_update`/`sequence_archive`, `module_create`/`module_update`/`module_move`/`module_remove`, `slot_update`/`slot_move`/`slot_merge`, `place`, `co_place`, `ungroup`, `remove`, `set_calibration`/`set_period`/`set_note`, `reattach`, `acknowledge`, `renumber`.
+  - Action names: `sequence_create`/`sequence_update`/`sequence_archive`, `module_create`/`module_update`/`module_move`/`module_remove`, `slot_update`/`slot_move`/`slot_merge`, `place`, `co_place`, `ungroup`, `remove`, `set_calibration`/`set_period`/`set_note`, `confirm_period`, `reattach`, `acknowledge`, `renumber`.
   - When one PATCH changes several attributes, it writes one event per changed attribute. This is the only multi-event call.
 - **Order keys:** data model §4 (append = max + 1024; swap on chevron; insert-between = `(a+b)//2`; renumber only that container, `1024*i`, when the gap is under 2).
 - **Slot semantics:**
@@ -475,6 +486,9 @@ def delete_view(con, owner, view_id) -> None
 - **Off-grade:** if `snap["requires_confirm"]` and not `confirm_off_grade`, raise `NeedsConfirm`. `place_group` checks all snaps first and lists every one that needs confirmation.
 - **`already_placed`:** `place` raises `Conflict('already_placed', extra={placement_id})`. `place_group` skips those keys and reports them.
 - **`period_hint_seen`** is written only when `period_estimate` is in `changes`. `seq_service` passes the current hint text.
+- **Autofill (O8/O9).** `place` and `place_group` write, when `snap["period_hint"]` has a non-null `value`, `period_estimate = value`, `period_hint_seen = hint.text` and `estimate_source = 'ladder'`. The `place` event's `after` records `period_estimate` and `estimate_source` (both null when nothing was filled). `co_place`, `move_slot`, `merge_slot`, `ungroup`, `reattach` and `acknowledge` never touch estimates. A removed and re-placed node is a new row, so it autofills again.
+- **Edit.** `set_attributes` treats `period_estimate` as changed when the value differs, **or** when it is the same non-null number and the source is `'ladder'` (retyping the ladder's number makes it the builder's). On a change it sets `estimate_source = 'builder'`, or `NULL` when cleared, and the `set_period` event's `before`/`after` carry `estimate_source`. Setting the builder's own number again is a no-op (no bump, no event).
+- **Confirm.** `confirm_estimate` flips `'ladder'` to `'builder'`, bumps `placement.rev` (not the sequence rev), and logs one `confirm_period` event with `before {period_estimate, estimate_source: 'ladder'}` and `after {period_estimate, estimate_source: 'builder'}`. On a source of `'builder'` or `NULL` it raises `Invalid('invalid')` (422).
 - **Validation (`Invalid('invalid')`):** `calibration` ∉ `CALIBRATIONS` ∪ {None}; `period_estimate` < 0 or > 200; empty `title`/`name`; `direction` ∉ {up, down}; both or neither of `direction`/`to_module_id`.
 
 ```
@@ -511,7 +525,7 @@ COUNT_TARGET = {"deep": 0.25, "functional": 0.50, "illuminating": 0.25}
 TIME_TARGET  = {"deep": 0.40, "functional": 0.45, "illuminating": 0.15}
 TIME_MARK_MIN_COVERAGE = 0.5
 def round_half_up(x: float, dp: int) -> float     # math.floor(x * 10**dp + 0.5) / 10**dp  (x >= 0)
-def compute(placements: Iterable[dict]) -> Guardrail   # each: {calibration, period_estimate}
+def compute(placements: Iterable[dict]) -> Guardrail   # each: {calibration, period_estimate, estimate_source?}
 ```
 
 The formula is in §5.8. It is **authoritative**; the JS mirror must match it.
@@ -649,6 +663,7 @@ In step 3, `place`, `reattach` and `acknowledge` build their `NodeSnap` from
 | W10 | POST | `/slots` | `{expected_rev, sequence_id, module_id, source_keys[1..4], confirm_off_grade=false, differentiation_notes?: {key: note}}` | WriteResult `{slot_id, placement_ids, skipped}` | `create_slot_group` |
 | W11 | POST | `/placements` | `{expected_rev, sequence_id, module_id, source_key, slot_id?, after_slot_id?, differentiation_note?, confirm_off_grade=false}` | WriteResult `{placement_id, slot_id, placed_elsewhere}` | `place` |
 | W12 | PATCH | `/placements/{placement_id}` | `{expected_rev` (**placement** rev)`, calibration?, period_estimate?, differentiation_note?}` | WriteResult `{placement_id}` | `update_placement` |
+| W12c | PATCH | `/placements/{placement_id}` | `{expected_rev` (**placement** rev)`, confirm_estimate: true}`, sent alone. Keeps a ladder-autofilled estimate as the builder's (O8/O9). 422 `invalid` if the source is not `'ladder'`, if the flag is not `true`, or if it is sent with other fields | WriteResult `{placement_id}` | `update_placement` → `seq_store.confirm_estimate` |
 | W13 | POST | `/placements/{placement_id}/co-place` | `{expected_rev, target_slot_id}` | WriteResult `{slot_id}` | `co_place` |
 | W14 | POST | `/placements/{placement_id}/ungroup` | `{expected_rev}` | WriteResult `{slot_id}` | `ungroup` |
 | W15 | DELETE | `/placements/{placement_id}` | query `expected_rev`, `reason?` | WriteResult `{}` | `remove_placement` |
@@ -664,8 +679,8 @@ In step 3, `place`, `reattach` and `acknowledge` build their `NodeSnap` from
 
 **Revisions.**
 
-- `expected_rev` is `sequence.rev` for every write except W12, which uses `placement.rev`, and W1 and V1–V4, which have none.
-- W12 does not change `sequence.rev`.
+- `expected_rev` is `sequence.rev` for every write except W12 and W12c, which use `placement.rev`, and W1 and V1–V4, which have none.
+- W12 and W12c do not change `sequence.rev`.
 - Every write returns the full, fresh `SequenceView`, so F never has to guess.
 
 **Static serving** uses explicit `FileResponse` routes. **Never
@@ -941,7 +956,8 @@ PlacementView= {placement_id, rev, order_in_slot, source_key, node_id: str|None,
                 node_text,            # current text, or node_text_seen if orphaned
                 node_text_seen, stem_id, stem_name, concept_skill_display, ladder_file_seen,
                 grade_kind_seen, state_now: str|None, status, relabelled, relabel,
-                is_bridge, calibration, period_estimate, period_hint: PeriodHint|None,
+                is_bridge, calibration, period_estimate,
+                estimate_source: "ladder"|"builder"|None, period_hint: PeriodHint|None,
                 period_hint_seen, differentiation_note, placed_by, placed_at, updated_by,
                 updated_at, placed_elsewhere: [PlacedRef], badges: [Badge]}
 PlacedHere   = {placement_id, module_id, module_title, module_position, slot_id, slot_position,
@@ -990,6 +1006,7 @@ WHO-0012.
       "ladder_file_seen": "MH2_PK5_…_Whole Numbers and Base Ten Structure.docx",
       "grade_kind_seen": "span", "state_now": "span", "status": "ok", "relabelled": false,
       "relabel": null, "is_bridge": false, "calibration": "functional", "period_estimate": 1.0,
+      "estimate_source": "builder",
       "period_hint": {"text": "G2: 1 instructional period", "value": 1.0, "unit": "period",
                       "qualifier": "exact", "low": 1.0, "high": 1.0, "basis": "grade_named", "n_estimates": 1},
       "period_hint_seen": "G2: 1 instructional period", "differentiation_note": "Within 1,000 here; G3 extends to 10,000",
@@ -1003,13 +1020,13 @@ WHO-0012.
    "slots": [
     {"slot_id": 2, "label": "Co-taught: compare", "order_key": 1024, "position": 1, "placements": [
      {"placement_id": 2, "source_key": "WHO:d65c6bed74a5ba1c", "node_id": "WHO-0010",
-      "calibration": "deep", "period_estimate": 1.5, "status": "ok", "is_bridge": false, "badges": [], "…": "…"},
+      "calibration": "deep", "period_estimate": 1.5, "estimate_source": "builder", "status": "ok", "is_bridge": false, "badges": [], "…": "…"},
      {"placement_id": 3, "source_key": "COM:58ec03661c5f2d1b", "node_id": "COM-0012",
-      "calibration": "deep", "period_estimate": 0.5, "status": "ok", "is_bridge": false, "badges": [], "…": "…"}]},
+      "calibration": "deep", "period_estimate": 0.5, "estimate_source": "builder", "status": "ok", "is_bridge": false, "badges": [], "…": "…"}]},
     {"slot_id": 3, "label": null, "order_key": 2048, "position": 2, "placements": [
      {"placement_id": 4, "source_key": "WHO:fdbd77e5556b420d", "node_id": "WHO-0012",
       "grade_kind_seen": "off_grade", "state_now": "off_grade", "status": "ok", "is_bridge": true,
-      "calibration": "illuminating", "period_estimate": null, "period_hint": null,
+      "calibration": "illuminating", "period_estimate": null, "estimate_source": null, "period_hint": null,
       "badges": [{"code": "bridge", "tier": "structural", "label": "bridge · off_grade",
                   "detail": "Placed outside this grade's inventory on purpose", "refs": [], "partners": []}],
       "…": "…"}]}]}],
@@ -1020,7 +1037,7 @@ WHO-0012.
                            "slot_id": 2, "slot_position": 1, "status": "ok", "is_bridge": false},
   "COM:58ec03661c5f2d1b": {"placement_id": 3, "…": "…"}, "WHO:fdbd77e5556b420d": {"placement_id": 4, "…": "…"}},
  "slice_badges": {"WHO:dc726b29e8f61f18": ["(before_predecessor badge)"], "WHO:fdbd77e5556b420d": ["(bridge badge)"]},
- "guardrail": {"n": 4, "n_calibrated": 4, "n_timed": 3,
+ "guardrail": {"n": 4, "n_calibrated": 4, "n_timed": 3, "n_from_ladder": 0,
    "counts": {"deep": 2, "functional": 1, "illuminating": 1, "unset": 0},
    "count_share": {"deep": 0.5, "functional": 0.25, "illuminating": 0.25},
    "periods": {"deep": 2.0, "functional": 1.0, "illuminating": 0.0, "unset": 0.0},
@@ -1061,7 +1078,7 @@ there is no sequence.
 
 ### 5.8 Guardrail formula (authoritative; JS mirrors it)
 
-Input: the active placements, each `{calibration ∈ deep|functional|illuminating|null, period_estimate: float|null}`. Orphans are included.
+Input: the active placements, each `{calibration ∈ deep|functional|illuminating|null, period_estimate: float|null, estimate_source?: "ladder"|"builder"|null}`. Orphans are included.
 
 ```
 L = ["deep", "functional", "illuminating"]
@@ -1071,7 +1088,8 @@ n_calibrated = n - counts.unset
 count_share[l] = R4(counts[l] / n_calibrated) if n_calibrated > 0 else null
 periods[l]   = R2(sum period_estimate where calibration == l and estimate not null)
 periods.unset= R2(sum period_estimate where calibration null and estimate not null)
-n_timed      = count with period_estimate not null
+n_timed      = count with period_estimate not null          # ladder-autofilled estimates count (O8/O9)
+n_from_ladder= count with period_estimate not null and estimate_source == "ladder"
 total_periods= R2(sum of all non-null estimates)
 T            = raw (unrounded) sum over L of the periods[l] sums
 time_share[l]= R4(raw periods[l] / T) if T > 0 else null
@@ -1176,7 +1194,7 @@ detail}`).
   - `compare(keys)` checks 1–4 distinct keys (else 422 `invalid`) and that every key is in `compare_columns` (else 404), then returns `assembleCompare(cols, payload.field_defs, grade)`.
   - `whoami()` returns `payload.whoami`.
   - `guardrail()` and `attention()` return the corresponding parts of the current view.
-  - `events()` returns the in-memory event log (the same Event shape, `before`/`after` null).
+  - `events()` returns the in-memory event log (the same Event shape). `before`/`after` are null except on `place` (`after` with `period_estimate`, `estimate_source`), `set_period` and `confirm_period`, which mirror §3.5.
 - **State.** It keeps `{seq: {sequence, modules[], slots[], placements[]}, views[], next_id, events[]}`, with order keys, and rebuilds a `SequenceView` after every write with `demoBuildView()`:
   - `position`s are 1-based over active rows sorted by `order_key`.
   - `PlacementView` fields come from the slice node. `period_hint` comes from `SliceNode.period_hint`, `placed_elsewhere` from `SliceNode.placed_elsewhere`, and `concept_skill_display`/`stem_name` from the drawer.
@@ -1185,6 +1203,7 @@ detail}`).
   - `before_predecessor` and `predecessor_unplaced` are **not computed** in demo mode. The page shows a footnote, "Ordering warnings need the server".
   - `guardrail` = the JS `computeGuardrail` (§5.8) over the whole sequence and over each module.
 - **Writes.**
+  - Autofill (O8/O9): `place` and `createSlotGroup` take `period_estimate = period_hint.value` from the export with `estimate_source = 'ladder'`; it never recomputes the value table (R-S10). `updatePlacement` sets the source to `builder` (or null when cleared); `confirmEstimate` (and a PATCH-shaped `{confirm_estimate: true}`) mirrors W12c, including the 422; `computeGuardrail` returns `n_from_ladder`.
   - The same rules as §3.5: the rev check (409 `stale_revision` with `sequence` = the current view), `already_placed`, `confirm_off_grade_required` (using `requires_confirm` from the slice/drawer node), `module_not_empty`, `at_edge`, `already_alone`, order-key arithmetic, soft remove, and boundary-crossing slot moves.
   - Every write returns `{sequence: view, result}` with the §4 result keys.
 - **`reattach`** in demo mode accepts only a key present in `drawers`, and sets status `ok`. **`acknowledge`** sets status `ok`.
@@ -1322,7 +1341,7 @@ Chip actions, which are real `<button>`s:
 - **No sequence:** a "Start the Grade 2 sequence" button → `createSequence(grade, "Grade 2 sequence")`, then `createModule(…, "Module 1")`.
 - **Guardrail readout** (sticky at the top of the rail), for the sequence and for the selected target module (tabs "Sequence | This module"):
   - **Counts bar:** three segments (Deep, Functional, Illuminating) sized by `count_share`, with the `count_target` drawn as thin tick marks above the bar. The caption is "Calibrated n_calibrated of n placements · unset u".
-  - **Time bar:** segments sized by `time_share`. The `time_target` ticks are drawn **only if `show_time_targets`**. The caption is "Periods known for n_timed of n placements · total total_periods periods" and, when the marks are hidden, "(reference marks shown at ≥ 50% coverage)".
+  - **Time bar:** segments sized by `time_share`. The `time_target` ticks are drawn **only if `show_time_targets`**. The caption is "Periods known for n_timed of n placements · total total_periods periods", with "(n_from_ladder from ladder)" after "placements" when `n_from_ladder > 0`, and, when the marks are hidden, "(reference marks shown at ≥ 50% coverage)".
   - The subtitle is always "Reference marks, not quotas". There are no red/green verdict colours and no pass/fail wording.
 - **Needs attention** (collapsible, count badge, hidden when 0). Items are grouped by module. For each item:
   - **Orphan:** the `node_text_seen` and `ladder_file_seen`; the suggestions side by side ("was" versus "now" text, reason and ratio), each with a **Re-attach** button; and **Remove**.
@@ -1346,7 +1365,8 @@ Chip actions, which are real `<button>`s:
   - a status chip when not ok;
   - **Calibration:** a segmented control `Deep | Functional | Illuminating | —`, with the tooltip "Know it / Use it / See it";
   - **Periods:** a number input (min 0, step 0.25, empty = unknown) with the saved value, saved on change or blur;
-  - the hint text next to it: `period_hint.text`, with a "Use 2" button only when `period_hint.value != null`. Clicking the button fills the input and saves. When `unit != "period"` or `basis == "ungraded_multi_grade"` or `qualifier == "part_of"`, the text shows the reason ("in days; not converted", "estimate covers several grades", "≤ 1");
+  - when `estimate_source == "ladder"`: a **"from ladder"** pill (tooltip: `period_hint_seen`) and a **"Looks right"** button, which sends W12c and clears the pill. When it is `"builder"` the number shows plain;
+  - the hint text next to it: `period_hint.text`, with a "Use 2" button only when `period_hint.value != null`. Clicking the button fills the input and saves; it is an edit, so the source becomes `builder`. When `basis == "ungraded_multi_grade"` or `qualifier == "part_of"`, the text shows the reason ("estimate covers several grades", "≤ 1");
   - **Note:** a button showing "Add note" or the first line of `differentiation_note`, opening an inline textarea;
   - "Ungroup" (co-placed slots only);
   - "Remove";
@@ -1367,7 +1387,7 @@ Chip actions, which are real `<button>`s:
     - otherwise: a "Place in [module ▾]" button, which follows the same prompt rules;
     - the `placed_elsewhere` list.
   - The strip mini-map (the `strip` chips, the current one outlined, clickable) with "‹ prev · next ›" buttons.
-  - Period hint.
+  - Period hint, with a line saying what the autofill chose and why, from `value`, `qualifier`, `unit` and `basis` (for example "Autofilled 2 (same estimate used in each grade the node spans)" or "Autofilled 0.5 ('part of 1 period')"), or "Not autofilled: …" when `value` is null.
   - Fields: non-empty `fields`, each a labelled list. A "Show all fields" toggle adds `fields_empty` as "—".
   - Standards: CCSS codes, with a shared marker. "State codes (n)" is collapsed.
   - **Pairings:** grouped by stem, "Comparing: 1.NBT.B.3, 2.NBT.A.4 … → COM-0012 (in grade), COM-0011 …". Each partner node is clickable and opens its drawer when it is in this slice; otherwise it is plain text.

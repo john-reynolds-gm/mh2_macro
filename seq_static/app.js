@@ -52,6 +52,9 @@ var ORDER_STEP = 1024;
 var COLLAPSE_CHIP_THRESHOLD = 100;     // Gate B Q1: stems start collapsed above this
 var STRUCTURAL_SLICE_CODES = ["bridge", "grade_changed", "before_predecessor", "predecessor_unplaced"];
 var DEMO_NOTICE_ORDERING = "Ordering warnings need the server";
+var GRADE_TIP = "Each grade has its own sequence. Your work in this grade is saved.";
+var NEW_MODULE = "__new__";
+var FILTERS_TIP = "Remembers which filters and stems are shown. Your sequence itself saves automatically.";
 var STALE_MESSAGE = "Someone else changed this sequence. Your change was not applied, and you are now seeing the latest.";
 
 var NODE_ROWS = [
@@ -278,19 +281,20 @@ function moveStem(state, slice, stemId, dir) {
 
 function roundHalfUp(x, dp) { var m = Math.pow(10, dp); return Math.floor(x * m + 0.5) / m; }
 
-/** Counts by level and time by level for a list of {calibration, period_estimate}.
+/** Counts by level and time by level for a list of {calibration, period_estimate, estimate_source}.
  *  Mirrors mh2/seq_guardrail.compute exactly. No pass/fail anywhere: these are
  *  diagnostics, never quotas. */
 function computeGuardrail(placements) {
   var L = CALIBRATIONS, n = placements.length;
   var counts = { deep: 0, functional: 0, illuminating: 0, unset: 0 };
   var sums = { deep: 0, functional: 0, illuminating: 0, unset: 0 };
-  var nTimed = 0, allSum = 0;
+  var nTimed = 0, nLadder = 0, allSum = 0;
   placements.forEach(function (p) {
     var k = L.indexOf(p.calibration) >= 0 ? p.calibration : "unset";
     counts[k] += 1;
     if (p.period_estimate !== null && p.period_estimate !== undefined) {
       nTimed += 1; sums[k] += p.period_estimate; allSum += p.period_estimate;
+      if (p.estimate_source === "ladder") nLadder += 1;
     }
   });
   var nCal = n - counts.unset;
@@ -303,7 +307,7 @@ function computeGuardrail(placements) {
   });
   periods.unset = roundHalfUp(sums.unset, 2);
   return {
-    n: n, n_calibrated: nCal, n_timed: nTimed, counts: counts, count_share: countShare,
+    n: n, n_calibrated: nCal, n_timed: nTimed, n_from_ladder: nLadder, counts: counts, count_share: countShare,
     periods: periods, total_periods: roundHalfUp(allSum, 2), time_share: timeShare,
     time_coverage: n > 0 ? roundHalfUp(nTimed / n, 4) : null,
     show_time_targets: n > 0 && (nTimed / n >= TIME_MARK_MIN_COVERAGE),
@@ -442,10 +446,24 @@ function indexSlice(slice) {
 /** Why a hint has no "Use n" button, in words (contract 7.3). "" when none needed. */
 function hintReason(h) {
   if (!h) return "";
-  if (h.unit && h.unit !== "period") return "in " + h.unit + "s; not converted";
   if (h.basis === "ungraded_multi_grade") return "estimate covers several grades";
   if (h.qualifier === "part_of") return "\u2264 " + fmtNum(h.high !== null && h.high !== undefined ? h.high : h.low);
   return "";
+}
+
+/** The drawer's line on what the autofill chose and why (rulings O8, O9). The value
+ *  itself is computed in Python (seq_read) and arrives in h.value; this only explains it. */
+function autofillText(h) {
+  if (!h) return "";
+  if (h.value === null || h.value === undefined) {
+    return "Not autofilled: " + (h.n_estimates > 1 ? "the note gives more than one estimate" : "the note gives no single number") + ".";
+  }
+  var why = [];
+  if (h.qualifier === "part_of") why.push("\u2018part of " + fmtNum(h.high) + " " + (h.unit || "period") + (h.high === 1 ? "" : "s") + "\u2019");
+  else if (h.qualifier === "range") why.push(h.high === null || h.high === undefined ? "lower bound of an open-ended estimate" : "lower end of " + fmtNum(h.low) + "\u2013" + fmtNum(h.high));
+  if (h.unit === "day" || h.unit === "lesson") why.push("1 " + h.unit + " = 1 period");
+  if (h.basis === "ungraded_multi_grade") why.push("same estimate used in each grade the node spans");
+  return "Autofilled " + fmtNum(h.value) + (why.length ? " (" + why.join("; ") + ")" : "") + ".";
 }
 
 function fmtNum(x) {
@@ -479,6 +497,30 @@ function gshort(g) { return GRADE_SHORT[g] || g; }
 function pct(x) { return x === null || x === undefined ? "\u2013" : String(Math.round(x * 1000) / 10) + "%"; }
 function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
 function firstLine(s) { return String(s || "").split("\n")[0]; }
+function truncateText(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1).replace(/\s+$/, "") + "\u2026" : s; }
+
+/** "2:41 pm" in local time from a Date or epoch ms; "" when there is no usable time. */
+function clockText(t) {
+  var d = t instanceof Date ? t : (t === null || t === undefined ? null : new Date(t));
+  if (!d || isNaN(d.getTime())) return "";
+  var h = d.getHours(), m = d.getMinutes();
+  return (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + " " + (h < 12 ? "am" : "pm");
+}
+
+/** The header's save indicator.  st = {status: idle|saving|saved|error|conflict, at, reason};
+ *  `now` is the time shown when st has no `at`; isDemo is false, true (demo, kept in this
+ *  browser) or "session" (demo whose storage is blocked).  Returns {text, kind}. */
+function saveStatusText(st, now, isDemo) {
+  st = st || { status: "idle" };
+  if (st.status === "saving") return { text: "Saving\u2026", kind: "busy" };
+  if (st.status === "saved") {
+    var when = clockText(st.at || now);
+    return { text: "\u2713 " + (isDemo === "session" ? "Saved for this session only" : (isDemo ? "Saved in this browser" : "All changes saved")) + (when ? " \u00b7 " + when : ""), kind: "ok" };
+  }
+  if (st.status === "error") return { text: "Not saved: " + (st.reason || "something went wrong"), kind: "warn" };
+  if (st.status === "conflict") return { text: "Someone else changed this; reloaded", kind: "warn" };
+  return { text: "All changes save automatically", kind: "muted" };
+}
 
 /** "Also placed in G1 · M3 Place value; G3 · M1 ..." from PlacedRef[]. */
 function placedElsewhereText(refs) {
@@ -591,6 +633,7 @@ class HttpApi {
     return this.req("POST", "placements", null, body);
   }
   updatePlacement(id, prev, changes) { return this.req("PATCH", "placements/" + id, null, Object.assign({ expected_rev: prev }, changes)); }
+  confirmEstimate(id, prev) { return this.updatePlacement(id, prev, { confirm_estimate: true }); }
   coPlace(id, rev, slotId) { return this.req("POST", "placements/" + id + "/co-place", null, { expected_rev: rev, target_slot_id: slotId }); }
   ungroup(id, rev) { return this.req("POST", "placements/" + id + "/ungroup", null, { expected_rev: rev }); }
   removePlacement(id, rev, reason) { return this.req("DELETE", "placements/" + id, { expected_rev: rev, reason: reason || null }); }
@@ -718,7 +761,7 @@ class DemoApi {
     ids = ids || {};
     this.st.events.push({ event_id: this._nextId("event"), action: action, actor: "demo", at: nowIso(),
       module_id: ids.module_id || null, slot_id: ids.slot_id || null, placement_id: ids.placement_id || null,
-      before: null, after: null });
+      before: ids.before || null, after: ids.after || null });
   }
   /** Bump the sequence rev, log, persist, and return the WriteResult. */
   _commit(events, result) {
@@ -936,16 +979,23 @@ class DemoApi {
     if (!info) throw this._notFound("Node");
     return info;
   }
+  /** Ladder autofill (O8/O9): the number is period_hint.value from the export; never computed here. */
   _newPlacement(key, slotId, note, orderInSlot) {
     var info = this._snap(key), dr = this.payload.drawers[key], now = nowIso();
+    var auto = !!(info.period_hint && info.period_hint.value !== null && info.period_hint.value !== undefined);
     return { placement_id: this._nextId("placement"), rev: 1, slot_id: slotId, order_in_slot: orderInSlot,
       source_key: key, node_id: info.node_id, node_id_seen: info.node_id, node_text: info.node_text,
       node_text_seen: info.node_text, stem_id: info.stem_id, stem_name: info.stem_name,
       concept_skill_display: dr ? dr.cs.label_display : info.cs_label, ladder_file_seen: dr ? dr.source_file : null,
       grade_kind_seen: info.state, state_now: info.state, status: "ok", relabelled: false, relabel: null,
-      is_bridge: !!info.requires_confirm, calibration: null, period_estimate: null, period_hint: info.period_hint || null,
-      period_hint_seen: null, differentiation_note: note || null, placed_by: "demo", placed_at: now,
+      is_bridge: !!info.requires_confirm, calibration: null, period_hint: info.period_hint || null,
+      period_estimate: auto ? info.period_hint.value : null, period_hint_seen: auto ? info.period_hint.text : null,
+      estimate_source: auto ? "ladder" : null, differentiation_note: note || null, placed_by: "demo", placed_at: now,
       updated_by: "demo", updated_at: now, placed_elsewhere: clone(info.placed_elsewhere || []), badges: [], removed: false };
+  }
+  _placeAfter(p, extra) {
+    return Object.assign({ source_key: p.source_key, grade_kind_seen: p.grade_kind_seen, differentiation_note: p.differentiation_note },
+      extra || {}, { period_estimate: p.period_estimate, estimate_source: p.estimate_source, confirmed_off_grade: p.is_bridge });
   }
   _needConfirm(keys) {
     var states = {}, list = [];
@@ -979,7 +1029,7 @@ class DemoApi {
     todo.forEach(function (k, i) {
       var p = this._newPlacement(k, slotId, notes && notes[k], ORDER_STEP * (i + 1));
       this.st.placements.push(p); ids.push(p.placement_id);
-      events.push({ action: "place", placement_id: p.placement_id, slot_id: slotId, module_id: moduleId });
+      events.push({ action: "place", placement_id: p.placement_id, slot_id: slotId, module_id: moduleId, after: this._placeAfter(p, { group: true }) });
     }, this);
     return this._commit(events, { slot_id: slotId, placement_ids: ids, skipped: skipped });
   }
@@ -1012,14 +1062,19 @@ class DemoApi {
     var inSlot = this._placementsOf(slotId);
     var p = this._newPlacement(key, slotId, opts.differentiation_note, orderAppend(inSlot.map(function (x) { return x.order_in_slot; })));
     this.st.placements.push(p);
-    return this._commit([{ action: "place", placement_id: p.placement_id, slot_id: slotId, module_id: moduleId }],
+    return this._commit([{ action: "place", placement_id: p.placement_id, slot_id: slotId, module_id: moduleId, after: this._placeAfter(p) }],
       { placement_id: p.placement_id, slot_id: slotId, placed_elsewhere: clone(p.placed_elsewhere) });
   }
 
   async updatePlacement(id, prev, changes) {
+    var c = changes || {};
+    if (has(c, "confirm_estimate")) {
+      if (c.confirm_estimate !== true || Object.keys(c).length > 1) throw this._invalid("confirm_estimate must be true and sent on its own");
+      return this.confirmEstimate(id, prev);
+    }
     var p = this._placement(id);
     if (p.rev !== prev) throw this._stale(p.rev);
-    var events = [], c = changes || {};
+    var events = [];
     if (has(c, "calibration") && c.calibration !== null && CALIBRATIONS.indexOf(c.calibration) < 0) throw this._invalid("Unknown calibration");
     if (has(c, "period_estimate") && c.period_estimate !== null) {
       var num = Number(c.period_estimate);
@@ -1027,9 +1082,14 @@ class DemoApi {
       c = Object.assign({}, c, { period_estimate: num });
     }
     if (has(c, "calibration")) { p.calibration = c.calibration; events.push("set_calibration"); }
+    var periodEv = null;
     if (has(c, "period_estimate")) {
+      var src = c.period_estimate === null ? null : "builder";
+      periodEv = { before: { period_estimate: p.period_estimate, period_hint_seen: p.period_hint_seen, estimate_source: p.estimate_source || null } };
       p.period_estimate = c.period_estimate;
       p.period_hint_seen = p.period_hint ? p.period_hint.text : null;
+      p.estimate_source = src;
+      periodEv.after = { period_estimate: p.period_estimate, period_hint_seen: p.period_hint_seen, estimate_source: src };
       events.push("set_period");
     }
     if (has(c, "differentiation_note")) {
@@ -1039,10 +1099,27 @@ class DemoApi {
     if (events.length) {
       p.rev += 1; p.updated_by = "demo"; p.updated_at = nowIso();
       var slot = this.st.slots.filter(function (s) { return s.slot_id === p.slot_id; })[0];
-      events.forEach(function (a) { this._log(a, { placement_id: id, slot_id: p.slot_id, module_id: slot ? slot.module_id : null }); }, this);
+      events.forEach(function (a) {
+        var ids = { placement_id: id, slot_id: p.slot_id, module_id: slot ? slot.module_id : null };
+        this._log(a, a === "set_period" ? Object.assign(ids, periodEv) : ids);
+      }, this);
       this._save();
     }
     return { sequence: this._view(), result: { placement_id: id } };   // the sequence rev is NOT bumped
+  }
+
+  /** "Looks right": the ladder number becomes the builder's, unchanged (placement rev only, like a PATCH). */
+  async confirmEstimate(id, prev) {
+    var p = this._placement(id);
+    if (p.rev !== prev) throw this._stale(p.rev);
+    if (p.estimate_source !== "ladder") throw this._invalid("There is no ladder estimate to confirm");
+    p.estimate_source = "builder"; p.rev += 1; p.updated_by = "demo"; p.updated_at = nowIso();
+    var slot = this.st.slots.filter(function (s) { return s.slot_id === p.slot_id; })[0];
+    this._log("confirm_period", { placement_id: id, slot_id: p.slot_id, module_id: slot ? slot.module_id : null,
+      before: { period_estimate: p.period_estimate, estimate_source: "ladder" },
+      after: { period_estimate: p.period_estimate, estimate_source: "builder" } });
+    this._save();
+    return { sequence: this._view(), result: { placement_id: id } };
   }
 
   async coPlace(id, rev, targetSlotId) {
@@ -1235,10 +1312,26 @@ function renderHeader(state, M) {
     demo = '<span class="demo-badge" title="' + esc("Runs offline from an embedded snapshot; nothing is sent anywhere") + '">Demo</span>' +
       button("Reset demo", { action: "reset-demo" }, { cls: "linklike", title: "Discard demo edits and start again" });
   }
+  var ss = saveStatusText(M.ui.save, null, M.demo.on ? (M.demo.persisted ? true : "session") : false);
+  var status = '<span class="savestat ' + ss.kind + '" aria-live="polite">' + esc(ss.text) + "</span>";
   return '<div class="hdr-row"><h1>MH2 Grade Sequencing</h1>' +
-    '<label class="grade-pick"><span class="lbl">Grade</span><select' + da({ action: "pick-grade" }) + ' aria-label="Grade">' + opts + "</select></label>" +
-    stamp + '<span class="grow"></span>' + demo + who +
-    button("Sequence", { action: "toggle-rail" }, { cls: "rail-toggle", aria: "Show or hide the sequence rail", pressed: !!M.ui.railOpen }) + "</div>";
+    '<label class="grade-pick" title="' + esc(GRADE_TIP) + '"><span class="lbl">Grade</span><select' + da({ action: "pick-grade" }) + ' aria-label="Grade" title="' + esc(GRADE_TIP) + '">' + opts + "</select></label>" +
+    renderTargetPicker(M) + status + stamp + '<span class="grow"></span>' + demo + who + "</div>";
+}
+
+/** "Adding to: [M2 \u00b7 Fractions intro]": always visible; bound to ui.targetModuleId like the rail radios. */
+function renderTargetPicker(M) {
+  var seq = seqOf(M), mods = (M.seqView && M.seqView.modules) || [], t = targetModuleOf(M), tip = "The module that + Place adds nodes to";
+  var opts = "";
+  if (!seq) opts = '<option value="" selected>Start a sequence first</option>';
+  else {
+    if (!mods.length) opts += '<option value="" selected disabled>No module yet</option>';
+    opts += mods.map(function (m) {
+      return '<option value="' + esc(m.module_id) + '"' + (t && t.module_id === m.module_id ? " selected" : "") + ">" + esc(moduleLabel(m)) + "</option>";
+    }).join("") + '<option value="' + NEW_MODULE + '">+ New module</option>';
+  }
+  return '<label class="adding-to" title="' + esc(tip) + '"><span class="lbl">Adding to</span><select' + da({ action: "header-target" }) + fk("target-pick") +
+    ' aria-label="Adding to module" title="' + esc(tip) + '"' + (seq ? "" : " disabled") + ">" + opts + "</select></label>";
 }
 
 /** Banners under the header: owner notice, demo storage warning. */
@@ -1289,14 +1382,15 @@ function renderStemsMenu(state, M) {
 
 function renderViewsControls(state, M) {
   var views = M.views || [], ui = M.ui, sel = ui.selectedViewId;
-  var opts = '<option value="">Saved views\u2026</option>' + views.map(function (v) {
+  var opts = '<option value="">Saved filters\u2026</option>' + views.map(function (v) {
     return '<option value="' + esc(v.view_id) + '"' + (String(v.view_id) === String(sel) ? " selected" : "") + ">" + esc(v.name) + "</option>";
   }).join("");
   var selView = views.filter(function (v) { return String(v.view_id) === String(sel); })[0];
-  var out = '<span class="views"><select' + da({ action: "pick-view" }) + ' aria-label="Saved views">' + opts + "</select>";
+  var out = '<span class="views"><select' + da({ action: "pick-view" }) + ' aria-label="Saved filters" title="' + esc(FILTERS_TIP) + '">' + opts + "</select>";
   if (ui.viewMode === "save" || ui.viewMode === "rename") {
-    out += '<input type="text" class="view-name" maxlength="80" placeholder="View name" value="' + esc(ui.viewMode === "rename" && selView ? selView.name : "") + '"' + da({ action: "view-name" }) + fk("view-name") + ' aria-label="View name">' +
-      button("Save", { action: "view-commit" }, { cls: "tbtn primary" }) + button("Cancel", { action: "view-cancel" }, { cls: "tbtn" });
+    out += '<input type="text" class="view-name" maxlength="80" placeholder="Filter name" value="' + esc(ui.viewMode === "rename" && selView ? selView.name : "") + '"' + da({ action: "view-name" }) + fk("view-name") + ' aria-label="Name for these saved filters">' +
+      button("Save", { action: "view-commit" }, { cls: "tbtn primary" }) + button("Cancel", { action: "view-cancel" }, { cls: "tbtn" }) +
+      '<span class="view-help">' + esc(FILTERS_TIP) + "</span>";
   } else if (ui.viewMode === "delete" && selView) {
     out += '<span class="confirm-inline">Delete \u201c' + esc(selView.name) + "\u201d? " + button("Yes, delete", { action: "view-delete-yes" }, { cls: "tbtn danger" }) + button("Keep", { action: "view-cancel" }, { cls: "tbtn" }) + "</span>";
   } else {
@@ -1321,14 +1415,6 @@ function renderToolbar(state, M) {
 
 /* ---- slice --------------------------------------------------------------- */
 
-/** Chip label: the node number only ("EE_..._DEG_1-0003" -> "0003"). The stem
- *  heading above the strip already names the stem; the full ID stays in the
- *  tooltip and aria-label. Falls back to the full ID if it has no "-NNNN". */
-function chipId(nodeId) {
-  var m = /-(\d+)$/.exec(nodeId || "");
-  return m ? m[1] : (nodeId || "");
-}
-
 function renderChip(n, state, M) {
   var ph = placedOf(M)[n.source_key], cls = ["chip"];
   if (n.state === "off_grade" || n.state === "no_grade") cls.push("ctx");
@@ -1345,12 +1431,13 @@ function renderChip(n, state, M) {
   if (ph && ph.is_bridge) pills += '<span class="pill bridge">bridge</span>';
   var inCmp = state.compare.indexOf(n.source_key) >= 0, full = state.compare.length >= COMPARE_MAX && !inCmp;
   var act = "";
-  if (!ph) act += button("+ Place", { action: "place-chip", id: n.source_key }, { cls: "cbtn", aria: "Place " + n.node_id + " in the sequence", title: "Place in the target module" });
+  var tmod = targetModuleOf(M), placeTip = tmod ? "Place in " + moduleLabel(tmod) : "Place in the target module";
+  if (!ph) act += button("+ Place", { action: "place-chip", id: n.source_key }, { cls: "cbtn", aria: tmod ? placeTip + ": " + n.node_id : "Place " + n.node_id + " in the sequence", title: placeTip });
   act += button(inCmp ? "\u2713 compare" : "\u2295 compare", { action: "toggle-compare", id: n.source_key },
     { cls: "cbtn", pressed: inCmp, disabled: full, aria: (inCmp ? "Remove " : "Add ") + n.node_id + (inCmp ? " from" : " to") + " compare", title: full ? "Compare holds at most 4" : "Compare up to 4 nodes" });
   return '<li class="chip-li"><div class="' + cls.join(" ") + '" data-node="' + esc(n.source_key) + '">' +
     '<button type="button" class="chip-body"' + da({ action: "open-node", id: n.source_key }) + fk("chip:" + n.source_key) + ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '">' +
-    '<span class="c-id" title="' + esc(n.node_id) + '">' + esc(chipId(n.node_id)) + "</span>" +
+    '<span class="c-id">' + esc(n.node_id) + "</span>" +
     '<span class="c-text" title="' + esc(n.node_text) + '">' + esc(n.node_text) + "</span>" +
     '<span class="c-pills">' + gradePills(n.grades, M.grade) + "</span>" +
     '<span class="c-badges">' + pills + kind + sb.map(badgeHtml).join("") + "</span></button>" +
@@ -1436,7 +1523,7 @@ function renderGuardrailBars(g) {
     ? "Calibrated " + g.n_calibrated + " of " + g.n + " placements \u00b7 unset " + g.counts.unset
     : (g.n > 0 ? "Nothing calibrated yet \u00b7 unset " + g.counts.unset : "No placements yet");
   var tCap = g.n > 0
-    ? "Periods known for " + g.n_timed + " of " + g.n + " placements \u00b7 total " + fmtNum(g.total_periods) + " periods" + (g.show_time_targets ? "" : " (reference marks shown at \u2265 " + Math.round(g.time_mark_min_coverage * 100) + "% coverage)")
+    ? "Periods known for " + g.n_timed + " of " + g.n + " placements" + (g.n_from_ladder > 0 ? " (" + g.n_from_ladder + " from ladder)" : "") + " \u00b7 total " + fmtNum(g.total_periods) + " periods" + (g.show_time_targets ? "" : " (reference marks shown at \u2265 " + Math.round(g.time_mark_min_coverage * 100) + "% coverage)")
     : "No placements yet";
   return '<div class="gsub">Reference marks, not quotas</div>' +
     '<div class="gblock"><div class="glabel">Placements by level</div>' +
@@ -1446,6 +1533,8 @@ function renderGuardrailBars(g) {
     '<div class="gbar" role="img" aria-label="' + esc(tCap) + '"><span class="segs">' + seg(g.time_share) + "</span>" + (g.show_time_targets ? ticks(g.time_target, "tick-time") : "") + "</div>" +
     '<div class="glegend">' + legend(false) + '</div><div class="gcap">' + esc(tCap) + "</div></div>";
 }
+
+function moduleLabel(m) { return "M" + m.position + " \u00b7 " + m.title; }
 
 function targetModuleOf(M) {
   var mods = (M.seqView && M.seqView.modules) || [];
@@ -1517,7 +1606,11 @@ function renderCalibration(p) {
 }
 
 function renderPeriods(p) {
-  var h = p.period_hint, hint = "";
+  var h = p.period_hint, hint = "", src = "";
+  if (p.estimate_source === "ladder") {
+    src = ' <span class="pill ladder" title="' + esc("Autofilled from the ladder note: " + (p.period_hint_seen || "")) + '">from ladder</span>' +
+      button("Looks right", { action: "confirm-period", id: p.placement_id }, { cls: "tbtn sm", aria: "Keep " + fmtNum(p.period_estimate) + " periods from the ladder", title: "Keep this number and clear the \u2018from ladder\u2019 mark" });
+  }
   if (h) {
     var why = hintReason(h);
     hint = '<span class="hint" title="Period hint, shown as written">' + esc(h.text) + "</span>" +
@@ -1525,7 +1618,7 @@ function renderPeriods(p) {
       (why ? ' <span class="hint-why">(' + esc(why) + ")</span>" : "");
   }
   return '<div class="pl-per"><label class="per-lbl">Periods <input type="number" min="0" max="200" step="0.25" inputmode="decimal" value="' +
-    (p.period_estimate === null || p.period_estimate === undefined ? "" : esc(p.period_estimate)) + '"' + da({ action: "set-period", id: p.placement_id }) + fk("per:" + p.placement_id) + ' aria-label="Instructional periods for ' + esc(p.node_id || p.node_id_seen) + '"></label>' + hint + "</div>";
+    (p.period_estimate === null || p.period_estimate === undefined ? "" : esc(p.period_estimate)) + '"' + da({ action: "set-period", id: p.placement_id }) + fk("per:" + p.placement_id) + ' aria-label="Instructional periods for ' + esc(p.node_id || p.node_id_seen) + '"></label>' + src + hint + "</div>";
 }
 
 /** "Co-place with..." select: every other slot, labelled by module, position and first node. */
@@ -1562,7 +1655,47 @@ function renderPlacement(p, M, ctx) {
     (p.status === "orphaned" ? "" : button("Open in drawer", { action: "open-node", id: p.source_key }, { cls: "tbtn sm" })) + "</div></div>";
 }
 
+/** Is this slot shown as the full card?  Per-slot toggle, else the rail-wide density; an open edit or a
+ *  pending remove-confirm keeps the card open so the control being used does not vanish. */
+function slotExpanded(s, M) {
+  var ui = M.ui, ed = ui.editing;
+  if (ed && ((ed.kind === "slot" && ed.id === s.slot_id) || (ed.kind === "note" && s.placements.some(function (p) { return p.placement_id === ed.id; })))) return true;
+  if (s.placements.some(function (p) { return ui.confirmRemove === p.placement_id; })) return true;
+  if (ui.rowOpen && has(ui.rowOpen, s.slot_id)) return !!ui.rowOpen[s.slot_id];
+  return ui.railDensity === "expanded";
+}
+
+/** Compact slot: one ~2-line row per placement (slot number, node number, stem, first 60 characters, then
+ *  calibration letter, periods and badge dots).  Click or Enter on a row opens the full card; only the slot's
+ *  up/down chevrons stay, on the first row, so reordering works collapsed. */
+function renderCompactSlot(s, M, flat) {
+  var idx = flat.indexOf(s.slot_id), multi = s.placements.length > 1;
+  var rows = s.placements.map(function (p, i) {
+    var nid = p.node_id || p.node_id_seen, cal = p.calibration ? CAL_LABEL[p.calibration] : null;
+    var per = p.period_estimate === null || p.period_estimate === undefined ? null : fmtNum(p.period_estimate);
+    var flags = (p.status && p.status !== "ok" ? [{ tier: "structural", label: p.status === "grade_changed" ? "grade changed" : p.status }] : [])
+      .concat((p.badges || []).filter(function (b) { return b.code !== "orphaned" && b.code !== "grade_changed"; }).map(function (b) { return { tier: b.tier, label: b.detail || b.label }; }))
+      .concat(p.placed_elsewhere && p.placed_elsewhere.length ? [{ tier: "info", label: "Also placed in " + placedElsewhereText(p.placed_elsewhere) }] : []);
+    var label = "Slot " + s.position + (multi ? ", co-placed" : "") + ": " + nid + ", " + p.stem_name + ". " + (cal ? CAL_LABEL[p.calibration] : "Calibration not set") +
+      ", " + (per === null ? "periods not set" : per + (per === "1" ? " period" : " periods")) + (flags.length ? ", " + plural(flags.length, "flag") : "") + ". Press Enter to show the full card.";
+    var main = '<div class="plrow-main" role="button" tabindex="0" aria-expanded="false" data-row="1"' + da({ action: "row-toggle", id: s.slot_id }) + fk("pl:" + p.placement_id) +
+      ' aria-label="' + esc(label) + '" title="Show the full card">' +
+      '<span class="pr-slot">' + (i === 0 ? esc(s.position) : "\u21b3") + "</span>" +
+      '<span class="pr-body"><span class="pr-l1"><b>' + esc(nid) + "</b> \u00b7 " + esc(p.stem_name) + '</span><span class="pr-l2">' + esc(truncateText(p.node_text, 60)) + "</span></span>" +
+      '<span class="pr-meta"><span class="pr-cal' + (cal ? " seg-" + p.calibration : "") + '" title="' + esc(cal ? cal + " (" + CAL_TEACHER[p.calibration] + ")" : "Calibration not set") + '">' + (cal ? cal.charAt(0) : "\u2013") + "</span>" +
+      '<span class="pr-per" title="' + esc(per === null ? "Periods not set" : per + " periods") + '">' + (per === null ? "\u2013" : esc(per)) + "p</span>" +
+      '<span class="pr-dots">' + flags.map(function (f) { return '<i class="dot tier-' + esc(f.tier) + '" title="' + esc(f.label) + '"></i>'; }).join("") + "</span></span></div>";
+    var chev = i === 0
+      ? '<span class="pr-chev">' + button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. Moves across module boundaries at the ends", disabled: idx === 0, focus: "slot:" + s.slot_id + ":up" }) +
+        button("\u25bc", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. Moves across module boundaries at the ends", disabled: idx === flat.length - 1, focus: "slot:" + s.slot_id + ":down" }) + "</span>"
+      : "";
+    return '<div class="plrow' + (p.status && p.status !== "ok" ? " pl-warn" : "") + '" data-pl="' + esc(p.placement_id) + '">' + main + chev + "</div>";
+  }).join("");
+  return '<div class="slot compact' + (multi ? " multi" : "") + '" role="group" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="-1" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' + rows + "</div>";
+}
+
 function renderSlot(s, mod, M, flat) {
+  if (!slotExpanded(s, M)) return renderCompactSlot(s, M, flat);
   var ed = M.ui.editing && M.ui.editing.kind === "slot" && M.ui.editing.id === s.slot_id, multi = s.placements.length > 1;
   var idx = flat.indexOf(s.slot_id), mods = M.seqView.modules;
   var firstOfAll = idx === 0, lastOfAll = idx === flat.length - 1;
@@ -1575,6 +1708,7 @@ function renderSlot(s, mod, M, flat) {
     others.map(function (m) { return '<option value="' + esc(m.module_id) + '">M' + esc(m.position) + " " + esc(m.title) + "</option>"; }).join("") + "</select>";
   return '<div class="slot' + (multi ? " multi" : "") + '" role="group" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="0" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' +
     '<div class="slot-h"><span class="slot-pos">Slot ' + esc(s.position) + (multi ? " \u00b7 co-placed" : "") + "</span>" + label + '<span class="grow"></span>' +
+    button("Collapse", { action: "row-toggle", id: s.slot_id }, { cls: "tbtn sm", aria: "Collapse slot " + s.position + " to a compact row", title: "Show this slot as a compact row", focus: "slotc:" + s.slot_id }) +
     button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. " + tip, disabled: firstOfAll, focus: "slot:" + s.slot_id + ":up" }) +
     button("\u25bc", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. " + tip, disabled: lastOfAll, focus: "slot:" + s.slot_id + ":down" }) +
     (others.length ? moveTo : "") + button("Merge into slot above", { action: "slot-merge", id: s.slot_id }, { cls: "tbtn sm", disabled: firstOfAll, title: "Co-place this slot's nodes with the slot above it" }) + "</div>" +
@@ -1649,9 +1783,21 @@ function renderRail(state, M) {
   var head = '<div class="seq-h">' + (ed
     ? '<input type="text" class="mod-title-in" maxlength="120" value="' + esc(seq.title) + '"' + da({ action: "seq-title" }) + fk("seqtitle") + ' aria-label="Sequence title">'
     : "<h2>" + esc(seq.title) + "</h2>" + button("Edit", { action: "seq-edit" }, { cls: "linklike", aria: "Rename the sequence" })) +
-    '<div class="seq-meta">Owner ' + esc(seq.owner) + " \u00b7 " + plural(mods.length, "module") + " \u00b7 " + button("Download CSV", { action: "export-csv" }, { cls: "linklike", title: "The ordered sequence as a spreadsheet file" }) + "</div></div>";
+    '<div class="seq-meta">Owner ' + esc(seq.owner) + " \u00b7 " + plural(mods.length, "module") + " \u00b7 " + button("Download CSV", { action: "export-csv" }, { cls: "linklike", title: "The ordered sequence as a spreadsheet file" }) + '</div>' +
+    '<div class="seq-meta rows-ctl">Rows: ' + button("Expand all", { action: "rows-expand-all" }, { cls: "linklike", pressed: M.ui.railDensity === "expanded", aria: "Expand all placements to full cards" }) + " \u00b7 " +
+    button("Collapse all", { action: "rows-collapse-all" }, { cls: "linklike", pressed: M.ui.railDensity !== "expanded", aria: "Collapse all placements to compact rows" }) + "</div></div>";
   return renderGuardrail(state, M) + renderAttention(state, M) + head + '<div class="modules">' + cards + "</div>" +
     button("+ Add module", { action: "add-module" }, { cls: "tbtn add", focus: "add-module" }) + renderHistory(state, M) + renderDemoFootnote(M);
+}
+
+/** Below 1024 px: "Nodes | Sequence (n)" at the top of the content area.  The state is ui.railOpen
+ *  (kept under that name; it only decides which pane shows at this width). */
+function renderTabs(M) {
+  var n = M.seqView && M.seqView.guardrail ? M.seqView.guardrail.n : 0, seqOn = !!M.ui.railOpen;
+  function tab(val, label, on) {
+    return '<button type="button" role="tab" class="vtab" aria-selected="' + (on ? "true" : "false") + '"' + da({ action: "rail-tab", val: val }) + fk("tab:" + val) + ">" + esc(label) + "</button>";
+  }
+  return '<div class="vtabs" role="tablist" aria-label="Show nodes or the sequence">' + tab("nodes", "Nodes", !seqOn) + tab("seq", "Sequence (" + n + ")", seqOn) + "</div>";
 }
 
 function renderDemoFootnote(M) {
@@ -1700,7 +1846,8 @@ function renderDrawer(state, M) {
   }).join('<span class="arrow" aria-hidden="true">\u2192</span>') + "</div>" +
     '<div class="d-nav">' + button("\u2039 prev", { action: "open-node", id: me > 0 ? si[me - 1] : "" }, { cls: "tbtn sm", disabled: me <= 0 }) + button("next \u203a", { action: "open-node", id: me >= 0 && me < si.length - 1 ? si[me + 1] : "" }, { cls: "tbtn sm", disabled: me < 0 || me >= si.length - 1 }) + "</div></div>";
   var hint = "";
-  if (d.period_hint) hint = '<div class="d-sec"><h4>Period hint</h4><div>' + esc(d.period_hint.text) + (hintReason(d.period_hint) ? ' <span class="hint-why">(' + esc(hintReason(d.period_hint)) + ")</span>" : "") + "</div></div>";
+  if (d.period_hint) hint = '<div class="d-sec"><h4>Period hint</h4><div>' + esc(d.period_hint.text) + (hintReason(d.period_hint) ? ' <span class="hint-why">(' + esc(hintReason(d.period_hint)) + ")</span>" : "") + "</div>" +
+    '<div class="hint-auto">' + esc(autofillText(d.period_hint)) + "</div></div>";
   var showAll = !!M.ui.showAllFields;
   var fields = '<div class="d-sec"><h4>Node details</h4>' + d.fields.map(function (f) {
     return '<div class="fld"><h5>' + esc(f.label) + "</h5><ul>" + f.values.map(function (v) { return "<li>" + esc(v) + "</li>"; }).join("") + "</ul></div>";
@@ -1793,7 +1940,8 @@ function renderSheet(state, M) {
 
 function renderNotice(M) {
   var n = M.ui.notice;
-  return n ? '<div class="notice ' + esc(n.kind || "info") + '"><span>' + esc(n.text) + "</span>" + button("Dismiss", { action: "dismiss-notice" }, { cls: "linklike" }) + "</div>" : "";
+  return n ? '<div class="notice ' + esc(n.kind || "info") + '"><span>' + esc(n.text) + "</span>" +
+    (n.link ? button(esc(n.link.label), { action: n.link.action, id: n.link.id }, { cls: "linklike" }) : "") + button("Dismiss", { action: "dismiss-notice" }, { cls: "linklike" }) + "</div>" : "";
 }
 
 function renderToasts(M) {
@@ -1805,7 +1953,7 @@ function renderToasts(M) {
 function renderFooter(M) {
   if (!M.demo || !M.demo.on) return "";
   return "<span>Demo \u00b7 data built from " + esc(M.demo.source === "mh2.db" ? "mh2.db" : "fixture") + (M.demo.generatedAt ? " \u00b7 generated " + esc(String(M.demo.generatedAt).slice(0, 16).replace("T", " ")) : "") +
-    " \u00b7 " + (M.demo.persisted ? "edits are kept in this browser" : "edits are not kept after reload") + "</span>";
+    " \u00b7 " + (M.demo.persisted ? "Your edits are saved in this browser on this computer only. Another browser or computer starts fresh." : "edits are not kept after reload") + "</span>";
 }
 
 /* ========================================================================
@@ -1823,10 +1971,11 @@ function newUi(userName) {
   return { open: {}, goalOpen: {}, editing: null, prompt: null, notice: null, toasts: [], toastSeq: 0,
     railOpen: false, guardTab: "seq", targetModuleId: null, viewMode: null, viewDraft: "", selectedViewId: null,
     events: [], eventsNext: null, showAllFields: false, cmpHideEmpty: true, cmpSharedFirst: false, cmpModuleId: null,
+    save: { status: "idle" }, railDensity: "compact", rowOpen: {},
     userName: userName || "", sheetH: 45, confirmRemove: null, noteDraft: {}, focusOverride: null, flashIds: [], scrollTo: null };
 }
 
-var REGIONS = ["hdr", "banner", "toolbar", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts", "foot"];
+var REGIONS = ["hdr", "banner", "toolbar", "tabs", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts", "foot"];
 
 function createApp(env) {
   var doc = env.doc, api = env.api, hist = env.hist || null, loc = env.loc || { search: "", pathname: "" };
@@ -1834,12 +1983,17 @@ function createApp(env) {
   var store = env.storage === undefined ? safeStorage() : env.storage;
   var userName = "";
   try { userName = store ? (store.getItem("mh2seq-user") || "") : ""; } catch (e) { userName = ""; }
+  var nowFn = env.now || function () { return new Date(); };
+  /** localStorage with a silent fallback when storage is blocked (same rule as mh2seq-user). */
+  function storeGet(k) { try { return store ? store.getItem(k) : null; } catch (e) { return null; } }
+  function storeSet(k, v) { try { if (store) { if (v === null) store.removeItem(k); else store.setItem(k, v); } } catch (e) { /* blocked: the choice lasts this session */ } }
 
   var state = defaultState(null);
   var M = { grade: null, gradesInfo: null, slice: null, index: {}, seqView: null, ui: newUi(userName), whoami: null, views: [],
     drawer: null, compareData: null, vis: null,
     demo: { on: !!api.isDemo, persisted: !!api.persisted, source: env.demoSource || null, generatedAt: env.demoGeneratedAt || null } };
-  var ui = M.ui, busy = false, nodeCache = {}, lastHtml = {}, tokNode = 0, tokCmp = 0, lastPlace = null;
+  var ui = M.ui; ui.railDensity = storeGet("mh2seq-rail-density") === "expanded" ? "expanded" : "compact";
+  var busy = false, nodeCache = {}, lastHtml = {}, tokNode = 0, tokCmp = 0, lastPlace = null;
   var R = {};
   REGIONS.forEach(function (id) { R[id] = doc.getElementById(id); });
   var root = doc.getElementById("app");
@@ -1865,6 +2019,12 @@ function createApp(env) {
     var out = [];
     ((M.seqView && M.seqView.modules) || []).forEach(function (m) { m.slots.forEach(function (s) { out.push(s); }); });
     return out;
+  }
+  function targetKey(grade) { return "mh2seq-target:" + grade; }
+  /** The user's choice of target module: remembered per grade. */
+  function setTarget(id) {
+    ui.targetModuleId = id;
+    if (id !== null && id !== undefined) storeSet(targetKey(M.grade), String(id));
   }
   function fixTarget() {
     var mods = (M.seqView && M.seqView.modules) || [];
@@ -1922,7 +2082,7 @@ function createApp(env) {
     M.vis = visibleSlice(M.slice, state, M.seqView);
     M.demo.persisted = !!api.persisted;
     var keep = capture();
-    put("hdr", renderHeader(state, M)); put("banner", renderBanner(state, M)); put("toolbar", renderToolbar(state, M));
+    put("hdr", renderHeader(state, M)); put("banner", renderBanner(state, M)); put("toolbar", renderToolbar(state, M)); put("tabs", renderTabs(M));
     put("slice", renderSlice(state, M)); put("rail", renderRail(state, M)); put("drawer", renderDrawer(state, M));
     put("sheet", renderSheet(state, M)); put("tray", renderTray(state, M)); put("notice", renderNotice(M));
     put("toasts", renderToasts(M)); put("foot", renderFooter(M));
@@ -1942,7 +2102,7 @@ function createApp(env) {
   }
   function setState(next) { state = next; syncUrl(); renderAll(); }
 
-  function notice(text, kind) { ui.notice = text ? { text: text, kind: kind || "info" } : null; }
+  function notice(text, kind, link) { ui.notice = text ? { text: text, kind: kind || "info", link: link || null } : null; }
   function toast(text) {
     var id = ++ui.toastSeq;
     ui.toasts.push({ id: id, text: text });
@@ -1972,15 +2132,27 @@ function createApp(env) {
     if (busy) return null;
     busy = true;
     ui.notice = null;
+    var prev = ui.save, committed = false;
+    ui.save = { status: "saving" };
+    if (!pointerDown && M.slice) put("hdr", renderHeader(state, M));        // not mid-click: a swapped DOM would drop it
     try {
       var res = await fn();
       M.seqView = res.sequence;
+      ui.save = { status: "saved", at: nowFn() }; committed = true;
       fixTarget();
       if (isOpen(M, "history", false)) await loadEvents(true);
       renderAll();
       return res;
-    } catch (e) { handleError(e); return null; }
+    } catch (e) { if (!committed) ui.save = saveAfterError(e, prev); handleError(e); return null; }
     finally { busy = false; }
+  }
+  /** Header status after a failed write.  Refusals the UI already explains (bridge confirm, already placed, at an
+   *  edge) were never attempts to save, so the previous status stays. */
+  function saveAfterError(e, prev) {
+    if (!(e instanceof ApiError)) return { status: "error", reason: "unexpected error" };
+    if (e.error === "stale_revision" && e.detail && e.detail.sequence) return { status: "conflict" };
+    if (e.error === "confirm_off_grade_required" || e.error === "already_placed" || e.error === "at_edge") return prev;
+    return { status: "error", reason: e.error === "network" ? "can\u2019t reach the server" : truncateText(String(e.message || "request failed").split(/\.\s|\.$|\n/)[0], 60) };
   }
   function seqWrite(fn) {
     return write(function () { var s = seqOf(M); return fn(s.sequence_id, s.rev); });
@@ -1999,8 +2171,10 @@ function createApp(env) {
     state = query !== undefined ? decodeState(query, M.slice) : defaultState(M.slice);
     M.drawer = null; M.compareData = null; nodeCache = {};
     ui.prompt = null; ui.editing = null; ui.selectedViewId = null; ui.viewMode = null; ui.events = []; ui.eventsNext = null;
-    ui.targetModuleId = null; ui.guardTab = "seq"; ui.notice = null;
+    var want = storeGet(targetKey(grade)), wantId = want === null || want === "" || isNaN(Number(want)) ? null : Number(want);
+    ui.targetModuleId = wantId; ui.guardTab = "seq"; ui.notice = null; ui.rowOpen = {};
     fixTarget();
+    if (want !== null && ui.targetModuleId !== wantId) storeSet(targetKey(grade), null);     // that module is gone: forget it
   }
   async function restoreSelection() {
     if (state.node) { try { await openNode(state.node, { focus: false, keepState: true }); } catch (e) { state.node = null; } }
@@ -2092,7 +2266,8 @@ function createApp(env) {
       ui.flashIds = ids;
       var mod = findModule(pr.moduleId), names = pr.keys.map(function (k) { return M.index[k] ? M.index[k].node_id : k; }).join(", ");
       var skipped = (res.result.skipped || []).length;
-      notice("Placed " + names + (mod ? " in M" + mod.position : "") + (skipped ? " (" + skipped + " skipped: already placed)" : "") + ".", "ok");
+      notice("Placed " + names + (mod ? " in M" + mod.position : "") + (skipped ? " (" + skipped + " skipped: already placed)" : "") + ".", "ok",
+        ids.length ? { label: "Show in sequence", action: "show-in-rail", id: ids[0] } : null);
       renderAll();
     }
     return res;
@@ -2145,7 +2320,7 @@ function createApp(env) {
   on("input", "view-name", function (d) { ui.viewDraft = d.value; });
   on("click", "view-commit", async function () {
     var name = String(ui.viewDraft || "").trim();
-    if (!name) { toast("Give the view a name."); renderAll(); return; }
+    if (!name) { toast("Give the saved filters a name."); renderAll(); return; }
     try {
       if (ui.viewMode === "rename") {
         var u = await api.updateView(ui.selectedViewId, { name: name });
@@ -2156,7 +2331,7 @@ function createApp(env) {
       }
       ui.viewMode = null; renderAll();
     } catch (e) {
-      if (e instanceof ApiError && e.error === "view_name_exists") { toast("A view with that name exists."); renderAll(); } else handleError(e);
+      if (e instanceof ApiError && e.error === "view_name_exists") { toast("Saved filters with that name already exist."); renderAll(); } else handleError(e);
     }
   });
   on("click", "view-delete-yes", async function () {
@@ -2164,7 +2339,6 @@ function createApp(env) {
     catch (e) { handleError(e); }
   });
   // header
-  on("click", "toggle-rail", function () { ui.railOpen = !ui.railOpen; renderAll(); });
   on("change", "set-user", async function (d) {
     var v = String(d.value || "").trim();
     try { if (store) { if (v) store.setItem("mh2seq-user", v); else store.removeItem("mh2seq-user"); } } catch (e) { /* ignore */ }
@@ -2174,7 +2348,7 @@ function createApp(env) {
   });
   on("click", "reset-demo", async function () {
     if (!api.reset) return;
-    api.reset(); await loadGrade(M.grade, ""); syncUrl(); notice("Demo reset to its starting data.", "info"); renderAll();
+    api.reset(); ui.save = { status: "idle" }; await loadGrade(M.grade, ""); syncUrl(); notice("Demo reset to its starting data.", "info"); renderAll();
   });
   on("click", "retry-boot", function () { return init(); });
   on("click", "dismiss-notice", function () { notice(null); renderAll(); });
@@ -2185,7 +2359,7 @@ function createApp(env) {
   on("click", "close-drawer", function () { closeDrawer(); });
   on("click", "toggle-all-fields", function () { ui.showAllFields = !ui.showAllFields; renderAll(); });
   on("click", "place-chip", function (d) { return startPlace([d.id]); });
-  on("change", "drawer-module", function (d) { ui.targetModuleId = num(d.value); renderAll(); });
+  on("change", "drawer-module", function (d) { setTarget(num(d.value)); renderAll(); });
   on("click", "show-in-rail", function (d) {
     ui.railOpen = true; ui.flashIds = [num(d.id)]; renderAll(); focusKey("pl:" + d.id);
   });
@@ -2201,7 +2375,7 @@ function createApp(env) {
   on("click", "cmp-remove", function (d) { state = toggleCompare(state, d.id); return compareChanged(); });
   on("change", "cmp-hide-empty", function (d) { ui.cmpHideEmpty = !!d.checked; renderAll(); });
   on("change", "cmp-shared-first", function (d) { ui.cmpSharedFirst = !!d.checked; renderAll(); });
-  on("change", "cmp-module", function (d) { ui.targetModuleId = num(d.value); renderAll(); });
+  on("change", "cmp-module", function (d) { setTarget(num(d.value)); renderAll(); });
   on("click", "cmp-coplace", function () { return startPlace(state.compare.slice(), { moduleId: ui.targetModuleId }); });
   on("click", "sheet-grip", function () { /* drag handled by pointer events in boot; keyboard below */ });
 
@@ -2216,7 +2390,7 @@ function createApp(env) {
     if (r) {
       var s = seqOf(M);
       var r2 = await write(function () { return api.createModule(s.sequence_id, s.rev, "Module 1"); });
-      if (r2) { ui.targetModuleId = r2.result.module_id; notice("Sequence started with Module 1. Use \u201c+ Place\u201d on any chip.", "ok"); renderAll(); }
+      if (r2) { setTarget(r2.result.module_id); notice("Sequence started with Module 1. Use \u201c+ Place\u201d on any chip.", "ok"); renderAll(); }
     }
   });
   on("click", "seq-edit", function () { ui.editing = { kind: "seqtitle" }; renderAll(); focusKey("seqtitle"); });
@@ -2236,7 +2410,7 @@ function createApp(env) {
   on("click", "add-module", async function () {
     var n = ((M.seqView && M.seqView.modules) || []).length + 1;
     var r = await seqWrite(function (sid, rev) { return api.createModule(sid, rev, "Module " + n); });
-    if (r) { ui.targetModuleId = r.result.module_id; ui.editing = { kind: "module", id: r.result.module_id }; ui.railOpen = true; renderAll(); focusKey("modtitle:" + r.result.module_id); }
+    if (r) { setTarget(r.result.module_id); ui.editing = { kind: "module", id: r.result.module_id }; ui.railOpen = true; renderAll(); focusKey("modtitle:" + r.result.module_id); }
   });
   // rail: modules
   on("click", "module-edit", function (d) { ui.editing = { kind: "module", id: num(d.id) }; renderAll(); focusKey("modtitle:" + d.id); });
@@ -2249,7 +2423,26 @@ function createApp(env) {
   });
   on("click", "module-move", function (d) { ui.focusOverride = "module:" + d.id + ":" + d.val; return seqWrite(function (sid, rev) { return api.moveModule(num(d.id), rev, d.val); }); });
   on("click", "module-remove", function (d) { return seqWrite(function (sid, rev) { return api.removeModule(num(d.id), rev); }); });
-  on("change", "target-module", function (d) { ui.targetModuleId = num(d.id); renderAll(); });
+  on("change", "target-module", function (d) { setTarget(num(d.id)); renderAll(); });
+  on("change", "header-target", function (d) {
+    if (d.value === NEW_MODULE) {
+      // the select now shows "+ New module"; redraw the header whatever the write does
+      return Promise.resolve(ACTIONS["add-module"].fn(d)).then(function () { lastHtml.hdr = null; renderAll(); });
+    }
+    if (d.value === "") return;
+    setTarget(num(d.value)); renderAll();
+  });
+  on("click", "rail-tab", function (d) { ui.railOpen = d.val === "seq"; renderAll(); });
+  on("click", "row-toggle", function (d) {
+    var f = findSlot(num(d.id)); if (!f) return;
+    var open = !slotExpanded(f.slot, M);
+    ui.rowOpen[f.slot.slot_id] = open;
+    ui.focusOverride = open ? "slot:" + f.slot.slot_id : "pl:" + f.slot.placements[0].placement_id;
+    renderAll();
+  });
+  function setDensity(v) { ui.railDensity = v; ui.rowOpen = {}; storeSet("mh2seq-rail-density", v); renderAll(); }
+  on("click", "rows-expand-all", function () { setDensity("expanded"); });
+  on("click", "rows-collapse-all", function () { setDensity("compact"); });
   // rail: slots
   on("click", "slot-move", function (d) { if (!ui.focusOverride) ui.focusOverride = "slot:" + d.id + ":" + d.val; return seqWrite(function (sid, rev) { return api.moveSlot(num(d.id), rev, { direction: d.val }); }); });
   on("change", "slot-move-to", function (d) {
@@ -2280,11 +2473,16 @@ function createApp(env) {
     var f = findPlacement(num(id)); if (!f) return;
     var v = raw === "" || raw === null || raw === undefined ? null : Number(raw);
     if (v !== null && (isNaN(v) || v < 0 || v > 200)) { toast("Periods must be a number from 0 to 200."); renderAll(); return; }
-    if (v === f.placement.period_estimate) return;
+    if (v === f.placement.period_estimate && !(v !== null && f.placement.estimate_source === "ladder")) return;  // retyping a ladder number makes it the builder's
     return write(function () { return api.updatePlacement(f.placement.placement_id, f.placement.rev, { period_estimate: v }); });
   }
   on("change", "set-period", function (d) { return setPeriod(d.id, d.value); });
   on("click", "use-hint", function (d) { return setPeriod(d.id, d.val); });
+  on("click", "confirm-period", function (d) {
+    var f = findPlacement(num(d.id)); if (!f || f.placement.estimate_source !== "ladder") return;
+    ui.focusOverride = "per:" + d.id;
+    return write(function () { return api.confirmEstimate(f.placement.placement_id, f.placement.rev); });
+  });
   on("click", "note-edit", function (d) { var f = findPlacement(num(d.id)); ui.editing = { kind: "note", id: num(d.id) }; ui.noteDraft[d.id] = f ? (f.placement.differentiation_note || "") : ""; renderAll(); focusKey("note:" + d.id); });
   on("input", "note-text", function (d) { ui.noteDraft[d.id] = d.value; });
   on("click", "note-cancel", function () { var e = ui.editing; ui.editing = null; if (e) delete ui.noteDraft[e.id]; renderAll(); });
@@ -2329,7 +2527,6 @@ function createApp(env) {
     if (ui.open.stemsmenu) { ui.open.stemsmenu = false; renderAll(); return true; }
     if (state.node) { closeDrawer(); return true; }
     if (state.sheet) { act("close-sheet"); return true; }
-    if (ui.railOpen) { ui.railOpen = false; renderAll(); return true; }      // the narrow-screen rail overlay
     return false;
   }
   function onKeydown(ev) {
@@ -2345,6 +2542,7 @@ function createApp(env) {
       act(kind === "slot" ? "slot-move" : "module-move", { id: id, val: k === "ArrowUp" ? "up" : "down" });
       return;
     }
+    if ((k === "Enter" || k === " ") && actEl && actEl === t && actEl.getAttribute("data-row")) { if (ev.preventDefault) ev.preventDefault(); act("row-toggle", { id: actEl.getAttribute("data-id") }); return; }
     if (k === "Enter" && actEl && actEl.getAttribute("data-action") === "view-name") { if (ev.preventDefault) ev.preventDefault(); act("view-commit"); return; }
     if (k === "Enter" && actEl && ["module-title", "slot-label", "seq-title"].indexOf(actEl.getAttribute("data-action")) >= 0) {
       if (ev.preventDefault) ev.preventDefault();
@@ -2367,7 +2565,7 @@ function createApp(env) {
       value: el.value, checked: el.checked, el: el });
   }
   function bind() {
-    ["hdr", "toolbar", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts"].forEach(function (id) {
+    ["hdr", "toolbar", "tabs", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts"].forEach(function (id) {
       var el = R[id]; if (!el || !el.addEventListener) return;
       ["click", "change", "input", "keydown", "dblclick"].forEach(function (type) { el.addEventListener(type, function (ev) { onEvent(type, ev); }); });
     });
@@ -2430,7 +2628,7 @@ if (typeof module !== "undefined" && module.exports) {
     renderRail, renderSheet, renderGuardrail, renderAttention, renderToolbar,
     // extras used by the tests
     encodeUrlQuery, decodeGrade, lensOf, applyLens, toggleCompare, toggleCollapse, moveStem, effectiveCollapsed,
-    compareRowsView, sequenceToCsv, csvCell, indexSlice, hintReason, orderAppend, orderBetween, renumber, roundHalfUp,
-    renderChip, renderHeader, renderTray, renderPrompt, renderPlacement, renderGuardrailBars, renderNotice, renderFooter,
+    compareRowsView, sequenceToCsv, csvCell, indexSlice, hintReason, autofillText, orderAppend, orderBetween, renumber, roundHalfUp,
+    renderChip, renderHeader, renderTabs, renderTargetPicker, renderCompactSlot, renderViewsControls, saveStatusText, clockText, renderTray, renderPrompt, renderPlacement, renderGuardrailBars, renderNotice, renderFooter,
     createApp, boot, safeStorage, sliceIds, lensIsDefault, stemOrderSort, kindLabel, COMPARE_MAX };
 } else { document.addEventListener("DOMContentLoaded", function () { boot(); }); }

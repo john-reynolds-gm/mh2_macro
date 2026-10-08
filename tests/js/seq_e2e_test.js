@@ -143,12 +143,12 @@ async function scenario(api, label, opts) {
   const byId = {};
   slice.super_stems.forEach((ss) => ss.stems.forEach((st) => st.concept_skills.forEach((c) => c.nodes.forEach((n) => { byId[n.node_id] = n; }))));
   const K = {};
-  ["WHO-0010", "WHO-0011", "WHO-0012", "COM-0012"].forEach((id) => { assert.ok(byId[id], label + ": " + id + " in the G2 slice"); K[id] = byId[id].source_key; });
-  assert.strictEqual(byId["WHO-0012"].requires_confirm, true, "WHO-0012 is off-grade in G2");
-  await step("drawer", () => api.node(K["WHO-0010"], G));
-  const cmp = await step("compare3", () => api.compare([K["COM-0012"], K["WHO-0010"], K["WHO-0011"]], G));
+  ["NS-BASE10-0010", "NS-BASE10-0011", "NS-BASE10-0012", "NS-COMP-ORDER-0012"].forEach((id) => { assert.ok(byId[id], label + ": " + id + " in the G2 slice"); K[id] = byId[id].source_key; });
+  assert.strictEqual(byId["NS-BASE10-0012"].requires_confirm, true, "NS-BASE10-0012 is off-grade in G2");
+  await step("drawer", () => api.node(K["NS-BASE10-0010"], G));
+  const cmp = await step("compare3", () => api.compare([K["NS-COMP-ORDER-0012"], K["NS-BASE10-0010"], K["NS-BASE10-0011"]], G));
   assert.strictEqual(cmp.columns.length, 3);
-  await step("compare5_invalid", () => api.compare([K["COM-0012"], K["WHO-0010"], K["WHO-0011"], K["WHO-0012"], byId["WHO-0013"] ? byId["WHO-0013"].source_key : "x:y"], G), "invalid");
+  await step("compare5_invalid", () => api.compare([K["NS-COMP-ORDER-0012"], K["NS-BASE10-0010"], K["NS-BASE10-0011"], K["NS-BASE10-0012"], byId["NS-BASE10-0013"] ? byId["NS-BASE10-0013"].source_key : "x:y"], G), "invalid");
   await step("node_404", () => api.node("NOPE:0000000000000000", G), "not_found");
   view = await step("sequence_empty", () => api.sequence(G));
   assert.strictEqual(view.sequence, null);
@@ -159,60 +159,78 @@ async function scenario(api, label, opts) {
   const m1 = (await W("create_module_1", () => api.createModule(sid, rev(), "M1 Place value"))).result.module_id;
   const m2 = (await W("create_module_2", () => api.createModule(sid, rev(), "M2 Comparing numbers"))).result.module_id;
 
-  await W("place_who11", () => api.place(sid, rev(), m1, K["WHO-0011"], {}));
-  const p10 = await W("place_who10", () => api.place(sid, rev(), m2, K["WHO-0010"], {}));
-  await W("place_com12", () => api.place(sid, rev(), m2, K["COM-0012"], {}));
-  const nc = await W("place_who12_unconfirmed", () => api.place(sid, rev(), m2, K["WHO-0012"], {}), "confirm_off_grade_required");
-  assert.deepStrictEqual(nc.detail.source_keys, [K["WHO-0012"]]); assert.strictEqual(nc.detail.states[K["WHO-0012"]], "off_grade");
-  await W("place_who12_bridge", () => api.place(sid, rev(), m2, K["WHO-0012"], { confirm_off_grade: true }));
-  await W("place_dup", () => api.place(sid, rev(), m2, K["WHO-0010"], {}), "already_placed");
+  await W("place_who11", () => api.place(sid, rev(), m1, K["NS-BASE10-0011"], {}));
+  const p10 = await W("place_who10", () => api.place(sid, rev(), m2, K["NS-BASE10-0010"], {}));
+  await W("place_com12", () => api.place(sid, rev(), m2, K["NS-COMP-ORDER-0012"], {}));
+  const nc = await W("place_who12_unconfirmed", () => api.place(sid, rev(), m2, K["NS-BASE10-0012"], {}), "confirm_off_grade_required");
+  assert.deepStrictEqual(nc.detail.source_keys, [K["NS-BASE10-0012"]]); assert.strictEqual(nc.detail.states[K["NS-BASE10-0012"]], "off_grade");
+  await W("place_who12_bridge", () => api.place(sid, rev(), m2, K["NS-BASE10-0012"], { confirm_off_grade: true }));
+  await W("place_dup", () => api.place(sid, rev(), m2, K["NS-BASE10-0010"], {}), "already_placed");
+  // ladder autofill on place (O8/O9): the number is the exported hint's value, in both APIs
+  flatPlacements(view).forEach((p) => {
+    const v = p.period_hint && p.period_hint.value !== null && p.period_hint.value !== undefined ? p.period_hint.value : null;
+    assert.strictEqual(p.period_estimate, v, label + ": autofill " + p.node_id);
+    assert.strictEqual(p.estimate_source, v === null ? null : "ladder", label + ": source " + p.node_id);
+    assert.strictEqual(p.period_hint_seen, v === null ? null : p.period_hint.text, label + ": hint seen " + p.node_id);
+  });
+  assert.strictEqual(flatPlacements(view).find((p) => p.source_key === K["NS-BASE10-0010"]).estimate_source, "ladder", label + ": NS-BASE10-0010 autofilled");
+  assert.strictEqual(view.guardrail.n_from_ladder, flatPlacements(view).filter((p) => p.estimate_source === "ladder").length);
   const pid = (k) => view.placed_index[k].placement_id, slotOf = (k) => view.placed_index[k].slot_id;
-  assert.strictEqual(view.placed_index[K["WHO-0012"]].is_bridge, true);
-  assert.ok(view.slice_badges[K["WHO-0012"]].some((b) => b.code === "bridge"));
+  assert.strictEqual(view.placed_index[K["NS-BASE10-0012"]].is_bridge, true);
+  assert.ok(view.slice_badges[K["NS-BASE10-0012"]].some((b) => b.code === "bridge"));
 
-  // co-place COM-0012 into WHO-0010's slot (the §5.6 worked example)
-  await W("co_place", () => api.coPlace(pid(K["COM-0012"]), rev(), slotOf(K["WHO-0010"])));
-  assert.strictEqual(slotOf(K["COM-0012"]), slotOf(K["WHO-0010"]));
+  // co-place NS-COMP-ORDER-0012 into NS-BASE10-0010's slot (the §5.6 worked example)
+  await W("co_place", () => api.coPlace(pid(K["NS-COMP-ORDER-0012"]), rev(), slotOf(K["NS-BASE10-0010"])));
+  assert.strictEqual(slotOf(K["NS-COMP-ORDER-0012"]), slotOf(K["NS-BASE10-0010"]));
   // reorder inside M2, then back; module chevrons; edge
-  await W("slot_up", () => api.moveSlot(slotOf(K["WHO-0012"]), rev(), { direction: "up" }));
-  assert.strictEqual(view.placed_index[K["WHO-0012"]].slot_position, 1);
-  await W("slot_down", () => api.moveSlot(slotOf(K["WHO-0012"]), rev(), { direction: "down" }));
+  await W("slot_up", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { direction: "up" }));
+  assert.strictEqual(view.placed_index[K["NS-BASE10-0012"]].slot_position, 1);
+  await W("slot_down", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { direction: "down" }));
   await W("module_up", () => api.moveModule(m2, rev(), "up"));
   assert.strictEqual(view.modules[0].module_id, m2);
   await W("module_down", () => api.moveModule(m2, rev(), "down"));
   await W("module_at_edge", () => api.moveModule(m1, rev(), "up"), "at_edge");
-  await W("slot_at_edge", () => api.moveSlot(slotOf(K["WHO-0011"]), rev(), { direction: "up" }), "at_edge");
+  await W("slot_at_edge", () => api.moveSlot(slotOf(K["NS-BASE10-0011"]), rev(), { direction: "up" }), "at_edge");
   // ungroup and merge back
-  await W("ungroup", () => api.ungroup(pid(K["COM-0012"]), rev()));
-  assert.notStrictEqual(slotOf(K["COM-0012"]), slotOf(K["WHO-0010"]));
-  await W("ungroup_alone", () => api.ungroup(pid(K["WHO-0011"]), rev()), "already_alone");
-  await W("merge", () => api.mergeSlot(slotOf(K["COM-0012"]), rev(), slotOf(K["WHO-0010"])));
-  assert.strictEqual(slotOf(K["COM-0012"]), slotOf(K["WHO-0010"]));
+  await W("ungroup", () => api.ungroup(pid(K["NS-COMP-ORDER-0012"]), rev()));
+  assert.notStrictEqual(slotOf(K["NS-COMP-ORDER-0012"]), slotOf(K["NS-BASE10-0010"]));
+  await W("ungroup_alone", () => api.ungroup(pid(K["NS-BASE10-0011"]), rev()), "already_alone");
+  await W("merge", () => api.mergeSlot(slotOf(K["NS-COMP-ORDER-0012"]), rev(), slotOf(K["NS-BASE10-0010"])));
+  assert.strictEqual(slotOf(K["NS-COMP-ORDER-0012"]), slotOf(K["NS-BASE10-0010"]));
   // move between modules: bridge to M1 (end), then "down" across the boundary to M2's start
-  await W("slot_to_m1", () => api.moveSlot(slotOf(K["WHO-0012"]), rev(), { to_module_id: m1 }));
-  assert.deepStrictEqual([view.placed_index[K["WHO-0012"]].module_id, view.placed_index[K["WHO-0012"]].slot_position], [m1, 2]);
-  await W("slot_cross_down", () => api.moveSlot(slotOf(K["WHO-0012"]), rev(), { direction: "down" }));
-  assert.deepStrictEqual([view.placed_index[K["WHO-0012"]].module_id, view.placed_index[K["WHO-0012"]].slot_position], [m2, 1]);
-  await W("slot_cross_up", () => api.moveSlot(slotOf(K["WHO-0012"]), rev(), { direction: "up" }));
-  assert.strictEqual(view.placed_index[K["WHO-0012"]].module_id, m1);
+  await W("slot_to_m1", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { to_module_id: m1 }));
+  assert.deepStrictEqual([view.placed_index[K["NS-BASE10-0012"]].module_id, view.placed_index[K["NS-BASE10-0012"]].slot_position], [m1, 2]);
+  await W("slot_cross_down", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { direction: "down" }));
+  assert.deepStrictEqual([view.placed_index[K["NS-BASE10-0012"]].module_id, view.placed_index[K["NS-BASE10-0012"]].slot_position], [m2, 1]);
+  await W("slot_cross_up", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { direction: "up" }));
+  assert.strictEqual(view.placed_index[K["NS-BASE10-0012"]].module_id, m1);
   // labels and titles
-  await W("slot_label", () => api.updateSlot(slotOf(K["WHO-0010"]), rev(), "Co-taught: compare"));
+  await W("slot_label", () => api.updateSlot(slotOf(K["NS-BASE10-0010"]), rev(), "Co-taught: compare"));
   await W("module_title", () => api.updateModule(m1, rev(), { title: "M1 Place value and order" }));
   await W("sequence_title", () => api.updateSequence(sid, rev(), { title: "Grade 2 sequence (draft)" }));
 
   // calibration + periods (placement rev; the sequence rev does not move)
   const prevSeqRev = rev();
   const plRev = (k) => flatPlacements(view).find((p) => p.source_key === k).rev;
-  const cal = [["WHO-0011", "functional", 1], ["WHO-0010", "deep", 1.5], ["COM-0012", "deep", 0.5], ["WHO-0012", "illuminating", null]];
+  // "Looks right" on a ladder estimate: placement rev only; stale is 409; again is invalid
+  const C12 = K["NS-COMP-ORDER-0012"], srcOf = (k) => flatPlacements(view).find((p) => p.source_key === k);
+  await W("confirm_stale", () => api.confirmEstimate(pid(C12), plRev(C12) + 1), "stale_revision");
+  await W("confirm_com12", () => api.confirmEstimate(pid(C12), plRev(C12)));
+  assert.deepStrictEqual([srcOf(C12).period_estimate, srcOf(C12).estimate_source], [1, "builder"], label + ": confirmed");
+  await W("confirm_again", () => api.confirmEstimate(pid(C12), plRev(C12)), "invalid");
+  const cal = [["NS-BASE10-0011", "functional", 1], ["NS-BASE10-0010", "deep", 1.5], ["NS-COMP-ORDER-0012", "deep", 0.5], ["NS-BASE10-0012", "illuminating", null]];
   for (const [id, c, per] of cal) {
     await W("cal_" + id, () => api.updatePlacement(pid(K[id]), plRev(K[id]), { calibration: c }));
     if (per !== null) await W("per_" + id, () => api.updatePlacement(pid(K[id]), plRev(K[id]), { period_estimate: per }));
   }
-  await W("note_who10", () => api.updatePlacement(pid(K["WHO-0010"]), plRev(K["WHO-0010"]), { differentiation_note: "Within 1,000 here" }));
+  await W("note_who10", () => api.updatePlacement(pid(K["NS-BASE10-0010"]), plRev(K["NS-BASE10-0010"]), { differentiation_note: "Within 1,000 here" }));
   assert.strictEqual(rev(), prevSeqRev, label + ": attribute PATCH must not bump the sequence rev");
-  await W("placement_stale", () => api.updatePlacement(pid(K["WHO-0010"]), plRev(K["WHO-0010"]) - 1, { calibration: "functional" }), "stale_revision");
-  await W("placement_bad_cal", () => api.updatePlacement(pid(K["WHO-0010"]), plRev(K["WHO-0010"]), { calibration: "loud" }), "invalid");
-  const who10 = flatPlacements(view).find((p) => p.source_key === K["WHO-0010"]);
+  // retyping the ladder's own number (NS-BASE10-0011: 1) is still an edit: every estimate is now the builder's
+  flatPlacements(view).forEach((p) => assert.strictEqual(p.estimate_source, p.period_estimate === null ? null : "builder", label + ": " + p.node_id));
+  assert.strictEqual(view.guardrail.n_from_ladder, 0);
+  await W("placement_stale", () => api.updatePlacement(pid(K["NS-BASE10-0010"]), plRev(K["NS-BASE10-0010"]) - 1, { calibration: "functional" }), "stale_revision");
+  await W("placement_bad_cal", () => api.updatePlacement(pid(K["NS-BASE10-0010"]), plRev(K["NS-BASE10-0010"]), { calibration: "loud" }), "invalid");
+  const who10 = flatPlacements(view).find((p) => p.source_key === K["NS-BASE10-0010"]);
   assert.strictEqual(who10.calibration, "deep"); assert.strictEqual(who10.period_estimate, 1.5); assert.strictEqual(who10.differentiation_note, "Within 1,000 here");
 
   const gr = await step("guardrail", () => api.guardrail(G));
@@ -222,6 +240,8 @@ async function scenario(api, label, opts) {
   await step("attention_empty", () => api.attention(G));
   const ev = await step("events", () => api.events(sid, 50));
   assert.ok(ev.events.length >= 10, label + ": events recorded");
+  assert.deepStrictEqual(ev.events.filter((e) => e.placement_id === pid(C12) && ["place", "confirm_period", "set_period"].includes(e.action)).map((e) => e.action).reverse(),
+    ["place", "confirm_period", "set_period"], label + ": NS-COMP-ORDER-0012 history");
 
   // saved views
   const lens = { hidden_stems: [], hidden_cs: [], collapsed_stems: null, stem_order: [], context: true, leaves: true, state_ext: true, unplaced_only: false, pairings: true, flagged: false };
@@ -240,7 +260,7 @@ async function scenario(api, label, opts) {
   const m3 = (await W("create_module_3", () => api.createModule(sid, rev(), "M3 Spare"))).result.module_id;
   await W("remove_module_3", () => api.removeModule(m3, rev()));
   // place-then-remove a node
-  const extra = byId["WHO-0013"] && !byId["WHO-0013"].requires_confirm ? "WHO-0013" : null;
+  const extra = byId["NS-BASE10-0013"] && !byId["NS-BASE10-0013"].requires_confirm ? "NS-BASE10-0013" : null;
   const tmpKey = extra ? K[extra] = byId[extra].source_key : null;
   if (tmpKey) {
     await W("place_tmp", () => api.place(sid, rev(), m2, tmpKey, {}));
@@ -300,11 +320,11 @@ function makeDoc() {
       assert.strictEqual(new URL("../api/seq/", base + "seq/").href, base + "api/seq/");
     });
 
-    // A G3 sequence first, so G2 sees placed_elsewhere for WHO-0010.
+    // A G3 sequence first, so G2 sees placed_elsewhere for NS-BASE10-0010.
     let g3key = null;
     await check("setup: a G3 placement for the cross-grade overlay", async () => {
       const s3 = await http.slice("3");
-      s3.super_stems.forEach((ss) => ss.stems.forEach((st) => st.concept_skills.forEach((c) => c.nodes.forEach((n) => { if (n.node_id === "WHO-0010") g3key = n.source_key; }))));
+      s3.super_stems.forEach((ss) => ss.stems.forEach((st) => st.concept_skills.forEach((c) => c.nodes.forEach((n) => { if (n.node_id === "NS-BASE10-0010") g3key = n.source_key; }))));
       let r = await http.createSequence("3", "Grade 3 sequence");
       r = await http.createModule(r.result.sequence_id, r.sequence.sequence.rev, "M1 Place value to 1,000");
       r = await http.place(r.sequence.sequence.sequence_id, r.sequence.sequence.rev, r.result.module_id, g3key, {});
@@ -366,25 +386,25 @@ function makeDoc() {
     });
 
     await check("server-only: ordering warnings and cross-grade overlay reach the page", async () => {
-      const who11 = flatPlacements(H1.view).find((p) => p.source_key === H1.K["WHO-0011"]);
+      const who11 = flatPlacements(H1.view).find((p) => p.source_key === H1.K["NS-BASE10-0011"]);
       assert.ok(who11.badges.some((b) => b.code === "before_predecessor"), JSON.stringify(who11.badges));
-      assert.ok(H1.view.slice_badges[H1.K["WHO-0011"]].some((b) => b.code === "before_predecessor"));
-      const who10 = flatPlacements(H1.view).find((p) => p.source_key === H1.K["WHO-0010"]);
+      assert.ok(H1.view.slice_badges[H1.K["NS-BASE10-0011"]].some((b) => b.code === "before_predecessor"));
+      const who10 = flatPlacements(H1.view).find((p) => p.source_key === H1.K["NS-BASE10-0010"]);
       assert.strictEqual(who10.placed_elsewhere.length, 1); assert.strictEqual(who10.placed_elsewhere[0].grade, "3");
       assert.deepStrictEqual(H1.steps.place_who10.result.placed_elsewhere, who10.placed_elsewhere);
       // DemoApi takes placed_elsewhere from the exported slice: same refs
       assert.deepStrictEqual(D1.steps.place_who10.result.placed_elsewhere.map((r) => r.grade), ["3"]);
       const s2 = await http.slice("2");
-      const n = s2.super_stems.flatMap((ss) => ss.stems.flatMap((st) => st.concept_skills.flatMap((c) => c.nodes))).find((x) => x.node_id === "WHO-0010");
+      const n = s2.super_stems.flatMap((ss) => ss.stems.flatMap((st) => st.concept_skills.flatMap((c) => c.nodes))).find((x) => x.node_id === "NS-BASE10-0010");
       assert.ok(n.badges.some((b) => b.code === "placed_elsewhere" && b.label === "also G3"), JSON.stringify(n.badges));
     });
 
     await check("reconcile: a reworded node shows as an orphan with a suggestion; reattach clears it", async () => {
-      const K = H1.K, before = flatPlacements(H1.view).find((p) => p.source_key === K["WHO-0011"]);
-      const rw = await hook(base, "reword", { node_id: "WHO-0011", suffix: " today" });
-      assert.strictEqual(rw.old_key, K["WHO-0011"]);
+      const K = H1.K, before = flatPlacements(H1.view).find((p) => p.source_key === K["NS-BASE10-0011"]);
+      const rw = await hook(base, "reword", { node_id: "NS-BASE10-0011", suffix: " today" });
+      assert.strictEqual(rw.old_key, K["NS-BASE10-0011"]);
       const v = await http.sequence("2");
-      assert.strictEqual(v.placed_index[K["WHO-0011"]].status, "orphaned");
+      assert.strictEqual(v.placed_index[K["NS-BASE10-0011"]].status, "orphaned");
       const att = await http.attention("2");
       assert.strictEqual(att.items.length, 1); const it = att.items[0];
       assert.strictEqual(it.status, "orphaned"); assert.deepStrictEqual(it.actions, ["reattach", "remove"]);
@@ -396,7 +416,7 @@ function makeDoc() {
       const demo = new DemoApi(p2, null);
       const dv = await demo.sequence("2");
       assert.deepStrictEqual(shapeDiff(v, dv, "orphan_view"), []);
-      assert.strictEqual(dv.attention.length, 1); assert.strictEqual(dv.placed_index[K["WHO-0011"]].status, "orphaned");
+      assert.strictEqual(dv.attention.length, 1); assert.strictEqual(dv.placed_index[K["NS-BASE10-0011"]].status, "orphaned");
       // reattach on both
       const r = await http.reattach(it.placement_id, v.sequence.rev, rw.new_key);
       assert.deepStrictEqual(r.sequence.attention, []);
@@ -411,15 +431,15 @@ function makeDoc() {
 
     await check("reconcile: a changed grade ruling is grade_changed; acknowledge (sequence rev) keeps it", async () => {
       const K = H1.K;
-      const r0 = await hook(base, "set_kind", { node_id: "COM-0012", grade: "2", kind: "state_extension" });
+      const r0 = await hook(base, "set_kind", { node_id: "NS-COMP-ORDER-0012", grade: "2", kind: "state_extension" });
       assert.strictEqual(r0.updated, 1);
       const v = await http.sequence("2");
-      const it = v.attention.find((a) => a.source_key === K["COM-0012"]);
+      const it = v.attention.find((a) => a.source_key === K["NS-COMP-ORDER-0012"]);
       assert.ok(it, JSON.stringify(v.attention)); assert.strictEqual(it.status, "grade_changed");
       assert.deepStrictEqual(it.actions, ["acknowledge", "remove"]); assert.strictEqual(it.state_now, "state_extension");
-      const pv = flatPlacements(v).find((p) => p.source_key === K["COM-0012"]);
+      const pv = flatPlacements(v).find((p) => p.source_key === K["NS-COMP-ORDER-0012"]);
       assert.ok(pv.badges.some((b) => b.code === "grade_changed" && b.label.includes("state_extension")));
-      assert.ok(v.slice_badges[K["COM-0012"]].some((b) => b.code === "grade_changed"));
+      assert.ok(v.slice_badges[K["NS-COMP-ORDER-0012"]].some((b) => b.code === "grade_changed"));
       // demo seeded from this server view shows the same item, and acknowledges the same way
       const demo = new DemoApi(await hook(base, "demo_payload", { grade: "2", with_sequence: true }), null);
       const dv = await demo.sequence("2");
@@ -471,6 +491,34 @@ function makeDoc() {
       assert.strictEqual(M.seqView.placed_index[key], undefined);
       Object.keys(R).forEach((id) => assert.ok(!/undefined|NaN|\[object/.test(R[id].innerHTML), id + ": " + (R[id].innerHTML.match(/.{30}(undefined|NaN|\[object).{30}/) || [""])[0]));
       assert.ok(!R.rail.innerHTML.includes("Ordering warnings need the server"));
+    });
+
+    await check("walkthrough: save status, header target picker, grade round trip and 409 text against the live server", async () => {
+      const doc = makeDoc(), R = doc.els, mem = new Map();
+      const storage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { mem.set(k, String(v)); }, removeItem: (k) => { mem.delete(k); } };
+      const app = A.createApp({ doc, api: http, hist: { replaceState() {} }, loc: { search: "?grade=2" }, storage, setTimeout() { return 0; }, now: () => new Date(2026, 9, 1, 14, 41) });
+      await app.init();
+      const M = app.M;
+      assert.ok(R.hdr.innerHTML.includes("All changes save automatically"));
+      const mods = M.seqView.modules; assert.ok(mods.length >= 1);
+      const key = Object.keys(M.index).find((k) => M.index[k].owed && !M.seqView.placed_index[k] && !(M.index[k].placed_elsewhere || []).length);
+      await app.act("place-chip", { id: key });
+      assert.ok(R.hdr.innerHTML.includes("\u2713 All changes saved \u00b7 2:41 pm"), R.hdr.innerHTML.match(/savestat[^<]*</)[0]);
+      assert.ok(M.ui.notice.link && M.ui.notice.link.action === "show-in-rail");
+      // header picker and the rail radio agree
+      const other = mods[0].module_id;
+      await app.act("header-target", { value: String(other) });
+      assert.ok(new RegExp('value="' + other + '" checked').test(R.rail.innerHTML));
+      assert.strictEqual(storage.getItem("mh2seq-target:2"), String(other));
+      // grade 4 and back: the target is restored
+      await app.act("pick-grade", { value: "4" }); await app.act("pick-grade", { value: "2" });
+      assert.strictEqual(M.ui.targetModuleId, other);
+      // a stale rev: 409 and the reload text
+      const s = M.seqView.sequence;
+      await http.createModule(s.sequence_id, s.rev, "Walkthrough other window");
+      await app.act("add-module");
+      assert.ok(R.hdr.innerHTML.includes("Someone else changed this; reloaded"));
+      assert.ok(M.seqView.modules.some((m) => m.title === "Walkthrough other window"));
     });
 
     await check("dev identity: X-MH2-User attributes writes; a client-sent placed_by is ignored", async () => {

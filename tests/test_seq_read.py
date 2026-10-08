@@ -200,8 +200,8 @@ def test_period_hints():
     by_id = {r[0]: r[1] for r in c.execute("SELECT node_id, source_key FROM nodes")}
     h = R.period_hint(c, "NS-BASE10-0010", "2")
     assert h["value"] == 2.0 and h["basis"] == "grade_named", h
-    h = R.period_hint(c, "MD-TIME-0010", "2")
-    assert h["value"] is None and h["basis"] == "ungraded_multi_grade", h
+    h = R.period_hint(c, "MD-TIME-0010", "2")      # O9: un-graded multi-grade estimate now autofills
+    assert h["value"] == 1.0 and h["basis"] == "ungraded_multi_grade", h
     h = R.period_hint(c, "NS-COMP-ORDER-0012", "2")
     assert h["value"] == 1.0 and h["basis"] == "single_grade_node", h
     assert by_id["NS-COMP-ORDER-0012"] == COM12
@@ -212,10 +212,16 @@ def test_period_hints():
                 continue
             assert set(h) == {"text", "value", "unit", "qualifier", "low", "high",
                               "basis", "n_estimates"}
-            if h["unit"] in ("day", "lesson"):
+            # the O8/O9 value table, whatever the unit or basis
+            if h["n_estimates"] > 1:
                 assert h["value"] is None, (g, n["node_id"], h)
-            if h["basis"] == "ungraded_multi_grade":
-                assert h["value"] is None
+            elif h["value"] is not None:
+                if h["qualifier"] == "part_of":
+                    assert h["value"] == h["high"] - 0.5 and h["high"] > 0.5, (g, n["node_id"], h)
+                else:
+                    assert h["qualifier"] in ("exact", "range") and h["value"] == h["low"], (g, n["node_id"], h)
+            elif h["qualifier"] in ("exact", "range"):
+                raise AssertionError(("exact/range with no value", g, n["node_id"], h))
 
 
 # 10 ------------------------------------------------------------------------

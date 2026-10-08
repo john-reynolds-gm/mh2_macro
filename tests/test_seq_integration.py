@@ -107,7 +107,8 @@ def test_guardrail_parity_200_random_lists():
     for _ in range(200):
         n = rng.randint(0, 12)
         lists.append([{"calibration": rng.choice(cals),
-                       "period_estimate": rng.choice([None] + [q / 4 for q in range(0, 21)])}
+                       "period_estimate": rng.choice([None] + [q / 4 for q in range(0, 21)]),
+                       "estimate_source": rng.choice([None, "ladder", "builder"])}
                       for _ in range(n)])
     js = _node("IN.map(A.computeGuardrail)", lists)
     py = [seq_guardrail.compute(pl) for pl in lists]

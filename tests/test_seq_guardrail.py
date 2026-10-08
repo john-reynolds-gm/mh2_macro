@@ -86,6 +86,21 @@ def test_constants_and_no_verdict_key():
     assert g.COUNT_TARGET["deep"] == 0.25
 
 
+def test_ladder_sourced_estimates_count_and_are_counted_apart():
+    """O8/O9: an autofilled ('ladder') estimate counts toward n_timed ("N of M")
+    like any other; n_from_ladder says how many of those are still the ladder's."""
+    rows = [{"calibration": "deep", "period_estimate": 2.0, "estimate_source": "ladder"},
+            {"calibration": "functional", "period_estimate": 0.5, "estimate_source": "ladder"},
+            {"calibration": None, "period_estimate": 3.0, "estimate_source": "builder"},
+            {"calibration": "deep", "period_estimate": None, "estimate_source": None}]
+    out = g.compute(rows)
+    assert out["n_timed"] == 3 and out["n_from_ladder"] == 2 and out["total_periods"] == 5.5
+    assert out["periods"]["deep"] == 2.0 and out["time_coverage"] == 0.75
+    assert out == {**g.compute([{k: v for k, v in r.items() if k != "estimate_source"} for r in rows]),
+                   "n_from_ladder": 2}
+    assert g.compute(_pl([("deep", 1)]))["n_from_ladder"] == 0     # source absent: not ladder
+
+
 def test_round_half_up():
     assert g.round_half_up(0.375, 2) == 0.38
     assert g.round_half_up(2.5, 0) == 3.0

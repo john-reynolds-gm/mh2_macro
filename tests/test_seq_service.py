@@ -406,7 +406,7 @@ def test_end_to_end_5_6():
         "placement_id", "rev", "order_in_slot", "source_key", "node_id", "node_id_seen", "node_text",
         "node_text_seen", "stem_id", "stem_name", "concept_skill_display", "ladder_file_seen",
         "grade_kind_seen", "state_now", "status", "relabelled", "relabel", "is_bridge", "calibration",
-        "period_estimate", "period_hint", "period_hint_seen", "differentiation_note", "placed_by",
+        "period_estimate", "estimate_source", "period_hint", "period_hint_seen", "differentiation_note", "placed_by",
         "placed_at", "updated_by", "updated_at", "placed_elsewhere", "badges"}
     assert set(v) == {"grade", "ladders_last_read", "sequence", "modules", "placed_index",
                       "slice_badges", "guardrail", "attention"}
@@ -454,6 +454,48 @@ def test_attributes_guardrail_and_period_hint_seen():
     res = V.update_placement(ctx, "bob", pid10, 2, {"period_estimate": None, "calibration": None})
     pl = res["sequence"]["modules"][1]["slots"][0]["placements"][0]
     assert pl["period_estimate"] is None and pl["calibration"] is None
+
+
+def test_autofill_confirm_and_edit():
+    """Rulings O8/O9: place autofills from the ladder hint; confirm and edit
+    both make it the builder's; the guardrail counts ladder-sourced rows."""
+    ctx, _ = make_env()
+    e = build_5_6(ctx)
+    v = e["view"]
+    flat = {p["node_id"]: p for m in v["modules"] for s in m["slots"] for p in s["placements"]}
+    pl = flat["WHO-0010"]
+    assert pl["period_hint"]["value"] == 2.0
+    assert (pl["period_estimate"], pl["estimate_source"]) == (2.0, "ladder")
+    assert pl["period_hint_seen"] == pl["period_hint"]["text"]
+    n_ladder = sum(p["estimate_source"] == "ladder" for p in flat.values())
+    assert n_ladder == sum(p["period_hint"] is not None and p["period_hint"]["value"] is not None
+                           for p in flat.values())
+    assert v["guardrail"]["n_from_ladder"] == n_ladder >= 1
+    assert v["guardrail"]["n_timed"] >= n_ladder
+    pid = e["p_10"]["placement_id"]
+    srev = rev({"sequence": V.get_sequence(ctx, "2")})
+    # confirm: stale placement rev is a 409 carrying the view
+    err = expect(S.StaleRevision, lambda: V.update_placement(ctx, "bob", pid, 5, {"confirm_estimate": True}))
+    assert err.status == 409 and err.extra["sequence"] == V.get_sequence(ctx, "2")
+    expect(S.Invalid, lambda: V.update_placement(ctx, "bob", pid, 1, {"confirm_estimate": False}), "invalid")
+    expect(S.Invalid, lambda: V.update_placement(
+        ctx, "bob", pid, 1, {"confirm_estimate": True, "period_estimate": 3}), "invalid")
+    res = V.update_placement(ctx, "bob", pid, 1, {"confirm_estimate": True})
+    assert res["result"] == {"placement_id": pid} and rev(res) == srev
+    pl = [p for m in res["sequence"]["modules"] for s in m["slots"] for p in s["placements"]
+          if p["placement_id"] == pid][0]
+    assert (pl["period_estimate"], pl["estimate_source"], pl["rev"]) == (2.0, "builder", 2)
+    assert res["sequence"]["guardrail"]["n_from_ladder"] == n_ladder - 1
+    err = expect(S.Invalid, lambda: V.update_placement(ctx, "bob", pid, 2, {"confirm_estimate": True}),
+                 "invalid")
+    assert err.status == 422
+    res = V.update_placement(ctx, "bob", pid, 2, {"period_estimate": 3})
+    pl = [p for m in res["sequence"]["modules"] for s in m["slots"] for p in s["placements"]
+          if p["placement_id"] == pid][0]
+    assert (pl["period_estimate"], pl["estimate_source"]) == (3.0, "builder")
+    acts = [x["action"] for x in reversed(V.get_events(ctx, e["sid"])["events"])
+            if x["placement_id"] == pid]
+    assert acts == ["place", "confirm_period", "set_period"], acts
 
 
 def test_off_grade_422_then_confirm():

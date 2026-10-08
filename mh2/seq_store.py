@@ -105,12 +105,59 @@ _TABLES = ("placement_schema_meta", "grade_sequence", "module", "slot", "placeme
            "placement_event", "saved_view")
 
 
+_SCHEMA = Path(__file__).with_name("schema_placement.sql")
+
+
 def ensure_schema(con: sqlite3.Connection) -> None:
     have = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-    if all(t in have for t in _TABLES):
-        return  # fast path: skips the INSERT OR IGNORE write lock on every request
-    schema = Path(__file__).with_name("schema_placement.sql")
-    con.executescript(schema.read_text())
+    if not all(t in have for t in _TABLES):
+        con.executescript(_SCHEMA.read_text())
+    if _needs_v2(con):  # fast path: two catalogue reads, no write lock
+        _migrate_v2(con)
+
+
+def _needs_v2(con):
+    """(add estimate_source, rebuild placement_event) still to do on this database."""
+    cols = {r[1] for r in con.execute("PRAGMA table_info(placement)")}
+    ev = con.execute("SELECT sql FROM sqlite_master WHERE type='table'"
+                     " AND name='placement_event'").fetchone()[0]
+    need = ("estimate_source" not in cols, "'confirm_period'" not in ev)
+    return need if any(need) else None
+
+
+def _migrate_v2(con):
+    """v1 -> v2 (rulings O8/O9).  CREATE IF NOT EXISTS never alters a table, so:
+    add placement.estimate_source (an existing estimate was typed by a person:
+    'builder'), and rebuild placement_event so its action CHECK admits
+    'confirm_period' (SQLite cannot alter a CHECK).  Event rows, ids and the
+    AUTOINCREMENT high-water mark are kept.  Idempotent: re-checked under the
+    write lock in case another process migrated first."""
+    sql = _SCHEMA.read_text()
+    start = sql.index("CREATE TABLE IF NOT EXISTS placement_event (")
+    ev_table = sql[start:sql.index("\n);", start) + 3]
+    ev_indexes = [ln for ln in sql.splitlines()
+                  if ln.startswith("CREATE INDEX") and " ON placement_event(" in ln]
+    with _tx(con):
+        need = _needs_v2(con)
+        if need is None:
+            return
+        add_col, rebuild_events = need
+        if add_col:
+            con.execute("ALTER TABLE placement ADD COLUMN estimate_source TEXT CHECK"
+                        " (estimate_source IS NULL OR estimate_source IN ('ladder','builder'))")
+            con.execute("UPDATE placement SET estimate_source='builder'"
+                        " WHERE period_estimate IS NOT NULL")
+        if rebuild_events:
+            con.execute("ALTER TABLE placement_event RENAME TO placement_event_v1")
+            con.execute(ev_table)
+            con.execute("INSERT INTO placement_event SELECT * FROM placement_event_v1")
+            con.execute("UPDATE sqlite_sequence SET seq = MAX(seq, (SELECT seq FROM sqlite_sequence"
+                        " WHERE name='placement_event_v1')) WHERE name='placement_event'")
+            con.execute("DROP TABLE placement_event_v1")
+            for stmt in ev_indexes:
+                con.execute(stmt)
+        con.execute("UPDATE placement_schema_meta SET version=2"
+                    " WHERE component='placement' AND version < 2")
 
 
 def sequence_id_of(con, kind, row_id) -> int:
@@ -599,21 +646,41 @@ def _active_placement_for(con, sequence_id, source_key):
                 " AND source_key=? AND removed_at IS NULL", (sequence_id, source_key))
 
 
+def _autofill(snap):
+    """(period_estimate, period_hint_seen, estimate_source) for a new placement:
+    the ladder hint's precomputed value (seq_read, rulings O8/O9), else blank."""
+    hint = snap.get("period_hint")
+    if hint and hint.get("value") is not None:
+        return float(hint["value"]), hint["text"], "ladder"
+    return None, None, None
+
+
 def _insert_placement(con, writer, now, sequence_id, slot_id, order_in_slot, snap, note):
+    est, seen, source = _autofill(snap)
     try:
         cur = con.execute(
             "INSERT INTO placement (sequence_id, slot_id, order_in_slot, source_key,"
             " node_id_seen, node_text_seen, ladder_file_seen, stem_id_seen,"
-            " concept_skill_seen, grade_kind_seen, differentiation_note, placed_by,"
-            " placed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " concept_skill_seen, grade_kind_seen, period_estimate, period_hint_seen,"
+            " estimate_source, differentiation_note, placed_by,"
+            " placed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (sequence_id, slot_id, order_in_slot, snap["source_key"], snap.get("node_id"),
              snap["node_text"], snap.get("source_file"), snap.get("stem_id"),
-             snap.get("concept_skill"), snap["state"], note, writer, now))
+             snap.get("concept_skill"), snap["state"], est, seen, source, note, writer, now))
     except sqlite3.IntegrityError:
         dup = _active_placement_for(con, sequence_id, snap["source_key"])
         raise Conflict("already_placed", "This node is already placed in the sequence",
                        {"placement_id": dup["placement_id"] if dup else None})
     return cur.lastrowid
+
+
+def _place_after(snap, note, **extra):
+    """The `place` event's after_json."""
+    est, _seen, source = _autofill(snap)
+    return {"source_key": snap["source_key"], "grade_kind_seen": snap["state"],
+            "differentiation_note": note, **extra,
+            "period_estimate": est, "estimate_source": source,
+            "confirmed_off_grade": bool(snap.get("requires_confirm"))}
 
 
 def _new_slot(con, writer, now, sequence_id, module_id, key):
@@ -663,9 +730,7 @@ def place(con, writer, sequence_id, expected_rev, snap, *, module_id,
         _bump_seq(con, sequence_id)
         _event(con, sequence_id, "place", writer, now, module_id=module_id,
                slot_id=slot_id, placement_id=pid,
-               after={"source_key": snap["source_key"], "grade_kind_seen": snap["state"],
-                      "differentiation_note": note,
-                      "confirmed_off_grade": bool(snap.get("requires_confirm"))})
+               after=_place_after(snap, note))
     return {"placement_id": pid, "slot_id": slot_id}
 
 
@@ -707,9 +772,7 @@ def place_group(con, writer, sequence_id, expected_rev, snaps, *, module_id,
             pids.append(pid)
             _event(con, sequence_id, "place", writer, now, module_id=module_id,
                    slot_id=slot_id, placement_id=pid,
-                   after={"source_key": snap["source_key"], "grade_kind_seen": snap["state"],
-                          "differentiation_note": note, "group": True,
-                          "confirmed_off_grade": bool(snap.get("requires_confirm"))})
+                   after=_place_after(snap, note, group=True))
         _bump_seq(con, sequence_id)
     return {"slot_id": slot_id, "placement_ids": pids, "skipped": skipped}
 
@@ -747,13 +810,19 @@ def set_attributes(con, writer, placement_id, expected_rev, changes, period_hint
             raise NotFound("placement not found")
         if row["rev"] != expected_rev:
             raise StaleRevision(row["rev"])
-        changed = {k: v for k, v in clean.items() if v != row[k]}
+        # Retyping a ladder-autofilled number is still an edit: it makes it the builder's.
+        changed = {k: v for k, v in clean.items()
+                   if v != row[k] or (k == "period_estimate" and v is not None
+                                      and row["estimate_source"] == "ladder")}
         if not changed:
             return  # nothing changed: no bump, no event
         now = _now()
         sets = dict(changed)
+        source = None
         if "period_estimate" in changed:
+            source = None if changed["period_estimate"] is None else "builder"
             sets["period_hint_seen"] = period_hint_seen
+            sets["estimate_source"] = source
         assign = ", ".join(f"{k}=?" for k in sets)
         con.execute(f"UPDATE placement SET {assign}, updated_by=?, updated_at=?,"
                     " rev = rev + 1 WHERE placement_id=?",
@@ -766,10 +835,37 @@ def set_attributes(con, writer, placement_id, expected_rev, changes, period_hint
             if k == "period_estimate":
                 before["period_hint_seen"] = row["period_hint_seen"]
                 after["period_hint_seen"] = period_hint_seen
+                before["estimate_source"] = row["estimate_source"]
+                after["estimate_source"] = source
             _event(con, row["sequence_id"], _ATTR_ACTION[k], writer, now,
                    module_id=slot["module_id"] if slot else None,
                    slot_id=row["slot_id"], placement_id=placement_id,
                    before=before, after=after)
+
+
+def confirm_estimate(con, writer, placement_id, expected_rev) -> None:
+    """The writer agrees with a ladder-autofilled estimate: 'ladder' -> 'builder',
+    number unchanged, one `confirm_period` event.  Invalid unless the source is
+    'ladder' (already the builder's, or no estimate)."""
+    _check_expected(expected_rev)
+    with _tx(con):
+        row = _one(con, "SELECT * FROM placement WHERE placement_id=? AND removed_at IS NULL",
+                   (placement_id,))
+        if row is None:
+            raise NotFound("placement not found")
+        if row["rev"] != expected_rev:
+            raise StaleRevision(row["rev"])
+        if row["estimate_source"] != "ladder":
+            raise Invalid("invalid", "There is no ladder estimate to confirm")
+        now = _now()
+        con.execute("UPDATE placement SET estimate_source='builder', updated_by=?, updated_at=?,"
+                    " rev = rev + 1 WHERE placement_id=?", (writer, now, placement_id))
+        slot = _one(con, "SELECT module_id FROM slot WHERE slot_id=?", (row["slot_id"],))
+        _event(con, row["sequence_id"], "confirm_period", writer, now,
+               module_id=slot["module_id"] if slot else None,
+               slot_id=row["slot_id"], placement_id=placement_id,
+               before={"period_estimate": row["period_estimate"], "estimate_source": "ladder"},
+               after={"period_estimate": row["period_estimate"], "estimate_source": "builder"})
 
 
 def co_place(con, writer, placement_id, expected_rev, target_slot_id) -> None:

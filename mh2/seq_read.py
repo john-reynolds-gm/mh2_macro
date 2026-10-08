@@ -316,6 +316,25 @@ def _additional_notes(con) -> dict:
 # Period hint (contract 3.2.1)
 # ============================================================================
 
+def _autofill_value(kept: list):
+    """The number a placement is autofilled with (rulings O8, O9), or None.
+
+    Units are ignored: day = lesson = period, 1:1 (O8).  A multi-grade node's
+    un-graded estimate counts in every grade it spans (O9).  exact, closed and
+    open-ended ranges give their low; "part of N" gives N - 0.5 when N > 0.5;
+    everything else, a group total, or more than one kept estimate gives None."""
+    if len(kept) != 1:
+        return None
+    e = kept[0]
+    if "group_total" in (e.note or ""):
+        return None
+    if e.qualifier in ("exact", "range"):
+        return None if e.low is None else float(e.low)
+    if e.qualifier == "part_of" and e.high is not None and e.high > 0.5:
+        return float(e.high) - 0.5
+    return None
+
+
 def _period_hint_from(notes: list, node_grades: list, grade: str):
     """The hint for one node given its notes and node_grade grades, or None."""
     estimates = parse_period_notes(notes) if notes else []
@@ -330,14 +349,9 @@ def _period_hint_from(notes: list, node_grades: list, grade: str):
     if not kept:
         return None
     first = kept[0]
-    value = None
-    if (len(kept) == 1 and basis != "ungraded_multi_grade"
-            and first.qualifier == "exact" and first.unit == "period"
-            and "group_total" not in (first.note or "")):
-        value = float(first.low)
     return {
         "text": " · ".join(e.snippet for e in kept),
-        "value": value,
+        "value": _autofill_value(kept),
         "unit": first.unit,
         "qualifier": first.qualifier,
         "low": None if first.low is None else float(first.low),
@@ -350,8 +364,8 @@ def _period_hint_from(notes: list, node_grades: list, grade: str):
 def period_hint(con, node_id: str, grade: str):
     """PeriodHint for one node in one grade, or None (contract 3.2.1).
 
-    Never converts units: only an exact, single, period-unit estimate sets
-    `value`, and never for an un-graded estimate on a multi-grade node."""
+    `value` is the autofill number (_autofill_value); day, lesson and period
+    are the same unit (O8)."""
     grade = normalize_grade(con, grade)
     notes = [r[0] or "" for r in con.execute(
         "SELECT value FROM node_fields WHERE node_id = ? AND field = 'additional_notes' "

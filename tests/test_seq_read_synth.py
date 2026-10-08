@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
 from mh2 import seq_read as R  # noqa: E402
+from scripts.report_period_estimates import Estimate  # noqa: E402
 
 GRADE_ROWS = [("PK", 0), ("K", 1), ("1", 2), ("2", 3), ("3", 4), ("4", 5), ("OUT", 99)]
 
@@ -198,7 +199,8 @@ def test_period_hint_branches():
     assert h["basis"] == "single_grade_node" and h["value"] == 2.0 and h["n_estimates"] == 1
     con = hint_db(["Likely 2 instructional periods"], ["2", "3"])
     h = R.period_hint(con, "A-1", "2")
-    assert h["basis"] == "ungraded_multi_grade" and h["value"] is None
+    assert h["basis"] == "ungraded_multi_grade" and h["value"] == 2.0   # O9: same number in each grade
+    assert R.period_hint(con, "A-1", "3")["value"] == 2.0
     con = hint_db(["G2: Likely 3 instructional periods", "G3: Likely 1 instructional period"], ["2", "3"])
     assert R.period_hint(con, "A-1", "2")["value"] == 3.0
     assert R.period_hint(con, "A-1", "3")["value"] == 1.0
@@ -208,10 +210,60 @@ def test_period_hint_branches():
     assert R.period_hint(con, "A-1", "2") is None
     con = hint_db(["Likely 1 to 2 instructional periods"], ["2"])
     h = R.period_hint(con, "A-1", "2")
-    assert h["qualifier"] == "range" and h["value"] is None and h["low"] == 1.0 and h["high"] == 2.0
-    con = hint_db(["Likely 3 instructional days"], ["2"])
-    h = R.period_hint(con, "A-1", "2")
-    assert h["unit"] == "day" and h["value"] is None
+    assert h["qualifier"] == "range" and h["value"] == 1.0 and h["low"] == 1.0 and h["high"] == 2.0
+
+
+VALUE_TABLE = [  # (note, value, qualifier, unit)
+    # exact: low; day = lesson = period, 1:1 (O8)
+    ("Likely 2 instructional days", 2.0, "exact", "day"),
+    ("Likely 1/2 lesson", 0.5, "exact", "lesson"),
+    ("Likely 3 instructional periods", 3.0, "exact", "period"),
+    # closed range: low
+    ("Likely 1-2 instructional periods", 1.0, "range", "period"),
+    ("Likely 4-5 instructional days", 4.0, "range", "day"),
+    # open-ended range: low
+    ("Likely 1+ instructional periods", 1.0, "range", "period"),
+    ("Likely 1 or more instructional lessons", 1.0, "range", "lesson"),
+    # part_of with a bound: high - 0.5 (O9)
+    ("Likely part of 1 instructional period", 0.5, "part_of", "period"),
+    ("Likely part of 2 instructional periods", 1.5, "part_of", "period"),
+    # group total / no number: blank
+    ("Likely 2+ days for the first 6 nodes altogether", None, "part_of", "day"),
+    ("Multiple instructional periods", None, "multiple", "period"),
+    ("Fluency is not taught in a fixed number of instructional periods", None, "not_fixed", "period"),
+    ("Embedded in other instructional periods", None, "embedded", "period"),
+    ("Not a fixed number of instructional periods", None, "unparsed", None),
+]
+
+
+def test_period_hint_value_table():
+    """Brief O8/O9 value table, one row each, single-grade node."""
+    for note, value, qualifier, unit in VALUE_TABLE:
+        h = R.period_hint(hint_db([note], ["2"]), "A-1", "2")
+        assert (h["value"], h["qualifier"], h["unit"]) == (value, qualifier, unit), (note, h)
+
+
+def test_period_hint_value_ambiguous_and_multi_grade():
+    # more than one kept estimate: text only
+    h = R.period_hint(hint_db(["Likely 1 instructional period", "Likely 2 instructional periods"], ["2"]),
+                      "A-1", "2")
+    assert h["n_estimates"] == 2 and h["value"] is None
+    # multi-grade, un-graded: the same table in every grade (O9)
+    con = hint_db(["Likely part of 1 instructional period"], ["1", "2"])
+    for g in ("1", "2"):
+        h = R.period_hint(con, "A-1", g)
+        assert h["basis"] == "ungraded_multi_grade" and h["value"] == 0.5
+    con = hint_db(["Likely 1/2 lesson"], ["3", "4"])
+    assert [R.period_hint(con, "A-1", g)["value"] for g in ("3", "4")] == [0.5, 0.5]
+
+
+def test_autofill_value_part_of_at_most_half_is_blank():
+    """No corpus case and the parser cannot produce one ('part of 1/2' parses as
+    exact), so build the Estimate directly: do not invent N - 0.5 <= 0."""
+    E = Estimate
+    assert R._autofill_value([E(None, None, 0.5, "part_of", "period", "", "x")]) is None
+    assert R._autofill_value([E(None, None, None, "part_of", "period", "", "x")]) is None
+    assert R._autofill_value([E(None, 1.0, 1.0, "exact", "period", "group_total", "x")]) is None
 
 
 # ---------------------------------------------------------------------------

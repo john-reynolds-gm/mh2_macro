@@ -149,7 +149,9 @@ CREATE TABLE IF NOT EXISTS placement (
 
     -- placement-scoped attributes (three-tier rule; R-S2)
     calibration         TEXT CHECK (calibration IN ('deep','functional','illuminating')),
-    period_estimate     REAL CHECK (period_estimate IS NULL OR period_estimate >= 0),  -- instructional periods, never days/lessons (ruling O8)
+    period_estimate     REAL CHECK (period_estimate IS NULL OR period_estimate >= 0),  -- periods; day/lesson are 1:1 (O8)
+    estimate_source     TEXT CHECK (estimate_source IS NULL OR estimate_source IN ('ladder','builder')),
+                                       -- 'ladder' = autofilled on place, not yet edited or confirmed; NULL = no estimate (O8/O9, §5.4)
     period_hint_seen    TEXT,              -- ladder prose shown when the estimate was set
     differentiation_note TEXT,             -- also the scope/range note ("within 100 here, within 1000 in G3")
 
@@ -355,21 +357,29 @@ Moving it to `mh2/period_notes.py` with a re-export from the script is a
 later tidy-up (build plan S8). Given the node's `additional_notes` in ordinal
 order:
 
+Rulings O8 and O9 (2026-10-01; implemented 2026-10-08, `docs/brief_seq_o8_o9_autofill.md`):
+
 1. Keep the `Estimate`s with `e.grade == grade`. If there are none, and the
    node has exactly one `node_grade` grade, keep those with `e.grade is None`.
-   If there are none and the node is multi-grade, keep the un-graded ones for
-   **text only** (ruling O9).
-2. `hint_value` is set only for one kept estimate that has `qualifier ==
-   'exact'`, `unit == 'period'` and `'group_total' not in note`. It is
-   `e.low`.
-3. Everything else gives `hint_value=None` and the text only: range, open
-   ended, `part_of` (shown as "≤ high"), multiple, not_fixed, embedded,
-   unparsed, or unit `day` / `lesson` (O8). The payload carries `unit`,
-   `qualifier`, `low` and `high` so the page can say which one it is.
+   If there are none and the node is multi-grade, keep the un-graded ones,
+   for the value as well as the text: the same number in every grade the node
+   spans (O9). `basis` says which case applied.
+2. `hint_value`, the number a new placement is autofilled with, ignores units:
+   **day = lesson = period, 1:1** (O8). For exactly one kept estimate:
+   `exact`, a closed range and an open-ended range give `e.low`; `part_of`
+   with `high > 0.5` gives `high − 0.5` ("part of 1" → 0.5, "part of 2" → 1.5).
+3. Everything else gives `hint_value=None` and the text only: more than one
+   kept estimate, `'group_total' in note`, `part_of` with no bound (or a
+   bound ≤ 0.5), multiple, not_fixed, embedded, unparsed. The payload carries
+   `unit`, `qualifier`, `low`, `high` and `basis` so the page can say why.
 
-The hint is **displayed and offered as a prefill**. It is written to
-`placement.period_estimate` only when the builder saves it, and the text
-shown at that moment goes to `period_hint_seen`.
+**Placing saves the hint straight away.** When `hint_value` is not null,
+`place` and `place_group` write it to `placement.period_estimate`, the hint
+text to `period_hint_seen`, and `estimate_source = 'ladder'`. The page marks
+it "from ladder" until the writer edits it (any PATCH of `period_estimate`,
+even to the same number, makes it `'builder'`; clearing makes it NULL) or
+confirms it ("Looks right": a `confirm_period` event, `'ladder'` →
+`'builder'`). Moves and co-placing never touch it.
 
 ---
 

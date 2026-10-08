@@ -148,6 +148,7 @@ class UpdatePlacementBody(_Body):
     calibration: str | None = None
     period_estimate: float | None = None
     differentiation_note: str | None = None
+    confirm_estimate: bool | None = None   # true: keep the ladder number as the builder's
 
 
 class CoPlaceBody(_Body):

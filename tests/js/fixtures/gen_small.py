@@ -44,7 +44,8 @@ ELSEWHERE = [{"grade": "3", "sequence_id": 2, "sequence_title": "Grade 3 sequenc
               "module_title": "M1 Place value", "placement_id": 31}]
 HINT_2 = {"text": "G2: Likely 2 instructional periods", "value": 2.0, "unit": "period", "qualifier": "exact",
           "low": 2.0, "high": 2.0, "basis": "grade_named", "n_estimates": 1}
-HINT_TIM = {"text": "Likely 1 instructional period", "value": None, "unit": "period", "qualifier": "exact",
+# O9: an un-graded estimate on a multi-grade node fills the same number in each grade.
+HINT_TIM = {"text": "Likely 1 instructional period", "value": 1.0, "unit": "period", "qualifier": "exact",
             "low": 1.0, "high": 1.0, "basis": "ungraded_multi_grade", "n_estimates": 1}
 OWED = ("core", "span", "unconfirmed", "unknown")
 BRIDGE = ("off_grade", "state_extension", "leaf", "no_grade")

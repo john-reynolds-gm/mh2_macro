@@ -154,6 +154,28 @@ def _scenario(c):
     ev = c.get(f"/api/seq/sequences/{sid}/events", params={"limit": 5}).json()
     assert ev["events"][0]["action"] == "remove"
     assert c.get(f"/api/seq/sequences/{sid}/events", params={"limit": 500}).status_code == 422
+    # ladder autofill (O8/O9) and its confirm action: PATCH {"confirm_estimate": true}
+    hk = next((n for n in owed if n["source_key"] != k and n["period_hint"]
+               and n["period_hint"]["value"] is not None), None)
+    assert hk, "no owed G2 node with an autofill value"
+    cur = c.get("/api/seq/sequence", params={"grade": "2"}).json()["sequence"]["rev"]
+    v = c.post("/api/seq/placements", json={"expected_rev": cur, "sequence_id": sid, "module_id": mid,
+                                            "source_key": hk["source_key"]}).json()["sequence"]
+    q = v["modules"][0]["slots"][0]["placements"][0]
+    assert (q["period_estimate"], q["estimate_source"]) == (hk["period_hint"]["value"], "ladder")
+    assert v["guardrail"]["n_from_ladder"] == 1
+    url = f"/api/seq/placements/{q['placement_id']}"
+    r = c.patch(url, json={"expected_rev": q["rev"] + 1, "confirm_estimate": True})
+    assert r.status_code == 409 and r.json()["detail"]["error"] == "stale_revision"
+    assert r.json()["detail"]["sequence"]["sequence"]["rev"] == v["sequence"]["rev"]
+    r = c.patch(url, json={"expected_rev": q["rev"], "confirm_estimate": True})
+    assert r.status_code == 200, r.text
+    q2 = r.json()["sequence"]["modules"][0]["slots"][0]["placements"][0]
+    assert (q2["period_estimate"], q2["estimate_source"]) == (q["period_estimate"], "builder")
+    r = c.patch(url, json={"expected_rev": q2["rev"], "confirm_estimate": True})
+    assert r.status_code == 422 and r.json()["detail"]["error"] == "invalid"
+    ev = c.get(f"/api/seq/sequences/{sid}/events", params={"limit": 2}).json()
+    assert [e["action"] for e in ev["events"]] == ["confirm_period", "place"]
     # views
     vw = c.post("/api/seq/views", json={"grade": "2", "name": "Mine", "state": {"pairings": True}}).json()
     assert c.post("/api/seq/views", json={"grade": "2", "name": "Mine", "state": {}}).status_code == 409

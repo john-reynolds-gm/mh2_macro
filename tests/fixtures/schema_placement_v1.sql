@@ -1,3 +1,5 @@
+-- FROZEN COPY of mh2/schema_placement.sql at v1 (commit 4390927), for the v1 -> v2
+-- migration test in tests/test_seq_store.py. Do not edit.
 -- ============================================================================
 -- mh2/schema_placement.sql — grade sequencing authored state (in mh2_seq.db).
 --
@@ -30,9 +32,7 @@ CREATE TABLE IF NOT EXISTS placement_schema_meta (
     component TEXT PRIMARY KEY,           -- 'placement'
     version   INTEGER NOT NULL
 );
-INSERT OR IGNORE INTO placement_schema_meta (component, version) VALUES ('placement', 2);
--- v2 (2026-10-08, rulings O8/O9): placement.estimate_source, event 'confirm_period'.
--- seq_store.ensure_schema migrates a v1 database in place.
+INSERT OR IGNORE INTO placement_schema_meta (component, version) VALUES ('placement', 1);
 
 -- One grade's sequence. v1 UI creates one per grade; the schema allows more
 -- (a draft alternative) without a migration.
@@ -103,9 +103,7 @@ CREATE TABLE IF NOT EXISTS placement (
 
     -- placement-scoped attributes (three-tier rule; R-S2)
     calibration         TEXT CHECK (calibration IN ('deep','functional','illuminating')),
-    period_estimate     REAL CHECK (period_estimate IS NULL OR period_estimate >= 0),  -- periods; day/lesson are 1:1 (O8)
-    estimate_source     TEXT CHECK (estimate_source IS NULL OR estimate_source IN ('ladder','builder')),
-                                       -- 'ladder' = autofilled on place, not yet edited or confirmed; NULL = no estimate
+    period_estimate     REAL CHECK (period_estimate IS NULL OR period_estimate >= 0),  -- instructional periods, never days/lessons (ruling O8)
     period_hint_seen    TEXT,              -- ladder prose shown when the estimate was set
     differentiation_note TEXT,             -- also the scope/range note ("within 100 here, within 1000 in G3")
 
@@ -140,7 +138,7 @@ CREATE TABLE IF NOT EXISTS placement_event (
                    'module_create','module_update','module_move','module_remove',
                    'slot_update','slot_move','slot_merge',   -- v1 contract §3.4
                    'place','move','co_place','ungroup','remove',   -- 'move' unused in v1
-                   'set_calibration','set_period','set_note','confirm_period',
+                   'set_calibration','set_period','set_note',
                    'reattach','acknowledge','renumber')),
     actor        TEXT NOT NULL,
     at           TEXT NOT NULL,

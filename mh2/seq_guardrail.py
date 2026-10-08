@@ -29,6 +29,7 @@ def compute(placements: Iterable[dict]) -> dict:
     raw = {lv: 0.0 for lv in _LEVELS}
     raw["unset"] = 0.0
     n_timed = 0
+    n_from_ladder = 0
     total_raw = 0.0
     for r in rows:
         cal = r.get("calibration")
@@ -39,12 +40,15 @@ def compute(placements: Iterable[dict]) -> dict:
             raw[bucket] += est          # accumulated in input order
             total_raw += est
             n_timed += 1
+            if r.get("estimate_source") == "ladder":
+                n_from_ladder += 1   # autofilled, not yet edited or confirmed (O8/O9)
     n_cal = n - counts["unset"]
     t = sum(raw[lv] for lv in _LEVELS)   # raw (unrounded) calibrated total
     return {
         "n": n,
         "n_calibrated": n_cal,
         "n_timed": n_timed,
+        "n_from_ladder": n_from_ladder,
         "counts": counts,
         "count_share": {lv: (round_half_up(counts[lv] / n_cal, 4) if n_cal > 0 else None)
                         for lv in _LEVELS},

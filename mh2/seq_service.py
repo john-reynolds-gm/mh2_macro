@@ -69,7 +69,8 @@ def _snap(mh2, grade, source_key) -> dict:
     return {"source_key": f["source_key"], "node_id": f["node_id"],
             "node_text": f["node_text"], "source_file": f["source_file"],
             "stem_id": f["stem_id"], "concept_skill": f["concept_skill"],
-            "state": f["state"], "requires_confirm": bool(f["requires_confirm"])}
+            "state": f["state"], "requires_confirm": bool(f["requires_confirm"]),
+            "period_hint": f["period_hint"]}
 
 
 def _badge(code, tier, label, detail=None, refs=None):
@@ -86,7 +87,8 @@ def _empty_view(mh2, grade) -> dict:
 
 
 def _gr_input(placements):
-    return [{"calibration": p["calibration"], "period_estimate": p["period_estimate"]}
+    return [{"calibration": p["calibration"], "period_estimate": p["period_estimate"],
+             "estimate_source": p["estimate_source"]}
             for p in placements]
 
 
@@ -167,6 +169,7 @@ def build_sequence_view(seq_con, mh2_con, sequence_id, grade) -> dict:
                     "relabelled": st["relabelled"], "relabel": st["relabel"],
                     "is_bridge": is_bridge, "calibration": p["calibration"],
                     "period_estimate": p["period_estimate"],
+                    "estimate_source": p["estimate_source"],
                     "period_hint": f["period_hint"] if f else None,
                     "period_hint_seen": p["period_hint_seen"],
                     "differentiation_note": p["differentiation_note"],
@@ -430,6 +433,14 @@ def update_placement(ctx: Ctx, writer: str, placement_id: int, expected_rev: int
                      changes: dict) -> dict:
     keys = ("calibration", "period_estimate", "differentiation_note")
     ch = {k: changes[k] for k in keys if k in changes}
+    if "confirm_estimate" in changes:
+        if changes["confirm_estimate"] is not True or ch:
+            raise Invalid("invalid", "confirm_estimate must be true and sent on its own")
+
+        def confirm(seq, mh2, grade):
+            seq_store.confirm_estimate(seq, writer, placement_id, expected_rev)
+            return {"placement_id": placement_id}
+        return _write(ctx, "placement", placement_id, confirm)
 
     def op(seq, mh2, grade):
         hint_text = None

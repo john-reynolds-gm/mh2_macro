@@ -109,7 +109,7 @@ test("computeGuardrail matches contract 5.8 table G0-G5", () => {
   load("guardrail_cases.json").forEach((c) => {
     const g = computeGuardrail(c.input.map(([cal, pe]) => ({ calibration: cal, period_estimate: pe })));
     close(g, c.expect, c.id);
-    assert.deepStrictEqual(keys(g), ["count_share", "count_target", "counts", "n", "n_calibrated", "n_timed", "periods",
+    assert.deepStrictEqual(keys(g), ["count_share", "count_target", "counts", "n", "n_calibrated", "n_from_ladder", "n_timed", "periods",
       "show_time_targets", "time_coverage", "time_mark_min_coverage", "time_share", "time_target", "total_periods"].sort(), c.id + " keys");
     assert.strictEqual(Object.keys(g).filter((k) => ["pass", "fail", "ok", "status"].includes(k)).length, 0);
   });
@@ -179,12 +179,34 @@ test("order-key arithmetic", () => {
   assert.deepStrictEqual(A.renumber([{}, {}, {}]).map((x) => x.order_key), [1024, 2048, 3072]);
 });
 
+test("computeGuardrail counts ladder-sourced estimates in n_timed and apart in n_from_ladder", () => {
+  const g = computeGuardrail([{ calibration: "deep", period_estimate: 2, estimate_source: "ladder" },
+    { calibration: null, period_estimate: 1, estimate_source: "builder" }, { calibration: null, period_estimate: null, estimate_source: null }]);
+  assert.strictEqual(g.n_timed, 2); assert.strictEqual(g.n_from_ladder, 1); assert.strictEqual(g.total_periods, 3);
+  assert.strictEqual(computeGuardrail([{ calibration: "deep", period_estimate: 1 }]).n_from_ladder, 0);
+});
+
 test("hintReason covers day / lesson / several grades / part_of / none", () => {
-  assert.strictEqual(A.hintReason({ unit: "day", basis: "grade_named", qualifier: "exact", low: 2, high: 2 }), "in days; not converted");
+  assert.strictEqual(A.hintReason({ unit: "day", basis: "grade_named", qualifier: "exact", low: 2, high: 2 }), "");   // O8: day = period
   assert.strictEqual(A.hintReason({ unit: "period", basis: "ungraded_multi_grade", qualifier: "exact" }), "estimate covers several grades");
   assert.strictEqual(A.hintReason({ unit: "period", basis: "grade_named", qualifier: "part_of", low: 0.5, high: 1 }), "≤ 1");
   assert.strictEqual(A.hintReason({ unit: "period", basis: "grade_named", qualifier: "exact", low: 2, high: 2 }), "");
   assert.strictEqual(A.hintReason(null), "");
+});
+
+test("autofillText says what the autofill chose and why (O8/O9), never computing the value", () => {
+  const h = (o) => Object.assign({ text: "t", unit: "period", qualifier: "exact", low: 2, high: 2, basis: "grade_named", n_estimates: 1, value: 2 }, o);
+  assert.strictEqual(A.autofillText(h({})), "Autofilled 2.");
+  assert.strictEqual(A.autofillText(h({ basis: "ungraded_multi_grade" })), "Autofilled 2 (same estimate used in each grade the node spans).");
+  assert.strictEqual(A.autofillText(h({ qualifier: "part_of", low: null, high: 1, value: 0.5 })), "Autofilled 0.5 (\u2018part of 1 period\u2019).");
+  assert.strictEqual(A.autofillText(h({ qualifier: "part_of", low: null, high: 2, value: 1.5 })), "Autofilled 1.5 (\u2018part of 2 periods\u2019).");
+  assert.strictEqual(A.autofillText(h({ unit: "lesson", low: 0.5, high: 0.5, value: 0.5 })), "Autofilled 0.5 (1 lesson = 1 period).");
+  assert.strictEqual(A.autofillText(h({ qualifier: "range", low: 1, high: 2, value: 1 })), "Autofilled 1 (lower end of 1\u20132).");
+  assert.strictEqual(A.autofillText(h({ qualifier: "range", unit: "day", low: 1, high: null, value: 1 })), "Autofilled 1 (lower bound of an open-ended estimate; 1 day = 1 period).");
+  assert.strictEqual(A.autofillText(h({ qualifier: "multiple", low: null, high: null, value: null })), "Not autofilled: the note gives no single number.");
+  assert.strictEqual(A.autofillText(h({ n_estimates: 2, value: null })), "Not autofilled: the note gives more than one estimate.");
+  assert.strictEqual(A.autofillText(h({ value: 7 })), "Autofilled 7.");                 // the value is taken as given
+  assert.strictEqual(A.autofillText(null), "");
 });
 
 /* ------------------------------------------------------------- DemoApi ---- */
@@ -256,7 +278,7 @@ test("DemoApi place: slot of one, already_placed, off-grade confirm, bridge badg
   assert.deepStrictEqual(keys(r.result), ["placed_elsewhere", "placement_id", "slot_id"]);
   assert.strictEqual(r.result.placed_elsewhere.length, 1);
   const pv = r.sequence.modules[0].slots[0].placements[0];
-  assert.deepStrictEqual(keys(pv), ["badges", "calibration", "concept_skill_display", "differentiation_note", "grade_kind_seen", "is_bridge", "ladder_file_seen", "node_id", "node_id_seen", "node_text", "node_text_seen", "order_in_slot", "period_estimate", "period_hint", "period_hint_seen", "placed_at", "placed_by", "placed_elsewhere", "placement_id", "relabel", "relabelled", "rev", "source_key", "state_now", "status", "stem_id", "stem_name", "updated_at", "updated_by"]);
+  assert.deepStrictEqual(keys(pv), ["badges", "calibration", "concept_skill_display", "differentiation_note", "estimate_source", "grade_kind_seen", "is_bridge", "ladder_file_seen", "node_id", "node_id_seen", "node_text", "node_text_seen", "order_in_slot", "period_estimate", "period_hint", "period_hint_seen", "placed_at", "placed_by", "placed_elsewhere", "placement_id", "relabel", "relabelled", "rev", "source_key", "state_now", "status", "stem_id", "stem_name", "updated_at", "updated_by"]);
   assert.strictEqual(pv.placed_by, "demo"); assert.strictEqual(pv.status, "ok"); assert.strictEqual(pv.is_bridge, false);
   assert.deepStrictEqual(keys(r.sequence.placed_index[K.w11]), ["is_bridge", "module_id", "module_position", "module_title", "placement_id", "slot_id", "slot_position", "status"]);
   await assert.rejects(api.place(1, await curRev(api), m1, K.w11, {}), (e) => apiErr(409, "already_placed")(e) && e.detail.placement_id === r.result.placement_id);
@@ -272,6 +294,47 @@ test("DemoApi place: slot of one, already_placed, off-grade confirm, bridge badg
   assert.strictEqual(r.sequence.modules[0].slots[1].placements[0].differentiation_note, "Within 1,000 here");
   await assert.rejects(api.place(1, await curRev(api), 999, K.t10, {}), apiErr(404, "not_found"));
   await assert.rejects(api.place(1, await curRev(api), m1, "K:nope", {}), apiErr(404, "not_found"));
+});
+
+test("DemoApi autofill (O8/O9): place and placeGroup fill from period_hint.value; edit, clear and confirm mirror the server", async () => {
+  const { api, m1, m2 } = await seeded();
+  const find = (seq, k) => seq.modules.flatMap((m) => m.slots.flatMap((s) => s.placements)).find((p) => p.source_key === k);
+  let r = await api.place(1, await curRev(api), m1, K.w10, {});
+  let p = find(r.sequence, K.w10);
+  assert.deepStrictEqual([p.period_estimate, p.estimate_source, p.period_hint_seen], [2, "ladder", "G2: Likely 2 instructional periods"]);
+  assert.strictEqual(r.sequence.guardrail.n_from_ladder, 1); assert.strictEqual(r.sequence.guardrail.n_timed, 1);
+  r = await api.place(1, await curRev(api), m1, K.w11, {});                                    // no hint: blank
+  assert.deepStrictEqual([find(r.sequence, K.w11).period_estimate, find(r.sequence, K.w11).estimate_source], [null, null]);
+  r = await api.createSlotGroup(1, await curRev(api), m2, [K.t10, K.w20], false, null);       // multi-grade un-graded: 1 (O9)
+  assert.deepStrictEqual([find(r.sequence, K.t10).period_estimate, find(r.sequence, K.t10).estimate_source], [1, "ladder"]);
+  assert.strictEqual(find(r.sequence, K.w20).estimate_source, null);
+  assert.strictEqual(r.sequence.guardrail.n_from_ladder, 2);
+  const ev = (await api.events(1, 50)).events;
+  const placeEv = ev.find((e) => e.action === "place" && e.placement_id === p.placement_id);
+  assert.strictEqual(placeEv.after.period_estimate, 2); assert.strictEqual(placeEv.after.estimate_source, "ladder");
+  assert.strictEqual(ev.find((e) => e.action === "place" && e.placement_id === find(r.sequence, K.t10).placement_id).after.group, true);
+  // confirm: stale rev, then ok, then invalid (already the builder's)
+  await assert.rejects(api.confirmEstimate(p.placement_id, p.rev + 1), apiErr(409, "stale_revision"));
+  const seqRev = await curRev(api);
+  r = await api.updatePlacement(p.placement_id, p.rev, { confirm_estimate: true });            // the PATCH form routes to confirm
+  p = find(r.sequence, K.w10);
+  assert.deepStrictEqual([p.period_estimate, p.estimate_source, p.rev], [2, "builder", 2]);
+  assert.strictEqual(r.sequence.sequence.rev, seqRev);                                          // placement rev only
+  assert.strictEqual(r.sequence.guardrail.n_from_ladder, 1);
+  await assert.rejects(api.confirmEstimate(p.placement_id, p.rev), apiErr(422, "invalid"));
+  await assert.rejects(api.updatePlacement(p.placement_id, p.rev, { confirm_estimate: true, period_estimate: 3 }), apiErr(422, "invalid"));
+  const w11 = find(r.sequence, K.w11);
+  await assert.rejects(api.confirmEstimate(w11.placement_id, w11.rev), apiErr(422, "invalid"));    // no estimate
+  // edit: builder; clear: null
+  r = await api.updatePlacement(p.placement_id, p.rev, { period_estimate: 3 });
+  p = find(r.sequence, K.w10); assert.deepStrictEqual([p.period_estimate, p.estimate_source], [3, "builder"]);
+  const t10 = find(r.sequence, K.t10);
+  r = await api.updatePlacement(t10.placement_id, t10.rev, { period_estimate: null });
+  assert.deepStrictEqual([find(r.sequence, K.t10).period_estimate, find(r.sequence, K.t10).estimate_source], [null, null]);
+  const evs = (await api.events(1, 50)).events.filter((e) => e.placement_id === p.placement_id).map((e) => e.action).reverse();
+  assert.deepStrictEqual(evs, ["place", "confirm_period", "set_period"]);
+  const last = (await api.events(1, 50)).events.find((e) => e.action === "set_period" && e.placement_id === t10.placement_id);
+  assert.deepStrictEqual([last.before.estimate_source, last.after.estimate_source], ["ladder", null]);
 });
 
 test("DemoApi slots: co-place, ungroup, merge, move across modules, at_edge, empty slot cleanup", async () => {
@@ -526,6 +589,10 @@ test("renderChip: placed-here pill, compare toggle, slice_badges, compare cap", 
   const n10 = M.index[K.w10], n12 = M.index[K.w12], n20 = M.index[K.w20];
   const c10 = A.renderChip(n10, st, M);
   assert.ok(c10.includes("M1 · 1")); assert.ok(!c10.includes("+ Place"));
+  assert.ok(c10.includes('<span class="c-id">WHO-0010</span>'), "chip shows the full node ID");
+  const v = viewWith([{ node_id: "NS-COMP-ORDER-0012", node_id_seen: "NS-COMP-ORDER-0012", calibration: null, period_estimate: null }]);
+  const row = A.renderCompactSlot(v.modules[0].slots[0], Object.assign({}, M, { seqView: v }), [1]);
+  assert.ok(row.includes("<b>NS-COMP-ORDER-0012</b>"), "compact rail row shows the full node ID");
   const c12 = A.renderChip(n12, st, M);
   assert.ok(c12.includes("M2 · 3")); assert.ok(c12.includes(">bridge<")); assert.ok(c12.includes("bridge · off_grade"));
   const c20 = A.renderChip(n20, st, M); assert.ok(c20.includes("+ Place")); assert.ok(c20.includes("⊕ compare"));
@@ -546,13 +613,18 @@ function viewWith(placements, extra) {
 test("renderRail: chevrons with aria-labels, calibration control, period hint and Use button, keyboard hooks", () => {
   const M = model(), st = defaultState(M.slice);
   M.seqView = viewWith([{ calibration: "deep", period_estimate: 1, period_hint: { text: "G2: 1 instructional period", value: 1, unit: "period", qualifier: "exact", low: 1, high: 1, basis: "grade_named", n_estimates: 1 } },
-    { calibration: null, period_estimate: null, period_hint: { text: "Likely 2 days", value: null, unit: "day", qualifier: "exact", low: 2, high: 2, basis: "grade_named", n_estimates: 1 } }]);
-  M.ui.targetModuleId = 1;
+    { calibration: null, period_estimate: 2, estimate_source: "ladder", period_hint_seen: "Likely 2 days", period_hint: { text: "Likely 2 days", value: 2, unit: "day", qualifier: "exact", low: 2, high: 2, basis: "grade_named", n_estimates: 1 } }]);
+  M.ui.targetModuleId = 1; M.ui.railDensity = "expanded";        // the default is compact rows; this checks the full cards
   const html = A.renderRail(st, M);
   ["Move slot up", "Move slot down", "Move module up", "Move module down"].forEach((t) => assert.ok(html.includes('aria-label="' + t + '"'), t));
   assert.ok(html.includes("Know it / Use it / See it"));
   assert.ok(html.includes("Use 1")); assert.ok(html.includes("G2: 1 instructional period"));
-  assert.ok(html.includes("Likely 2 days") && html.includes("in days; not converted") && !html.includes("Use 2"));
+  assert.ok(html.includes("Likely 2 days") && !html.includes("not converted") && html.includes("Use 2"));
+  // O8/O9: the ladder-autofilled card shows the pill and "Looks right"; the builder's does not
+  assert.strictEqual((html.match(/class="pill ladder"/g) || []).length, 1);
+  assert.ok(html.includes('data-action="confirm-period" data-id="2"') && !html.includes('data-action="confirm-period" data-id="1"'));
+  assert.ok(html.includes('title="Autofilled from the ladder note: Likely 2 days"'));
+  assert.ok(html.includes("Periods known for 2 of 2 placements (1 from ladder)"));
   assert.ok(html.includes('data-focus-key="slot:1"') && html.includes('tabindex="0"'));
   assert.ok(html.includes("Merge into slot above"));
   assert.ok(/data-action="slot-move" data-id="1" data-val="up"[^>]*disabled/.test(html));            // first slot of first module: up disabled
@@ -708,7 +780,7 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   // placing without a sequence points at the rail
   await act("place-chip", { id: K.w20 }); assert.ok(M.ui.notice.text.includes("Start the Grade 2 sequence")); assert.strictEqual(M.seqView.sequence, null);
   // -- sequence and modules
-  await act("start-sequence");
+  await act("start-sequence"); await act("rows-expand-all");              // full cards for the assertions below; compact rows have their own tests
   assert.strictEqual(M.seqView.sequence.title, "Grade 2 sequence"); assert.deepStrictEqual(M.seqView.modules.map((m) => m.title), ["Module 1"]);
   assert.ok(R.rail.innerHTML.includes("Module 1") && R.rail.innerHTML.includes("Balance") && R.rail.innerHTML.includes("No placements yet"));
   await act("add-module"); assert.strictEqual(M.seqView.modules.length, 2); assert.ok(R.rail.innerHTML.includes('class="mod-title-in"'));
@@ -749,10 +821,19 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   const pid = (k) => M.seqView.placed_index[k].placement_id;
   await act("set-cal", { id: pid(K.w20), val: "deep" });
   assert.strictEqual(M.seqView.guardrail.counts.deep, 1); assert.ok(R.rail.innerHTML.includes("Calibrated 1 of 4 placements"));
-  await act("set-period", { id: pid(K.w20), value: "2" }); assert.strictEqual(M.seqView.guardrail.total_periods, 2);
+  // WHO-0010 was autofilled 2 from its ladder hint on place (O8/O9)
+  const w10 = () => M.seqView.modules.flatMap((m) => m.slots.flatMap((s) => s.placements)).find((p) => p.source_key === K.w10);
+  assert.deepStrictEqual([w10().period_estimate, w10().estimate_source], [2, "ladder"]);
+  assert.strictEqual(M.seqView.guardrail.total_periods, 2); assert.strictEqual(M.seqView.guardrail.n_from_ladder, 1);
   assert.strictEqual(M.seqView.guardrail.show_time_targets, false); assert.ok(!R.rail.innerHTML.includes("tick-time"));
-  await act("use-hint", { id: pid(K.w10), val: "2" });                                        // hint value 2 -> saved
-  assert.strictEqual(M.seqView.guardrail.total_periods, 4); assert.strictEqual(M.seqView.guardrail.show_time_targets, true); assert.ok(R.rail.innerHTML.includes("tick-time"));
+  assert.ok(R.rail.innerHTML.includes("from ladder</span>") && R.rail.innerHTML.includes("(1 from ladder)"));
+  await act("set-period", { id: pid(K.w20), value: "2" }); assert.strictEqual(M.seqView.guardrail.total_periods, 4);
+  assert.strictEqual(M.seqView.guardrail.show_time_targets, true); assert.ok(R.rail.innerHTML.includes("tick-time"));
+  await act("confirm-period", { id: pid(K.w10) });                                            // "Looks right": pill clears
+  assert.deepStrictEqual([w10().period_estimate, w10().estimate_source], [2, "builder"]);
+  assert.ok(!R.rail.innerHTML.includes("from ladder</span>") && !R.rail.innerHTML.includes("from ladder)"));
+  await act("use-hint", { id: pid(K.w10), val: "2" });                                        // same number, already the builder's: nothing sent
+  assert.strictEqual(M.seqView.guardrail.total_periods, 4);
   await act("set-cal", { id: pid(K.w10), val: "functional" });
   assert.deepStrictEqual(M.seqView.guardrail.time_share, { deep: 0.5, functional: 0.5, illuminating: 0 });
   await act("set-period", { id: pid(K.w10), value: "-3" }); assert.ok(M.ui.toasts.length === 1);            // invalid: toast, nothing sent
@@ -787,7 +868,7 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   assert.strictEqual(M.views.length, 1); assert.ok(R.toolbar.innerHTML.includes("Pairs and leaves"));
   await act("reset-view"); assert.strictEqual(app.getState().pairings, false);
   await act("pick-view", { value: String(M.views[0].view_id) }); assert.strictEqual(app.getState().pairings, true); assert.strictEqual(app.getState().leaves, true);
-  await act("view-save"); await act("view-name", { value: "Pairs and leaves" }); await act("view-commit"); assert.ok(M.ui.toasts.some((t) => t.text.includes("A view with that name exists")));
+  await act("view-save"); await act("view-name", { value: "Pairs and leaves" }); await act("view-commit"); assert.ok(M.ui.toasts.some((t) => t.text.includes("Saved filters with that name already exist")));
   await act("view-cancel"); await act("view-rename"); await act("view-name", { value: "Pairs" }); await act("view-commit"); assert.strictEqual(M.views[0].name, "Pairs");
   await act("view-delete"); await act("view-delete-yes"); assert.strictEqual(M.views.length, 0);
   // -- stems and strips show/hide
@@ -803,12 +884,12 @@ test("smoke: boot -> slice -> drawer -> compare -> module -> place -> reorder ->
   assert.ok(app.ui.editing); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.ui.editing, null);      // an open inline edit closes first
   assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().node, null); assert.strictEqual(R.drawer.hidden, true);
   assert.strictEqual(app.getState().sheet, true); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().sheet, false);
-  assert.strictEqual(M.ui.railOpen, true); assert.strictEqual(app.escapeKey(), true); assert.strictEqual(M.ui.railOpen, false);   // then the narrow-screen rail overlay
-  assert.strictEqual(app.escapeKey(), false);
+  assert.strictEqual(app.escapeKey(), false);                                  // the Sequence tab is a pane, not an overlay: Esc leaves it alone
   // -- delegated DOM events reach the same handlers
   const before = M.ui.railOpen;
-  R.hdr.listeners.click[0]({ target: fakeTarget({ "data-action": "toggle-rail" }) }); await new Promise((r) => setImmediate(r));
+  R.tabs.listeners.click[0]({ target: fakeTarget({ "data-action": "rail-tab", "data-val": before ? "nodes" : "seq" }) }); await new Promise((r) => setImmediate(r));
   assert.strictEqual(M.ui.railOpen, !before);
+  assert.ok(R.tabs.innerHTML.includes("Sequence (" + M.seqView.guardrail.n + ")"));
   R.toolbar.listeners.change[0]({ target: fakeTarget({ "data-action": "toggle" }, "x") });      // wrong event type for that action: ignored
   // -- scroll position of the scroll containers survives a re-render
   R.rail.scrollTop = 77; R.slice.scrollTop = 123; app.renderAll(); assert.strictEqual(R.rail.scrollTop, 77); assert.strictEqual(R.slice.scrollTop, 123);
@@ -864,6 +945,221 @@ test("integrator: one Esc closes one layer (region + document listeners); a chan
   R.toolbar.listeners.change[0]({ target: fakeTarget({ "data-action": "stem-visible", "data-id": "TIM" }, undefined) });
   await new Promise((r) => setImmediate(r));
   assert.notStrictEqual(R.toolbar.innerHTML, before, "the change re-rendered");
+});
+
+/* ------------------------------------------- walkthrough fixes (brief 2026-10-01) ---- */
+
+const clock = (h, m) => new Date(2026, 9, 1, h, m);          // local time, so the expectations do not depend on the machine's zone
+
+test("saveStatusText: every state, demo and server wording, 12-hour clock", () => {
+  const T = A.saveStatusText;
+  assert.deepStrictEqual(T(undefined, null, false), { text: "All changes save automatically", kind: "muted" });
+  assert.deepStrictEqual(T({ status: "idle" }, clock(9, 5), true), { text: "All changes save automatically", kind: "muted" });
+  assert.deepStrictEqual(T({ status: "saving" }, null, false), { text: "Saving…", kind: "busy" });
+  assert.deepStrictEqual(T({ status: "saved", at: clock(14, 41) }, null, false), { text: "✓ All changes saved · 2:41 pm", kind: "ok" });
+  assert.strictEqual(T({ status: "saved", at: clock(14, 41) }, null, true).text, "✓ Saved in this browser · 2:41 pm");
+  assert.strictEqual(T({ status: "saved", at: clock(14, 41) }, null, "session").text, "✓ Saved for this session only · 2:41 pm");
+  assert.strictEqual(T({ status: "saved" }, clock(0, 5), false).text, "✓ All changes saved · 12:05 am");     // `now` stands in when there is no `at`
+  assert.strictEqual(T({ status: "saved", at: clock(12, 0) }, null, false).text, "✓ All changes saved · 12:00 pm");
+  assert.strictEqual(T({ status: "saved" }, null, false).text, "✓ All changes saved");                              // no time at all: no dangling separator
+  assert.deepStrictEqual(T({ status: "error", reason: "can’t reach the server" }, null, false), { text: "Not saved: can’t reach the server", kind: "warn" });
+  assert.strictEqual(T({ status: "error" }, null, false).text, "Not saved: something went wrong");
+  assert.deepStrictEqual(T({ status: "conflict" }, null, false), { text: "Someone else changed this; reloaded", kind: "warn" });
+});
+
+async function seededApp(storage, nModules) {
+  const api = new DemoApi(small(), memStorage());
+  let r = await api.createSequence("2", "S"); const ids = [];
+  for (let i = 0; i < nModules; i++) { const q = r.sequence.sequence; r = await api.createModule(q.sequence_id, q.rev, "Module " + (i + 1)); ids.push(r.result.module_id); }
+  const doc = makeDoc();
+  const app = A.createApp({ doc, api, hist: { replaceState() {} }, loc: { search: "" }, storage, setTimeout() { return 0; }, now: () => clock(14, 41) });
+  await app.init();
+  return { app, doc, api, ids, R: doc.els, M: app.M };
+}
+
+test("header status: idle, saved, 409 reload, a real failure, and a refusal that is not a failure (stub DOM)", async () => {
+  const { app, R, M, api } = await seededApp(memStorage(), 0);
+  assert.ok(R.hdr.innerHTML.includes('aria-live="polite"') && R.hdr.innerHTML.includes("All changes save automatically"));
+  await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("✓ Saved in this browser · 2:41 pm"), R.hdr.innerHTML.match(/savestat[^<]*</)[0]);
+  api.st.sequence.rev += 5;                                                          // someone else wrote
+  await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("Someone else changed this; reloaded"));
+  assert.ok(R.notice.innerHTML.includes("Someone else changed this sequence"));      // the existing notice keeps the detail
+  await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("Saved in this browser"), "the next good write clears the warning");
+  const real = api.createModule.bind(api);
+  api.createModule = async () => { throw new ApiError(500, "boom", "Server exploded. More detail follows."); };
+  await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("Not saved: Server exploded") && !R.hdr.innerHTML.includes("More detail"), R.hdr.innerHTML.slice(0, 700));
+  api.createModule = async () => { throw new ApiError(0, "network", "Could not reach the server. Check your connection and try again."); };
+  await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("Not saved: can’t reach the server"));
+  api.createModule = real; await app.act("add-module");
+  assert.ok(R.hdr.innerHTML.includes("Saved in this browser"));
+  // already-placed is a toast, not a failed save: the status keeps its previous value
+  await app.act("place-chip", { id: K.w10 }); const before = R.hdr.innerHTML;
+  api.place = async () => { throw new ApiError(409, "already_placed", "That node is already placed."); };
+  await app.act("place-chip", { id: K.w20 });
+  assert.strictEqual(R.hdr.innerHTML, before); assert.ok(!R.hdr.innerHTML.includes("Not saved"));
+  void M;
+});
+
+test("target module: header picker and rail radio agree, '+ New module' runs add-module, chips name the target", async () => {
+  const { app, R, M, ids } = await seededApp(memStorage(), 2);
+  assert.strictEqual(M.ui.targetModuleId, ids[1]);                                   // default rule: the last module
+  let h = R.hdr.innerHTML;
+  assert.ok(h.includes('data-action="header-target"') && h.includes("Adding to") && h.includes("M1 · Module 1") && h.includes("+ New module"));
+  assert.ok(new RegExp('<option value="' + ids[1] + '" selected>M2 · Module 2').test(h));
+  assert.ok(R.slice.innerHTML.includes('title="Place in M2 · Module 2"') && R.slice.innerHTML.includes('aria-label="Place in M2 · Module 2: '));
+  await app.act("header-target", { value: String(ids[0]) });
+  assert.strictEqual(M.ui.targetModuleId, ids[0]);
+  assert.ok(new RegExp('<option value="' + ids[0] + '" selected>').test(R.hdr.innerHTML));
+  assert.ok(new RegExp('value="' + ids[0] + '" checked').test(R.rail.innerHTML) && !new RegExp('value="' + ids[1] + '" checked').test(R.rail.innerHTML));
+  assert.ok(R.slice.innerHTML.includes('title="Place in M1 · Module 1"'));
+  await app.act("target-module", { id: ids[1] });                                    // the rail radio writes the same state
+  assert.ok(new RegExp('<option value="' + ids[1] + '" selected>').test(R.hdr.innerHTML));
+  await app.act("header-target", { value: "__new__" });
+  assert.strictEqual(M.seqView.modules.length, 3);
+  assert.strictEqual(M.ui.targetModuleId, M.seqView.modules[2].module_id);
+  assert.ok(new RegExp('<option value="' + M.ui.targetModuleId + '" selected>').test(R.hdr.innerHTML));
+});
+
+test("target module is remembered per grade: stored id exists, stored id deleted, storage throws", async () => {
+  // exists
+  const st = memStorage(); st.setItem("mh2seq-target:2", "x");                       // pre-seed after learning the ids below
+  const probe = await seededApp(memStorage(), 3);
+  st.setItem("mh2seq-target:2", String(probe.ids[0]));
+  const api = new DemoApi(small(), memStorage()); let r = await api.createSequence("2", "S"); const ids = [];
+  for (let i = 0; i < 3; i++) { const q = r.sequence.sequence; r = await api.createModule(q.sequence_id, q.rev, "Module " + (i + 1)); ids.push(r.result.module_id); }
+  st.setItem("mh2seq-target:2", String(ids[0]));
+  const mk = (storage) => { const doc = makeDoc(); const app = A.createApp({ doc, api, hist: { replaceState() {} }, loc: { search: "" }, storage, setTimeout() { return 0; } }); return app; };
+  let app = mk(st); await app.init();
+  assert.strictEqual(app.M.ui.targetModuleId, ids[0], "restored, not the last module");
+  // a choice is written under mh2seq-target:<grade>
+  await app.act("header-target", { value: String(ids[1]) });
+  assert.strictEqual(st.getItem("mh2seq-target:2"), String(ids[1]));
+  // grade switch and back: restored
+  await app.act("pick-grade", { value: "4" }); await app.act("pick-grade", { value: "2" });
+  assert.strictEqual(app.M.ui.targetModuleId, ids[1]);
+  // deleted: falls back to the last module and forgets the stale id
+  const gone = memStorage(); gone.setItem("mh2seq-target:2", "99999");
+  app = mk(gone); await app.init();
+  assert.strictEqual(app.M.ui.targetModuleId, ids[2]); assert.strictEqual(gone.getItem("mh2seq-target:2"), null);
+  // garbage in storage is treated as nothing
+  const junk = memStorage(); junk.setItem("mh2seq-target:2", "abc");
+  app = mk(junk); await app.init(); assert.strictEqual(app.M.ui.targetModuleId, ids[2]);
+  // storage that throws: no crash, same fallback, choices still work for the session
+  app = mk(throwingStorage()); await app.init();
+  assert.strictEqual(app.M.ui.targetModuleId, ids[2]);
+  await app.act("header-target", { value: String(ids[0]) }); assert.strictEqual(app.M.ui.targetModuleId, ids[0]);
+  app = mk(null); await app.init(); assert.strictEqual(app.M.ui.targetModuleId, ids[2]);
+});
+
+test("place notice carries a 'Show in sequence' link that opens the sequence and flashes the placement", async () => {
+  const { app, R, M } = await seededApp(memStorage(), 2);
+  await app.act("place-chip", { id: K.w10 });
+  const pid = M.seqView.placed_index[K.w10].placement_id;
+  assert.deepStrictEqual(M.ui.notice.link, { label: "Show in sequence", action: "show-in-rail", id: pid });
+  assert.ok(M.ui.notice.text.includes("in M2"));
+  assert.ok(R.notice.innerHTML.includes('data-action="show-in-rail"') && R.notice.innerHTML.includes("Show in sequence"));
+  assert.strictEqual(M.ui.railOpen, false);
+  R.notice.listeners.click[0]({ target: fakeTarget({ "data-action": "show-in-rail", "data-id": String(pid) }) });
+  await new Promise((r) => setImmediate(r));
+  assert.strictEqual(M.ui.railOpen, true);                                           // on a narrow screen this is the tab switch
+  assert.ok(R.tabs.innerHTML.includes('aria-selected="true"') && R.tabs.innerHTML.includes("Sequence (1)"));
+});
+
+test("tabs below 1024px: Nodes | Sequence (n) with n = active placements, state in ui.railOpen", async () => {
+  const { app, R, M } = await seededApp(memStorage(), 1);
+  assert.ok(R.tabs.innerHTML.includes("Sequence (0)") && R.tabs.innerHTML.includes('role="tablist"'));
+  assert.ok(/aria-selected="true"[^>]*data-action="rail-tab" data-val="nodes"/.test(R.tabs.innerHTML));
+  await app.act("place-chip", { id: K.w10 }); await app.act("place-chip", { id: K.w20 });
+  assert.ok(R.tabs.innerHTML.includes("Sequence (2)"));
+  await app.act("rail-tab", { val: "seq" }); assert.strictEqual(M.ui.railOpen, true);
+  assert.ok(/aria-selected="true"[^>]*data-action="rail-tab" data-val="seq"/.test(R.tabs.innerHTML));
+  await app.act("rail-tab", { val: "nodes" }); assert.strictEqual(M.ui.railOpen, false);
+  assert.ok(!R.hdr.innerHTML.includes("toggle-rail"), "the small header button is gone");
+});
+
+test("compact rail rows: node ID, stem, 60-char text, calibration, periods, chevrons; Enter and click expand; density is remembered", async () => {
+  const st = memStorage();
+  const { app, R, M } = await seededApp(st, 1);
+  await app.act("place-chip", { id: K.w10 }); await app.act("place-chip", { id: K.w20 });
+  const long = "x".repeat(90);
+  const slots = M.seqView.modules[0].slots;
+  slots[0].placements[0].node_text = long; slots[0].placements[0].calibration = "deep"; slots[0].placements[0].period_estimate = 2;
+  app.renderAll();
+  let html = R.rail.innerHTML;
+  assert.strictEqual((html.match(/class="plrow-main"/g) || []).length, 2, "one compact row per placement by default");
+  assert.ok(!html.includes('class="seg-ctl"') && !html.includes('class="pl-per"'), "no full card by default");
+  assert.ok(html.includes("<b>WHO-0010</b>") && html.includes(">x".repeat(0) + "x".repeat(59) + "…<"), "full node ID and text cut to 60 characters");
+  assert.ok(html.includes('aria-label="Move slot up"') && html.includes('aria-label="Move slot down"'));
+  assert.ok(!html.includes("Move to module") && !html.includes("Co-place with") && !html.includes("Remove</button>"), "the other tools live on the full card");
+  assert.ok(html.includes('aria-expanded="false"') && html.includes('tabindex="0"') && html.includes('data-row="1"'));
+  assert.ok(html.includes(">D</span>") && html.includes(">2p</span>") && html.includes(">–p</span>"));
+  assert.ok(html.includes("Expand all") && html.includes("Collapse all"));
+  // Enter on a row opens that one slot only; Space too; another row stays compact
+  const id = String(slots[0].slot_id);
+  const row = fakeTarget({ "data-action": "row-toggle", "data-id": id, "data-row": "1" });
+  app.onEvent("keydown", { key: "Enter", target: row, preventDefault() {} });
+  await new Promise((r) => setImmediate(r));
+  html = R.rail.innerHTML;
+  assert.ok(html.includes('class="seg-ctl"') && (html.match(/class="plrow-main"/g) || []).length === 1);
+  assert.ok(html.includes("Move to module") === false || html.includes("Co-place with"), "full card: tools are back");
+  assert.strictEqual(app.ui.focusOverride, null);
+  // a second slot opens as well (more than one open at a time)
+  await app.act("row-toggle", { id: String(slots[1].slot_id) });
+  assert.strictEqual((R.rail.innerHTML.match(/class="seg-ctl"/g) || []).length, 2);
+  await app.act("row-toggle", { id: id });                                              // the Collapse button on the card
+  assert.strictEqual((R.rail.innerHTML.match(/class="plrow-main"/g) || []).length, 1);
+  // the Collapse button is a native button: Enter on it is not also handled as a row toggle
+  const btn = fakeTarget({ "data-action": "row-toggle", "data-id": id });
+  let handled = false; app.onEvent("keydown", { key: "Enter", target: btn, preventDefault() { handled = true; } }); assert.strictEqual(handled, false);
+  // expand all / collapse all persist the choice
+  await app.act("rows-expand-all");
+  assert.strictEqual((R.rail.innerHTML.match(/class="plrow-main"/g) || []).length, 0); assert.strictEqual(st.getItem("mh2seq-rail-density"), "expanded");
+  await app.act("rows-collapse-all");
+  assert.strictEqual((R.rail.innerHTML.match(/class="plrow-main"/g) || []).length, 2); assert.strictEqual(st.getItem("mh2seq-rail-density"), "compact");
+  // a new page load reads it back
+  await app.act("rows-expand-all");
+  const again = A.createApp({ doc: makeDoc(), api: app.api, hist: { replaceState() {} }, loc: { search: "" }, storage: st, setTimeout() { return 0; } });
+  assert.strictEqual(again.ui.railDensity, "expanded");
+  const blocked = A.createApp({ doc: makeDoc(), api: app.api, hist: { replaceState() {} }, loc: { search: "" }, storage: throwingStorage(), setTimeout() { return 0; } });
+  assert.strictEqual(blocked.ui.railDensity, "compact"); await blocked.init(); await blocked.act("rows-expand-all"); assert.strictEqual(blocked.ui.railDensity, "expanded");
+  // an open edit keeps its card open even in compact mode
+  await app.act("rows-collapse-all");
+  await app.act("note-edit", { id: String(M.seqView.modules[0].slots[0].placements[0].placement_id) });
+  assert.ok(app.R === undefined && R.rail.innerHTML.includes("<textarea"));
+});
+
+test("co-placed slot in compact mode: one row per placement, chevrons on the first only", () => {
+  const M = model(), st = defaultState(M.slice);
+  M.seqView = viewWith([{}, {}]);
+  const slot = M.seqView.modules[0].slots[0]; slot.placements.push(Object.assign({}, slot.placements[0], { placement_id: 9, node_id: "N-9", source_key: "K:9" }));
+  const html = A.renderRail(st, M);
+  assert.strictEqual((html.match(/data-action="row-toggle" data-id="1"/g) || []).length, 2);
+  assert.strictEqual((html.match(/data-action="slot-move" data-id="1"/g) || []).length, 2);     // up and down, once
+  assert.ok(html.includes("↳"));
+});
+
+test("labels: 'Saved views' is gone from everything the user sees; the filters help line shows in the save form", async () => {
+  const { app, R } = await seededApp(memStorage(), 1);
+  await app.act("view-save");
+  const all = Object.keys(R).map((k) => R[k].innerHTML).join("\n");
+  assert.ok(!/saved views?/i.test(all), (all.match(/.{20}saved views?.{20}/i) || [""])[0]);
+  assert.ok(R.toolbar.innerHTML.includes("Saved filters…") && R.toolbar.innerHTML.includes('aria-label="Saved filters"'));
+  assert.ok(R.toolbar.innerHTML.includes("Remembers which filters and stems are shown. Your sequence itself saves automatically."));
+  assert.ok(R.hdr.innerHTML.includes("Each grade has its own sequence. Your work in this grade is saved."));
+  await app.act("view-name", { value: "" }); await app.act("view-commit");
+  assert.ok(app.M.ui.toasts.every((t) => !/\bviews?\b/i.test(t.text)));
+});
+
+test("demo footer wording", () => {
+  const M = model();
+  assert.ok(A.renderFooter(M).includes("Your edits are saved in this browser on this computer only. Another browser or computer starts fresh."));
+  assert.ok(!A.renderFooter(M).includes("kept in this browser"));
+  M.demo.persisted = false; assert.ok(A.renderFooter(M).includes("edits are not kept after reload"));
 });
 
 /* --------------------------------------------------------------- runner ---- */
