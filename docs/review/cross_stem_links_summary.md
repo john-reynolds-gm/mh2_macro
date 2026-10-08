@@ -25,15 +25,15 @@ Resolution uses only names the project already keeps: `stems.name`, `stem_map.ma
 
 | match_confidence | Mentions |
 |---|---:|
-| high | 35 |
-| medium | 15 |
+| high | 36 |
+| medium | 14 |
 | low | 13 |
 | same_ladder | 2 |
 | none | 10 |
 
-Most-named target stems (high or medium): Whole Numbers and Base Ten Structure (WHO) 29, Comparing (COM) 8, Ordering (ORD) 8, Addition and Subtraction (ADD) 5, Time (TIM) 3, Spatial thinking (SPA) 1.
+Most-named target stems (high or medium): Whole Numbers and Base Ten Structure (NS-BASE10) 29, Comparing and Ordering (NS-COMP-ORDER) 8, Addition and Subtraction (OE-ADD-SUB) 5, Time (MD-TIME) 3, Spatial thinking (SS-SPATIAL) 1, Multiplication and Division (Fractions) (OE-MUL-DIV-FRAC) 1.
 
-Unresolved mentions (10; full list in `cross_stem_links_stated_unresolved.csv`): `ANG-0002` "Parallel/perpendicular (informal)"; `ANG-0002` "Congruence-as-superposition"; `ANG-0003` "Parallel/perpendicular (informal)"; `ANG-0003` "Congruence-as-superposition"; `EST-0004` "Rounding"; `EST-0005` "Rounding"; `EST-0008` "Rounding"; `EE_GENERAL_EXPRESSIONS-0001` "This has a lot that will overlap with K-5"; `EE_GENERAL_EXPRESSIONS-0002` "This has a lot that will overlap with K-5"; `EE_ONE_VARIABLE_EQUATIONS_DEG_1-0006` "Modeling".
+Unresolved mentions (10; full list in `cross_stem_links_stated_unresolved.csv`): `MD-ANGLES-0002` "Parallel/perpendicular (informal)"; `MD-ANGLES-0002` "Congruence-as-superposition"; `MD-ANGLES-0003` "Parallel/perpendicular (informal)"; `MD-ANGLES-0003` "Congruence-as-superposition"; `NS-ESTIMATE-0004` "Rounding"; `NS-ESTIMATE-0005` "Rounding"; `NS-ESTIMATE-0008` "Rounding"; `EE-EQ-1V-0006` "Modeling"; `EE-EXPR-GEN-0001` "This has a lot that will overlap with K-5"; `EE-EXPR-GEN-0002` "This has a lot that will overlap with K-5".
 
 20 mentions carry concept/skill candidates and 0 carry node candidates. Both are overlap guesses on content words, never written as links; treat them as prompts for a human.
 
@@ -53,11 +53,11 @@ Target stems with no drafted ladder (`target_has_nodes = 0`): 5 of 63 resolved m
 Of 180 CCSS pairs, 167 have both nodes in a shared grade; of 30 lesson pairs, 26 do (`node_grade` intersection non-empty). Pairs in different grades are still evidence of relatedness but are not co-placement candidates.
 
 Stem-pair level (the granularity at which a stated link can be compared; stated links to stems with no nodes excluded): 27 stem pairs have at least one signal. CCSS 16, lesson 11, stated 14.
-Stem pairs supported by a stated link **and** a computed signal: 7. Stated only (nothing else supports it): 7 (ADD/SUB, ADD/WHO, COU/SUB, COU/TIM, EST/FRA, EST/SUB, SUB/WHO).
+Stem pairs supported by a stated link **and** a computed signal: 7. Stated only (nothing else supports it): 7 (MD-TIME/NS-COUNT, NS-BASE10/NS-SUBITIZE, NS-BASE10/OE-ADD-SUB, NS-COUNT/NS-SUBITIZE, NS-ESTIMATE/NS-FRAC, NS-ESTIMATE/NS-SUBITIZE, NS-SUBITIZE/OE-ADD-SUB).
 
-A further 4 stated stem pairs point at a stem with no drafted ladder (ANG/SPA, COU/ORD, EST/MUL2, EST/ORD); they are left out of the counts above because there are no nodes to pair.
+A further 2 stated stem pairs point at a stem with no drafted ladder (MD-ANGLES/SS-SPATIAL, NS-ESTIMATE/OE-MUL-DIV-FRAC); they are left out of the counts above because there are no nodes to pair.
 
-Stem pairs with the most node pairs: COU/EST ccss 30, lesson 2, stated 0; EE_ONE_VARIABLE_EQUATIONS_DEG_1/EE_ONE_VARIABLE_INEQUALITIES_DE ccss 32, lesson 0, stated 0; COM/WHO ccss 18, lesson 7, stated 2; NS_INTEGERS_AND_RATIONALS/RP_COORDINATE_SYSTEM ccss 24, lesson 0, stated 0; ADD/COU ccss 12, lesson 4, stated 5; EE_ONE_VARIABLE_INEQUALITIES_DE/NS_INTEGERS_AND_RATIONALS ccss 12, lesson 0, stated 0.
+Stem pairs with the most node pairs: NS-COUNT/NS-ESTIMATE ccss 30, lesson 2, stated 0; EE-EQ-1V/EE-INEQ-1V ccss 32, lesson 0, stated 0; NS-BASE10/NS-COMP-ORDER ccss 18, lesson 7, stated 2; NS-INT-RAT/RP-COORD ccss 24, lesson 0, stated 0; NS-COUNT/OE-ADD-SUB ccss 12, lesson 4, stated 5; EE-INEQ-1V/NS-INT-RAT ccss 12, lesson 0, stated 0.
 
 ## 4. Grade 2 examples
 
@@ -65,16 +65,16 @@ Predicate: node pairs whose `node_grade` sets both contain grade 2 (`shared_grad
 
 | Nodes | Stems | Signals | Shared CCSS | Shared lessons | Jaccard | Text A / Text B |
 |---|---|---|---:|---:|---:|---|
-| COM-0012 / WHO-0010 | COM / WHO | ccss+lesson+stated_stem | 1 | 1 | 0.333 | Compare multi-digit numbers using place value relations / Compare whole numbers by using place value. |
-| EST-0009 / MUL-0001 | EST / MUL | ccss+lesson+stated_stem | 1 | 1 | 0.167 | Estimate a number of objects by decomposing and recompo / Represent equal groups by using repeated addition to fi |
-| COM-0012 / WHO-0011 | COM / WHO | ccss+stated_stem | 1 | 0 |  | Compare multi-digit numbers using place value relations / Order whole numbers by using place value. |
-| COU-0015 / WHO-0001 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Skip-count by tens. / Identify place value units and understand that each one |
-| COU-0015 / WHO-0008 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Skip-count by tens. / Represent, compose, and decompose whole numbers flexibl |
-| COU-0022 / WHO-0001 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Count beyond 100 by applying patterns of ones, tens, an / Identify place value units and understand that each one |
-| COU-0022 / WHO-0002 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Count beyond 100 by applying patterns of ones, tens, an / Determine the value represented by each digit of a numb |
-| COU-0022 / WHO-0003 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Count beyond 100 by applying patterns of ones, tens, an / Read and write numbers in standard form. |
-| COU-0022 / WHO-0008 | COU / WHO | ccss+stated_stem | 1 | 0 |  | Count beyond 100 by applying patterns of ones, tens, an / Represent, compose, and decompose whole numbers flexibl |
-| ADD-0004 / EST-0009 | ADD / EST | ccss | 1 | 0 |  | Count on to add whole numbers. / Estimate a number of objects by decomposing and recompo |
+| NS-BASE10-0010 / NS-COMP-ORDER-0012 | NS-BASE10 / NS-COMP-ORDER | ccss+lesson+stated_stem | 1 | 1 | 0.333 | Compare whole numbers by using place value. / Compare multi-digit numbers using place value relations |
+| NS-ESTIMATE-0009 / OE-MUL-DIV-WN-0001 | NS-ESTIMATE / OE-MUL-DIV-WN | ccss+lesson+stated_stem | 1 | 1 | 0.167 | Estimate a number of objects by decomposing and recompo / Represent equal groups by using repeated addition to fi |
+| NS-BASE10-0001 / NS-COUNT-0015 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Identify place value units and understand that each one / Skip-count by tens. |
+| NS-BASE10-0001 / NS-COUNT-0022 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Identify place value units and understand that each one / Count beyond 100 by applying patterns of ones, tens, an |
+| NS-BASE10-0002 / NS-COUNT-0022 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Determine the value represented by each digit of a numb / Count beyond 100 by applying patterns of ones, tens, an |
+| NS-BASE10-0003 / NS-COUNT-0022 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Read and write numbers in standard form. / Count beyond 100 by applying patterns of ones, tens, an |
+| NS-BASE10-0008 / NS-COUNT-0015 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Represent, compose, and decompose whole numbers flexibl / Skip-count by tens. |
+| NS-BASE10-0008 / NS-COUNT-0022 | NS-BASE10 / NS-COUNT | ccss+stated_stem | 1 | 0 |  | Represent, compose, and decompose whole numbers flexibl / Count beyond 100 by applying patterns of ones, tens, an |
+| NS-BASE10-0011 / NS-COMP-ORDER-0012 | NS-BASE10 / NS-COMP-ORDER | ccss+stated_stem | 1 | 0 |  | Order whole numbers by using place value. / Compare multi-digit numbers using place value relations |
+| NS-BASE10-0008 / NS-ESTIMATE-0009 | NS-BASE10 / NS-ESTIMATE | lesson | 0 | 1 | 0.1 | Represent, compose, and decompose whole numbers flexibl / Estimate a number of objects by decomposing and recompo |
 
 ## 5. Is stated-link parsing worth doing in v1? (brief §8 Q2)
 

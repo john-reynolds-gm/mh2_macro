@@ -44,7 +44,7 @@ IN_GRADE = {"PK": 24, "K": 45, "1": 37, "2": 35, "3": 37, "4": 61, "5": 54,
             "6": 81, "7": 77, "8": 37, "A1": 47}
 OWED = {"PK": 24, "K": 44, "1": 36, "2": 33, "3": 36, "4": 61, "5": 52,
         "6": 79, "7": 75, "8": 35, "A1": 47}
-COM12, WHO10 = "COM:58ec03661c5f2d1b", "WHO:d65c6bed74a5ba1c"
+COM12, WHO10 = "NS-COMP-ORDER:58ec03661c5f2d1b", "NS-BASE10:d65c6bed74a5ba1c"
 
 
 class Skip(Exception):
@@ -122,7 +122,7 @@ def test_g2_counts_and_states():
     assert Counter(n["state"] for n in nodes if not n["in_grade"]) == \
         Counter(off_grade=21, no_grade=1)
     leaves = sorted(n["node_id"] for n in nodes if n["state"] == "leaf")
-    assert leaves == ["COU-0024", "MUL-0004"], leaves
+    assert leaves == ["NS-COUNT-0024", "OE-MUL-DIV-WN-0004"], leaves
     assert sl["kind_source"] == "grade_type"
     # Build-dependent: every rebuild stamps a new ingest time, so check shape only.
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}",
@@ -198,13 +198,13 @@ def test_shared_ccss_pairs_match_cross_stem_csv():
 def test_period_hints():
     c = con()
     by_id = {r[0]: r[1] for r in c.execute("SELECT node_id, source_key FROM nodes")}
-    h = R.period_hint(c, "WHO-0010", "2")
+    h = R.period_hint(c, "NS-BASE10-0010", "2")
     assert h["value"] == 2.0 and h["basis"] == "grade_named", h
-    h = R.period_hint(c, "TIM-0010", "2")
+    h = R.period_hint(c, "MD-TIME-0010", "2")
     assert h["value"] is None and h["basis"] == "ungraded_multi_grade", h
-    h = R.period_hint(c, "COM-0012", "2")
+    h = R.period_hint(c, "NS-COMP-ORDER-0012", "2")
     assert h["value"] == 1.0 and h["basis"] == "single_grade_node", h
-    assert by_id["COM-0012"] == COM12
+    assert by_id["NS-COMP-ORDER-0012"] == COM12
     for g in grade_kind.GRADES:
         for n in all_nodes(slice_for(g)):
             h = n["period_hint"]
@@ -224,7 +224,7 @@ def test_build_compare():
     cmp_ = R.build_compare(c, [COM12, WHO10], "2")
     assert cmp_["shared_ccss"] == ["2.NBT.A.4"], cmp_["shared_ccss"]
     assert cmp_["shared_lessons"] == ["G2-M1-L35"], cmp_["shared_lessons"]
-    assert [col["node_id"] for col in cmp_["columns"]] == ["COM-0012", "WHO-0010"]
+    assert [col["node_id"] for col in cmp_["columns"]] == ["NS-COMP-ORDER-0012", "NS-BASE10-0010"]
     json.dumps(cmp_)
 
 
@@ -274,7 +274,7 @@ def test_every_grade_token_builds_a_slice():
 # drawer variants -------------------------------------------------------------
 def test_drawer_leaf_and_no_grade_nodes():
     c = con()
-    leaf_key = c.execute("SELECT source_key FROM nodes WHERE node_id = 'COU-0024'").fetchone()[0]
+    leaf_key = c.execute("SELECT source_key FROM nodes WHERE node_id = 'NS-COUNT-0024'").fetchone()[0]
     d = R.node_drawer(c, leaf_key, "2")
     assert d["state"] == "leaf" and d["requires_confirm"] is True and d["owed"] is False
     assert d["ruling"]["resolution"] == "leaf"
@@ -291,7 +291,7 @@ def test_drawer_leaf_and_no_grade_nodes():
     assert [b["code"] for b in d["badges"]][:1] == ["no_grade"]
     json.dumps(d)
     # Off-grade context node and unknown key.
-    d = R.node_drawer(c, "WHO:fdbd77e5556b420d", "2")
+    d = R.node_drawer(c, "NS-BASE10:fdbd77e5556b420d", "2")
     assert d["state"] == "off_grade" and d["requires_confirm"] is True
     assert all(b["code"] != "off_grade" for b in d["badges"])
     try:
@@ -306,9 +306,9 @@ def test_drawer_g2_example_shape():
     c = con()
     d = R.node_drawer(c, WHO10, "2")
     assert d["domain"] == "Number Systems and Structures"
-    assert d["cs"]["cs_id"] == "WHO:7046b922" and d["cs"]["goal_missing"] is False
+    assert d["cs"]["cs_id"] == "NS-BASE10:7046b922" and d["cs"]["goal_missing"] is False
     assert "\n" in d["cs"]["goal"]
-    assert [s["node_id"] for s in d["strip"]] == ["WHO-0010", "WHO-0011", "WHO-0012", "WHO-0013"]
+    assert [s["node_id"] for s in d["strip"]] == ["NS-BASE10-0010", "NS-BASE10-0011", "NS-BASE10-0012", "NS-BASE10-0013"]
     assert [s["is_self"] for s in d["strip"]] == [True, False, False, False]
     assert d["ruling"]["raw_value"] == "1, 2, 3, 4"
     assert [g["grade"] for g in d["grade_states"]] == ["1", "2", "3", "4"]
@@ -317,8 +317,8 @@ def test_drawer_g2_example_shape():
     assert d["state_codes"] and all(s["state"] for s in d["state_codes"])
     assert {l["lesson_id"] for l in d["lessons"]} >= {"G2-M1-L35", "G1-M5-L7"}
     l35 = [l for l in d["lessons"] if l["lesson_id"] == "G2-M1-L35"][0]
-    assert [s["stem_id"] for s in l35["shared_with"]] == ["COM"]
-    assert [p["stem_id"] for p in d["pairings"]] == ["COM", "EST"]
+    assert [s["stem_id"] for s in l35["shared_with"]] == ["NS-COMP-ORDER"]
+    assert [p["stem_id"] for p in d["pairings"]] == ["NS-COMP-ORDER", "NS-ESTIMATE"]
     assert d["pairings"] == [b for b in d["badges"] if b["code"] == "shared_code"][0]["partners"]
 
 
@@ -340,10 +340,10 @@ def test_overlay_passes_through_on_real_data():
 
 def test_node_facts_predecessors_and_unknown_keys():
     c = con()
-    facts = R.node_facts(c, "2", ["WHO:dc726b29e8f61f18", "NOPE:1"])
-    assert list(facts) == ["WHO:dc726b29e8f61f18"]
-    f = facts["WHO:dc726b29e8f61f18"]
-    assert f["predecessor_keys"] == [WHO10] and f["predecessor_node_ids"] == ["WHO-0010"]
+    facts = R.node_facts(c, "2", ["NS-BASE10:dc726b29e8f61f18", "NOPE:1"])
+    assert list(facts) == ["NS-BASE10:dc726b29e8f61f18"]
+    f = facts["NS-BASE10:dc726b29e8f61f18"]
+    assert f["predecessor_keys"] == [WHO10] and f["predecessor_node_ids"] == ["NS-BASE10-0010"]
     assert f["state"] == "span" and f["owed"] and not f["requires_confirm"]
     assert len(R.node_facts(c, "2")) == 353
     json.dumps(facts)
@@ -353,7 +353,7 @@ def test_field_defs_and_helpers():
     c = con()
     defs = R.compare_field_defs(c)
     assert [d["key"] for d in defs][:12] == [k for k, _ in R.FIELD_ORDER]
-    assert R.cs_id("WHO", "Compare and order numbers by using place value.") == "WHO:7046b922"
+    assert R.cs_id("NS-BASE10", "Compare and order numbers by using place value.") == "NS-BASE10:7046b922"
     assert R.display_label("Foo  bar (Jane - done)") == "Foo bar"
     # Must equal the DB's own latest ingest stamp, whatever build this is.
     assert R.ladders_last_read(c) == \

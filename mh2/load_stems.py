@@ -9,9 +9,14 @@ none of the disagreements is recoverable from string similarity:
     Subitizations           Subitization
     ...of Fractions         ...(Fractions)
 
-So `masterlist_name` repeats (NSS_COM and NSS_ORD share it) and `ladder_file`
-repeats (one Comparing and Ordering ladder, two workbook stems). Any code that
-assumes one ladder maps to one stem is wrong.
+So one ladder can cover two workbook stems. stems.csv records that as two rows
+with the SAME stem_id (NS-COMP-ORDER for 'Comparing' and for 'Ordering'), the
+shared ladder code from DEFERRED.md §10. Any code that assumes one stems.csv
+row per stem_id is wrong.
+
+stems.csv is also the registry of ladder codes: every stem_id in the database
+-- stems, concepts, nodes -- is a stem_id from this file. Nothing derives one
+from a name.
 
 Filenames are the one thing normalized here. stems.csv writes
 `MH2_PK5_Measurement_and_Data_Angles.docx` where the file on disk is
@@ -35,8 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
 
-# stem_id is an OPAQUE key. The slugs are provisional and may be replaced with
-# the team's own stem codes, so nothing may hardcode or pattern-match them.
+# stem_id is an OPAQUE key: nothing may hardcode or pattern-match it.
 FIELDS = ("stem_id", "band", "stem_group", "masterlist_name",
           "workbook_sheet", "workbook_stem", "ladder_file", "ladder_drafted")
 
@@ -91,7 +95,55 @@ def read_stems_csv(path: Path) -> list[dict]:
         raise SystemExit(f"{path.name} is missing columns: {missing}")
     for r in rows:
         r["ladder_drafted"] = int(str(r.get("ladder_drafted") or 0).strip() or 0)
+    _check_registry(rows, path)
     return rows
+
+
+def _check_registry(rows: list[dict], path: Path) -> None:
+    """
+    A stem_id may repeat only as one ladder over several workbook stems: same
+    band, same ladder_file, different workbook_stem. And a ladder file names
+    exactly one stem_id. Anything else is two stems sharing a code, which is
+    not recoverable once concepts and nodes are written under it.
+    """
+    problems = []
+    first: dict[str, dict] = {}
+    seen_pairs: set[tuple[str, str]] = set()
+    file_owner: dict[str, str] = {}
+    for r in rows:
+        sid = r["stem_id"].strip()
+        if not sid:
+            problems.append(f"blank stem_id on row {r!r}")
+            continue
+        pair = (sid, normalize_stem_text(r["workbook_stem"]))
+        if pair in seen_pairs:
+            problems.append(f"{sid}: workbook_stem {r['workbook_stem']!r} listed twice")
+        seen_pairs.add(pair)
+        f = first.setdefault(sid, r)
+        if f is not r and (f["band"] != r["band"] or
+                           normalize_ladder_filename(f["ladder_file"])
+                           != normalize_ladder_filename(r["ladder_file"])):
+            problems.append(f"{sid}: repeated with a different band or ladder_file")
+        lf = normalize_ladder_filename(r["ladder_file"])
+        if lf and file_owner.setdefault(lf, sid) != sid:
+            problems.append(f"{r['ladder_file']!r} claimed by both"
+                            f" {file_owner[lf]} and {sid}")
+    if problems:
+        raise SystemExit(f"{path.name} is inconsistent:\n  " + "\n  ".join(problems))
+
+
+def declared_ladders(rows: list[dict]) -> dict[str, tuple[str, str]]:
+    """
+    normalized ladder filename -> (stem_id, masterlist_name), for every row
+    that names a ladder_file. This is how a ladder document gets its stem_id:
+    looked up, never derived from the filename.
+    """
+    out: dict[str, tuple[str, str]] = {}
+    for r in rows:
+        lf = normalize_ladder_filename(r["ladder_file"])
+        if lf:
+            out.setdefault(lf, (r["stem_id"], r["masterlist_name"] or r["stem_id"]))
+    return out
 
 
 def resolve_ladder_files(rows: list[dict], ladder_dir: Path) -> dict[str, Path]:
@@ -142,18 +194,24 @@ def load(cur, csv_path: Path, ladder_dir: Path) -> dict:
 
     # Keyed on (band, normalized name), not name alone: two PK-5 stems ('Area',
     # 'Volume') would otherwise be stolen by the 6-9 stems of the same name
-    # ('GM_AREA', 'GM_VOLUME') now that both bands write to `stems`. Every
-    # existing row has band=NULL (PK-5's INSERT never sets it), so the NULL
-    # fallback below keeps PK-5 behavior unchanged; only the newly tagged 6_9
-    # rows are fenced by an exact band match.
+    # ('GM-AREA', 'GM-VOLUME') now that both bands write to `stems`. PK-5 rows
+    # in `stems` have band=NULL (PK-5's INSERT never sets it), so the NULL
+    # fallback below matches them; 6_9 rows are fenced by an exact band match.
     workbook_ids = {}
+    stem_ids = set()
     for stem_id, name, band in cur.execute("SELECT stem_id, name, band FROM stems"):
         workbook_ids[(band, normalize_stem_text(name))] = stem_id
+        stem_ids.add(stem_id)
 
     stats = {"rows": 0, "drafted": 0, "workbook_matched": 0, "unmatched": []}
     for r in rows:
         key = normalize_stem_text(r["workbook_stem"])
-        wb_id = workbook_ids.get((r["band"], key)) or workbook_ids.get((None, key))
+        # The workbook loader resolves against this same file (§10), so a
+        # `stems` row under this row's own stem_id IS its workbook stem. That
+        # is the only match for a shared stem: NS-COMP-ORDER's `stems` row is
+        # named 'Comparing and Ordering', matching neither workbook_stem.
+        wb_id = (r["stem_id"] if r["stem_id"] in stem_ids else None) or \
+            workbook_ids.get((r["band"], key)) or workbook_ids.get((None, key))
         if r["workbook_stem"] and wb_id is None:
             stats["unmatched"].append(f"{r['stem_id']}: {r['workbook_stem']!r}")
         if wb_id:

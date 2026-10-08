@@ -165,7 +165,8 @@ def extract_mentions(lines: List[str]) -> List[Tuple[str, str]]:
 
 # The only hand-made aliases. Writers shorten stem names in prose; each entry
 # below was read off an actual sentence in additional_notes, not guessed.
-SHORTHAND = {"base ten": "WHO", "base ten structure": "WHO", "subitizing": "SUB"}
+SHORTHAND = {"base ten": "NS-BASE10", "base ten structure": "NS-BASE10",
+             "subitizing": "NS-SUBITIZE"}
 
 
 class Resolver:
