@@ -102,7 +102,7 @@ you know the stem writers meant "per grade" when they left off the prefix.
   - The drawer and builder show a "from ladder" marker until `estimate_source = 'builder'`.
   - The guardrail counts ladder-sourced estimates. Optionally, it can show
     "N from ladder, M confirmed" next to "N of M counted".
-  - Re-placing a removed node autofills again only if it has no builder-sourced value.
+  - A removed and re-placed node is a new placement row, so it autofills again. History stays in `placement_event`.
 
 ### O10 Flagged filter vs Pairings toggle: **Ruled: accept (option A)** (2026-10-01)
 
