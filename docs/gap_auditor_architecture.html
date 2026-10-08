@@ -1,0 +1,240 @@
+<meta charset="utf-8">
+<title>Gap Auditor Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: one wide diagram band, then three reference columns that stack on phones. */
+:root{
+  --bg:#f5f7f9; --panel:#ffffff; --fg:#1b2530; --muted:#5b6876; --line:#c9d2db;
+  --accent:#2563a8; --accent-soft:#e3edf8;
+  --durable:#b45c12; --durable-soft:#fbeedd;
+  --disposable:#6a7785; --disposable-soft:#eef1f4;
+  --font-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12181e; --panel:#1a222a; --fg:#e4e9ee; --muted:#9aa7b4; --line:#34414d;
+  --accent:#6fa8e6; --accent-soft:#1b2e44;
+  --durable:#f0a35c; --durable-soft:#3a2a19;
+  --disposable:#a3afbb; --disposable-soft:#222c35; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181e; --panel:#1a222a; --fg:#e4e9ee; --muted:#9aa7b4; --line:#34414d;
+  --accent:#6fa8e6; --accent-soft:#1b2e44;
+  --durable:#f0a35c; --durable-soft:#3a2a19;
+  --disposable:#a3afbb; --disposable-soft:#222c35; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:32px 48px;display:grid;gap:28px}
+header{display:grid;gap:6px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(26px,4vw,34px);line-height:1.15;margin:0;text-wrap:balance}
+.lede{margin:0;max-width:68ch;color:var(--muted)}
+code,.mono{font-family:var(--font-mono);font-size:.88em}
+
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:860px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1.5px solid}
+.sw.d{background:var(--durable-soft);border-color:var(--durable)}
+.sw.x{background:var(--disposable-soft);border-color:var(--disposable)}
+.sw.p{background:var(--accent-soft);border-color:var(--accent)}
+.sw.r{border-style:dashed;border-color:var(--muted)}
+
+/* SVG styling through tokens */
+.n-proc rect{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.n-dur rect{fill:var(--durable-soft);stroke:var(--durable);stroke-width:2}
+.n-disp rect{fill:var(--disposable-soft);stroke:var(--disposable);stroke-width:1.5}
+.n-ext rect{fill:var(--panel);stroke:var(--fg);stroke-width:1.5}
+.t-h{font-family:var(--font-display);font-weight:600;font-size:16px;fill:var(--fg)}
+.t-m{font-family:var(--font-mono);font-size:11.5px;fill:var(--muted)}
+.t-b{font-family:var(--font-body);font-size:12.5px;fill:var(--fg)}
+.t-tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em}
+.t-lbl{font-family:var(--font-body);font-size:12px;fill:var(--muted)}
+.edge{stroke:var(--fg);stroke-width:1.5;fill:none}
+.edge.dash{stroke:var(--muted);stroke-dasharray:5 4}
+.ah{fill:var(--fg)}
+.ah2{fill:var(--muted)}
+.vol{fill:none;stroke:var(--durable);stroke-width:1.2;stroke-dasharray:6 4}
+.lblbg{fill:var(--panel)}
+
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+section{display:grid;gap:10px;align-content:start;min-width:0}
+h2{font-family:var(--font-display);font-weight:600;font-size:19px;margin:0}
+p{margin:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+td:first-child{white-space:nowrap}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid}
+.pill.d{color:var(--durable);border-color:var(--durable);background:var(--durable-soft)}
+.pill.x{color:var(--disposable);border-color:var(--disposable);background:var(--disposable-soft)}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:7px}
+.ask{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--durable);border-radius:6px;padding:14px 16px;display:grid;gap:8px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">MH2 gap auditor · hosting review</div>
+  <h1>Gap Auditor Architecture</h1>
+  <p class="lede">How data moves from source files to writers, and where the two SQLite databases sit. One database is rebuilt from source on every start. The other holds writer judgments and has no other copy.</p>
+</header>
+
+<div class="diagram" role="img" aria-label="Architecture diagram: source files feed rebuild.py, which produces mh2.db. render_static.py turns mh2.db into coverage.html. review_api.py reads mh2.db read-only, reads and writes mh2_seq.db, and serves writers in a browser over HTTPS with login.">
+<svg viewBox="0 0 1000 530" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker>
+  </defs>
+
+  <!-- Sources -->
+  <g class="n-ext">
+    <rect x="20" y="40" width="200" height="160" rx="6"/>
+    <text x="36" y="66" class="t-h">Source files</text>
+    <text x="36" y="86" class="t-m">data/source/ · read-only</text>
+    <text x="36" y="110" class="t-b">17 ladder .docx files</text>
+    <text x="36" y="128" class="t-b">Stem and tagging workbooks</text>
+    <text x="36" y="146" class="t-b">Standards CSVs</text>
+    <text x="36" y="164" class="t-b">Predictions + rerank cache</text>
+    <text x="36" y="188" class="t-m">Later: SharePoint (Graph)</text>
+  </g>
+
+  <!-- rebuild.py -->
+  <g class="n-proc">
+    <rect x="280" y="40" width="200" height="160" rx="6"/>
+    <text x="296" y="66" class="t-h">rebuild.py</text>
+    <text x="296" y="86" class="t-m">on every start · ~14 s</text>
+    <text x="296" y="110" class="t-b">Checks all inputs exist</text>
+    <text x="296" y="128" class="t-b">Builds a new copy</text>
+    <text x="296" y="146" class="t-b">Swaps it in on success only</text>
+    <text x="296" y="164" class="t-b">Lock: one rebuild at a time</text>
+    <text x="296" y="188" class="t-m">logs rebuild_log.tsv</text>
+  </g>
+
+  <!-- mh2.db -->
+  <g class="n-disp">
+    <rect x="540" y="60" width="180" height="120" rx="6"/>
+    <text x="556" y="84" class="t-tag" fill="var(--disposable)">DISPOSABLE</text>
+    <text x="556" y="106" class="t-h">mh2.db</text>
+    <text x="556" y="128" class="t-b">Standards, ladders,</text>
+    <text x="556" y="145" class="t-b">coverage colors</text>
+    <text x="556" y="166" class="t-m">regenerated from source</text>
+  </g>
+
+  <!-- coverage.html -->
+  <g class="n-disp">
+    <rect x="790" y="60" width="190" height="120" rx="6"/>
+    <text x="806" y="84" class="t-tag" fill="var(--disposable)">GENERATED</text>
+    <text x="806" y="106" class="t-h">coverage.html</text>
+    <text x="806" y="128" class="t-b">The page writers</text>
+    <text x="806" y="145" class="t-b">open first</text>
+    <text x="806" y="166" class="t-m">data/reports/</text>
+  </g>
+
+  <!-- review_api -->
+  <g class="n-proc">
+    <rect x="490" y="320" width="270" height="130" rx="6"/>
+    <text x="506" y="346" class="t-h">review_api.py</text>
+    <text x="506" y="366" class="t-m">FastAPI · uvicorn · 1 worker</text>
+    <text x="506" y="390" class="t-b">Serves coverage page + JSON API</text>
+    <text x="506" y="408" class="t-b">Reads mh2.db read-only</text>
+    <text x="506" y="426" class="t-b">Writes judgments to mh2_seq.db</text>
+    <text x="506" y="442" class="t-m">new connection per request</text>
+  </g>
+
+  <!-- persistent volume boundary + mh2_seq.db -->
+  <rect x="800" y="302" width="186" height="166" rx="8" class="vol"/>
+  <text x="812" y="296" class="t-tag" fill="var(--durable)">PERSISTENT STORAGE</text>
+  <g class="n-dur">
+    <rect x="812" y="320" width="162" height="130" rx="6"/>
+    <text x="826" y="344" class="t-tag" fill="var(--durable)">DURABLE · ONLY COPY</text>
+    <text x="826" y="366" class="t-h">mh2_seq.db</text>
+    <text x="826" y="388" class="t-b">Reviews, overrides,</text>
+    <text x="826" y="405" class="t-b">tag proposals, rulings</text>
+    <text x="826" y="426" class="t-m">never deleted</text>
+    <text x="826" y="442" class="t-m">back this up</text>
+  </g>
+
+  <!-- Writers -->
+  <g class="n-ext">
+    <rect x="20" y="330" width="200" height="110" rx="6"/>
+    <text x="36" y="356" class="t-h">Writers</text>
+    <text x="36" y="376" class="t-m">browser</text>
+    <text x="36" y="400" class="t-b">Review coverage,</text>
+    <text x="36" y="418" class="t-b">record judgments</text>
+  </g>
+
+  <!-- edges -->
+  <path d="M220 120 H276" class="edge" marker-end="url(#a)"/>
+  <path d="M480 120 H536" class="edge" marker-end="url(#a)"/>
+  <path d="M720 120 H786" class="edge" marker-end="url(#a)"/>
+  <rect x="722" y="94" width="62" height="16" class="lblbg"/>
+  <text x="753" y="106" class="t-lbl" text-anchor="middle">render</text>
+
+  <path d="M630 180 V316" class="edge" marker-end="url(#a)"/>
+  <rect x="568" y="238" width="58" height="16" class="lblbg"/>
+  <text x="622" y="250" class="t-lbl" text-anchor="end">read-only</text>
+
+  <path d="M885 180 V250 H700 V316" class="edge" marker-end="url(#a)"/>
+  <text x="792" y="243" class="t-lbl" text-anchor="middle">served at /</text>
+
+  <path d="M764 385 H808" class="edge" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="786" y="378" class="t-lbl" text-anchor="middle">r/w</text>
+
+  <path d="M224 385 H486" class="edge" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="355" y="376" class="t-lbl" text-anchor="middle">HTTPS + login</text>
+  <text x="355" y="402" class="t-lbl" text-anchor="middle">(Easy Auth requested;</text>
+  <text x="355" y="418" class="t-lbl" text-anchor="middle">HTTP Basic fallback)</text>
+
+  <path d="M380 200 V495 H893 V454" class="edge dash" marker-end="url(#a2)"/>
+  <rect x="440" y="487" width="390" height="18" class="lblbg"/>
+  <text x="636" y="500" class="t-lbl" text-anchor="middle">reconcile step: updates proposal status after a manual rebuild</text>
+  <text x="636" y="520" class="t-lbl" text-anchor="middle">(skipped when the container starts)</text>
+</svg>
+<div class="legend">
+  <span><i class="sw p"></i>Process</span>
+  <span><i class="sw x"></i>Rebuilt from source; safe to lose</span>
+  <span><i class="sw d"></i>Durable; must survive restarts and be backed up</span>
+  <span><i class="sw r"></i>Persistent storage boundary</span>
+</div>
+</div>
+
+<div class="cols">
+  <section>
+    <h2>Two databases, two rules</h2>
+    <table>
+      <thead><tr><th>File</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>mh2.db</code><br><span class="pill x">disposable</span></td><td>Built from the source files. Rebuilt on every container start. The app opens it read-only. Losing it costs one rebuild.</td></tr>
+        <tr><td><code>mh2_seq.db</code><br><span class="pill d">durable</span></td><td>Writer judgments. Created once, never deleted or rebuilt. This is the only file that needs persistent storage and backups.</td></tr>
+      </tbody>
+    </table>
+    <p>Both are SQLite files. No separate database server is involved.</p>
+  </section>
+
+  <section>
+    <h2>What happens at startup</h2>
+    <ol>
+      <li><code>rebuild.py</code> builds <code>mh2.db</code> from the source files. A failed build leaves the previous copy in place.</li>
+      <li><code>render_static.py</code> writes <code>coverage.html</code> from <code>mh2.db</code>.</li>
+      <li><code>uvicorn</code> starts <code>review_api.py</code> on port 8080.</li>
+    </ol>
+    <p>Startup makes no network calls. <code>mh2_seq.db</code> is created if missing and otherwise left alone.</p>
+  </section>
+
+  <section>
+    <h2>What this needs from hosting</h2>
+    <div class="ask">
+      <p><strong>One instance, one worker.</strong> Two instances would mean two copies of <code>mh2_seq.db</code> that drift apart, or one file shared over the network, where SQLite locking is unreliable.</p>
+      <p><strong>Local persistent disk for <code>mh2_seq.db</code></strong>, kept across restarts and redeploys. An Azure Files (SMB) share is a poor fit for SQLite.</p>
+      <p><strong>Scheduled backups</strong> of <code>mh2_seq.db</code>. Nothing else needs backing up.</p>
+      <p><strong>Read-only SharePoint access</strong> later, via Graph <code>Sites.Selected</code>, to pull source files at rebuild time.</p>
+    </div>
+  </section>
+</div>
+
+<footer>The data folder location is set by one environment variable, <code>MH2_DATA_DIR</code>, so it can point at whatever persistent storage IT provides. Source: <code>Dockerfile</code>, <code>entrypoint.sh</code>, <code>scripts/rebuild.py</code>, <code>review_api.py</code>, <code>config.py</code>.</footer>
+</div>
