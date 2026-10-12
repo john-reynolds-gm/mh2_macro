@@ -325,6 +325,42 @@ def _alloc_key(con, kind, container_id, sequence_id, writer, now, *,
     raise AssertionError("renumber did not open a gap")  # pragma: no cover
 
 
+def _check_index(to_index):
+    if isinstance(to_index, bool) or not isinstance(to_index, int):
+        raise Invalid("invalid", "to_index must be an integer")
+
+
+def _index_of(con, kind, container_id, pk_value):
+    """0-based position of an item among its container's active siblings, or
+    None when it is not in that container."""
+    ids = [p for p, _ in _siblings(con, kind, container_id)]
+    return ids.index(pk_value) if pk_value in ids else None
+
+
+def _check_range(con, kind, container_id, to_index, exclude_pk=None):
+    """Validate `to_index` against the container; returns the sibling ids
+    without `exclude_pk`. Called before any write so a no-op stays write-free."""
+    _check_index(to_index)
+    others = [p for p, _ in _siblings(con, kind, container_id) if p != exclude_pk]
+    if not 0 <= to_index <= len(others):
+        raise Invalid("invalid", f"to_index must be between 0 and {len(others)}")
+    return others
+
+
+def _alloc_at_index(con, kind, container_id, sequence_id, writer, now, to_index, *,
+                    exclude_pk=None):
+    """Order key that puts a new/moved item at 0-based `to_index` among the
+    container's active siblings, counted without `exclude_pk` (the item being
+    moved). Out of range (< 0 or > n) is 422 `invalid`."""
+    others = _check_range(con, kind, container_id, to_index, exclude_pk)
+    if to_index == 0:
+        return _alloc_key(con, kind, container_id, sequence_id, writer, now, where="start")
+    if to_index == len(others):
+        return _alloc_key(con, kind, container_id, sequence_id, writer, now, where="end")
+    return _alloc_key(con, kind, container_id, sequence_id, writer, now,
+                      where="after", after_pk=others[to_index - 1])
+
+
 def _swap_with_neighbour(con, kind, container_id, pk_value, direction):
     """Swap the order key with the adjacent active sibling; returns the
     neighbour's pk, or None at the edge."""
@@ -508,20 +544,36 @@ def update_module(con, writer, module_id, expected_rev, *, title=UNSET, note=UNS
                before=before, after=after)
 
 
-def move_module(con, writer, module_id, expected_rev, direction) -> None:
-    _check_direction(direction)
+def move_module(con, writer, module_id, expected_rev, direction=None, *, to_index=None) -> None:
+    if (direction is None) == (to_index is None):
+        raise Invalid("invalid", "give exactly one of direction / to_index")
+    if direction is not None:
+        _check_direction(direction)
     with _tx(con):
         mod = _module_row(con, module_id)
         sid = mod["sequence_id"]
         _check_seq_rev(con, sid, expected_rev)
         now = _now()
-        nb = _swap_with_neighbour(con, "module", sid, module_id, direction)
-        if nb is None:
-            raise Invalid("at_edge", f"module is already {'first' if direction == 'up' else 'last'}")
+        if direction is not None:
+            nb = _swap_with_neighbour(con, "module", sid, module_id, direction)
+            if nb is None:
+                raise Invalid("at_edge", f"module is already {'first' if direction == 'up' else 'last'}")
+            after = {"direction": direction, "swapped_with": nb}
+            before = {"order_key": mod["order_key"]}
+        else:
+            old_index = _index_of(con, "module", sid, module_id)
+            _check_range(con, "module", sid, to_index, module_id)
+            if to_index == old_index:
+                return  # already there: no rev bump, no event
+            key = _alloc_at_index(con, "module", sid, sid, writer, now, to_index,
+                                  exclude_pk=module_id)
+            con.execute("UPDATE module SET order_key=?, rev=rev+1 WHERE module_id=?",
+                        (key, module_id))
+            before = {"order_key": mod["order_key"], "to_index": old_index}
+            after = {"order_key": key, "to_index": to_index}
         _bump_seq(con, sid)
         _event(con, sid, "module_move", writer, now, module_id=module_id,
-               before={"order_key": mod["order_key"]},
-               after={"direction": direction, "swapped_with": nb})
+               before=before, after=after)
 
 
 def remove_module(con, writer, module_id, expected_rev) -> None:
@@ -559,11 +611,14 @@ def update_slot(con, writer, slot_id, expected_rev, label) -> None:
                slot_id=slot_id, before={"label": slot["label"]}, after={"label": label})
 
 
-def move_slot(con, writer, slot_id, expected_rev, *, direction=None, to_module_id=None) -> None:
+def move_slot(con, writer, slot_id, expected_rev, *, direction=None, to_module_id=None,
+              to_index=None) -> None:
     if (direction is None) == (to_module_id is None):
         raise Invalid("invalid", "give exactly one of direction / to_module_id")
     if direction is not None:
         _check_direction(direction)
+        if to_index is not None:
+            raise Invalid("invalid", "to_index goes with to_module_id, not direction")
     with _tx(con):
         slot = _slot_row(con, slot_id)
         sid = slot["sequence_id"]
@@ -592,10 +647,20 @@ def move_slot(con, writer, slot_id, expected_rev, *, direction=None, to_module_i
         else:
             target_row = _module_row(con, to_module_id)
             _same_seq(target_row, sid, "target module")
-            key = _alloc_key(con, "slot", to_module_id, sid, writer, now, where="end")
+            if to_index is None:
+                key = _alloc_key(con, "slot", to_module_id, sid, writer, now, where="end")
+            else:
+                _check_range(con, "slot", to_module_id, to_index, slot_id)
+                if to_module_id == old_module and \
+                        to_index == _index_of(con, "slot", old_module, slot_id):
+                    return  # already there: no rev bump, no event
+                key = _alloc_at_index(con, "slot", to_module_id, sid, writer, now,
+                                      to_index, exclude_pk=slot_id)
             con.execute("UPDATE slot SET module_id=?, order_key=?, rev=rev+1"
                         " WHERE slot_id=?", (to_module_id, key, slot_id))
             after = {"module_id": to_module_id, "order_key": key}
+            if to_index is not None:
+                after["to_index"] = to_index
         _bump_seq(con, sid)
         _event(con, sid, "slot_move", writer, now, module_id=after["module_id"],
                slot_id=slot_id,
@@ -613,6 +678,7 @@ def merge_slot(con, writer, slot_id, expected_rev, into_slot_id) -> None:
         if slot_id == into_slot_id:
             raise Invalid("invalid", "cannot merge a slot into itself")
         now = _now()
+        src_index = _index_of(con, "slot", src["module_id"], slot_id)
         moved = [r[0] for r in con.execute(
             "SELECT placement_id FROM placement WHERE slot_id=? AND removed_at IS NULL"
             " ORDER BY order_in_slot, placement_id", (slot_id,))]
@@ -627,7 +693,8 @@ def merge_slot(con, writer, slot_id, expected_rev, into_slot_id) -> None:
         _bump_seq(con, sid)
         _event(con, sid, "slot_merge", writer, now, module_id=dst["module_id"],
                slot_id=into_slot_id,
-               before={"slot_id": slot_id, "module_id": src["module_id"]},
+               before={"slot_id": slot_id, "module_id": src["module_id"],
+                       "slot_label": src["label"], "to_index": src_index},
                after={"into_slot_id": into_slot_id, "placement_ids": moved})
 
 
@@ -691,8 +758,10 @@ def _new_slot(con, writer, now, sequence_id, module_id, key):
 
 
 def place(con, writer, sequence_id, expected_rev, snap, *, module_id,
-          slot_id=None, after_slot_id=None, differentiation_note=None,
+          slot_id=None, after_slot_id=None, to_index=None, differentiation_note=None,
           confirm_off_grade=False) -> dict:
+    if to_index is not None and (slot_id is not None or after_slot_id is not None):
+        raise Invalid("invalid", "to_index cannot be combined with slot_id / after_slot_id")
     with _tx(con):
         _check_seq_rev(con, sequence_id, expected_rev)
         _check_snap(snap)
@@ -717,7 +786,10 @@ def place(con, writer, sequence_id, expected_rev, snap, *, module_id,
             raise NeedsConfirm([snap["source_key"]], {snap["source_key"]: snap["state"]})
         now = _now()
         if slot_id is None:
-            if after_slot_id is None:
+            if to_index is not None:
+                key = _alloc_at_index(con, "slot", module_id, sequence_id, writer, now,
+                                      to_index)
+            elif after_slot_id is None:
                 key = _alloc_key(con, "slot", module_id, sequence_id, writer, now)
             else:
                 key = _alloc_key(con, "slot", module_id, sequence_id, writer, now,
@@ -878,16 +950,62 @@ def co_place(con, writer, placement_id, expected_rev, target_slot_id) -> None:
         if target_slot_id == p["slot_id"]:
             raise Invalid("invalid", "already in that slot")
         now = _now()
+        src = _slot_row(con, p["slot_id"])
+        src_index = _index_of(con, "slot", src["module_id"], src["slot_id"])
         key = _alloc_key(con, "placement", target_slot_id, sid, writer, now)
         con.execute("UPDATE placement SET slot_id=?, order_in_slot=?, updated_by=?,"
                     " updated_at=?, rev=rev+1 WHERE placement_id=?",
                     (target_slot_id, key, writer, now, placement_id))
         dropped = _drop_slot_if_empty(con, p["slot_id"], writer, now)
+        before = {"slot_id": p["slot_id"]}
+        if dropped:  # undo needs to rebuild the slot where it was
+            before.update(module_id=src["module_id"], slot_label=src["label"],
+                          to_index=src_index)
         _bump_seq(con, sid)
         _event(con, sid, "co_place", writer, now, module_id=target["module_id"],
                slot_id=target_slot_id, placement_id=placement_id,
-               before={"slot_id": p["slot_id"]},
+               before=before,
                after={"slot_id": target_slot_id, "source_slot_removed": dropped})
+
+
+def move_placement(con, writer, placement_id, expected_rev, to_module_id, to_index) -> int:
+    """Move one placement into a NEW slot at `to_index` in `to_module_id`
+    (counted among that module's active slots, without the source slot when
+    this move empties it). A source slot left empty is dropped. Returns the
+    slot id the placement now sits in."""
+    with _tx(con):
+        p = _placement_row(con, placement_id)
+        sid = p["sequence_id"]
+        _check_seq_rev(con, sid, expected_rev)
+        mod = _module_row(con, to_module_id)
+        _same_seq(mod, sid, "target module")
+        src = _slot_row(con, p["slot_id"])
+        alone = con.execute("SELECT COUNT(*) FROM placement WHERE slot_id=?"
+                            " AND removed_at IS NULL", (src["slot_id"],)).fetchone()[0] == 1
+        exclude = src["slot_id"] if alone else None
+        _check_range(con, "slot", to_module_id, to_index, exclude)
+        if alone and to_module_id == src["module_id"] and \
+                to_index == _index_of(con, "slot", src["module_id"], src["slot_id"]):
+            return src["slot_id"]  # already there: no rev bump, no event
+        now = _now()
+        src_index = _index_of(con, "slot", src["module_id"], src["slot_id"])
+        key = _alloc_at_index(con, "slot", to_module_id, sid, writer, now, to_index,
+                              exclude_pk=exclude)
+        new_slot = _new_slot(con, writer, now, sid, to_module_id, key)
+        con.execute("UPDATE placement SET slot_id=?, order_in_slot=?, updated_by=?,"
+                    " updated_at=?, rev=rev+1 WHERE placement_id=?",
+                    (new_slot, ORDER_STEP, writer, now, placement_id))
+        dropped = _drop_slot_if_empty(con, src["slot_id"], writer, now)
+        before = {"slot_id": src["slot_id"], "module_id": src["module_id"],
+                  "slot_label": src["label"]}
+        if dropped:
+            before["to_index"] = src_index
+        _bump_seq(con, sid)
+        _event(con, sid, "move", writer, now, module_id=to_module_id, slot_id=new_slot,
+               placement_id=placement_id, before=before,
+               after={"slot_id": new_slot, "module_id": to_module_id,
+                      "to_index": to_index, "source_slot_removed": dropped})
+    return new_slot
 
 
 def ungroup(con, writer, placement_id, expected_rev) -> int:

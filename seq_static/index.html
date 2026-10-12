@@ -15,15 +15,18 @@
   </header>
   <div id="notice" class="notice-bar" aria-live="polite"></div>
   <div id="tabs" class="view-tabs"></div>
-  <main class="main">
-    <aside id="rail" class="rail" aria-label="Sequence builder"></aside>
-    <section id="slice" class="slice" aria-label="Grade slice"><p class="loading">Loading the grade slice&hellip;</p></section>
+  <main id="main" class="main">
+    <aside id="rail" class="rail" aria-label="Sequence builder" data-scroll="y"></aside>
+    <div id="divider" class="divider" role="separator" aria-orientation="vertical" aria-label="Resize the sequence panel. Arrow keys change the width; double-click resets it." tabindex="0"></div>
+    <section id="slice" class="slice" aria-label="Grade slice" data-scroll="y"><p class="loading">Loading the grade slice&hellip;</p></section>
+    <section id="board" class="board" aria-label="Sequence board" hidden></section>
     <aside id="drawer" class="drawer" role="complementary" aria-label="Node details" hidden></aside>
   </main>
   <div id="tray" class="tray" hidden></div>
   <section id="sheet" class="sheet" aria-label="Compare nodes" hidden></section>
   <footer id="foot" class="foot"></footer>
   <div id="toasts" class="toasts"></div>
+  <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 </div>
 <noscript>This tool needs JavaScript.</noscript>
 <script src="assets/app.js"></script>

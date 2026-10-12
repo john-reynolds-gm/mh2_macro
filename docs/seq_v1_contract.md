@@ -379,7 +379,7 @@ pills.
 
 This is data model §3 verbatim, with these changes (all additive):
 
-1. The `placement_event.action` CHECK list gains `'slot_update'`, `'slot_move'` and `'slot_merge'`. `'move'` stays in the list but is not used; slot moves log `slot_move`.
+1. The `placement_event.action` CHECK list gains `'slot_update'`, `'slot_move'` and `'slot_merge'`. `'move'` was unused in v1; since the board brief (2026-10-08) W18 logs it for placement moves. Slot moves still log `slot_move`.
 2. **v2 (2026-10-08, O8/O9):** `placement.estimate_source TEXT CHECK (estimate_source IS NULL OR estimate_source IN ('ladder','builder'))`. `'ladder'` means the estimate was autofilled on place and not yet edited or confirmed; `'builder'` means a person typed or confirmed it; `NULL` means there is no estimate. The action CHECK list gains `'confirm_period'`. `placement_schema_meta` version = 2.
 3. **Migration.** `ensure_schema` creates missing tables from the file, then, if `estimate_source` is missing from `PRAGMA table_info(placement)` or `'confirm_period'` is missing from `placement_event`'s DDL, migrates in one transaction (re-checked under the write lock): `ALTER TABLE placement ADD COLUMN estimate_source …`, existing non-null estimates become `'builder'`, and `placement_event` is rebuilt (rename, create, copy every row with its `event_id`, keep the AUTOINCREMENT high-water mark, drop, recreate indexes), because SQLite cannot alter a CHECK. The fast path is two catalogue reads and takes no write lock.
 4. The file header comment states that it is applied by `mh2/seq_store.ensure_schema` only, and that `mh2/schema_seq.sql` / `review_store` never read it.
@@ -470,13 +470,16 @@ def delete_view(con, owner, view_id) -> None
   2. revision (`StaleRevision`);
   3. business rules (`Conflict` / `Invalid` / `NeedsConfirm`).
 - **Events.** Exactly one `placement_event` row per call, with changed fields only in `before_json`/`after_json`. `place_group` writes one `place` event per placement. A renumber adds one `renumber` event.
-  - Action names: `sequence_create`/`sequence_update`/`sequence_archive`, `module_create`/`module_update`/`module_move`/`module_remove`, `slot_update`/`slot_move`/`slot_merge`, `place`, `co_place`, `ungroup`, `remove`, `set_calibration`/`set_period`/`set_note`, `confirm_period`, `reattach`, `acknowledge`, `renumber`.
+  - Action names: `sequence_create`/`sequence_update`/`sequence_archive`, `module_create`/`module_update`/`module_move`/`module_remove`, `slot_update`/`slot_move`/`slot_merge`, `place`, `move`, `co_place`, `ungroup`, `remove`, `set_calibration`/`set_period`/`set_note`, `confirm_period`, `reattach`, `acknowledge`, `renumber`.
   - When one PATCH changes several attributes, it writes one event per changed attribute. This is the only multi-event call.
 - **Order keys:** data model §4 (append = max + 1024; swap on chevron; insert-between = `(a+b)//2`; renumber only that container, `1024*i`, when the gap is under 2).
 - **Slot semantics:**
   - `place` without `slot_id` creates a slot of one, appended to the module or inserted after `after_slot_id`. With `slot_id` it appends into that slot (co-place at place time).
   - `move_slot(direction)` swaps with the adjacent slot in the module. At a boundary it crosses into the neighbouring module (§1.2). At the first slot of the first module ("up"), or the last slot of the last module ("down"), it raises `Invalid('at_edge')`.
-  - `move_slot(to_module_id)` appends at the end of that module.
+  - `move_slot(to_module_id)` appends at the end of that module. With `to_index` it puts the slot at that 0-based position among the module's active slots, counted **without the moved slot**; `to_index` is valid only with `to_module_id`.
+  - **Positional moves** (`to_index`, board brief §2): `move_module(to_index)`, `move_slot(to_module_id, to_index)`, `place(to_index)` and `move_placement` all use that same counting rule. `0 <= to_index <= n` (n = active siblings without the moved item) or 422 `invalid`. A move to the item's current position is a no-op: HTTP 200, no `rev` bump, no event. A stale `expected_rev` is still a 409, so a stale index can never misplace anything. `place(to_index)` cannot be combined with `slot_id` / `after_slot_id`; `move_module` takes exactly one of `direction` / `to_index`.
+  - `move_placement(to_module_id, to_index)` (W18) moves one placement into a **new** slot at that position. A source slot left empty is soft-removed, and then the index is counted without it. Logs `move`: before `{slot_id, module_id, slot_label[, to_index]}` (`to_index` only when the source slot was dropped), after `{slot_id, module_id, to_index, source_slot_removed}`.
+  - `co_place` and `merge_slot` events: when a source slot is dropped, `before` also carries `module_id`, `slot_label` and `to_index` (its position) so the slot can be rebuilt. `merge_slot` always drops its source, so always carries them.
   - `merge_slot` appends all of the source slot's active placements, in order, to `into_slot_id`, then soft-removes the source slot.
   - `co_place` moves one placement to the end of the target slot.
   - `ungroup` puts the placement into a new slot inserted immediately after its current slot.
@@ -584,15 +587,16 @@ view, before re-raising.**
 | `update_sequence(ctx, writer, sequence_id, expected_rev, fields: dict)` | `WriteResult` | PATCH /sequences/{id} |
 | `create_module(ctx, writer, sequence_id, expected_rev, title, note)` | `WriteResult` | POST /sequences/{id}/modules |
 | `update_module(ctx, writer, module_id, expected_rev, fields)` | `WriteResult` | PATCH /modules/{id} |
-| `move_module(ctx, writer, module_id, expected_rev, direction)` | `WriteResult` | POST /modules/{id}/move |
+| `move_module(ctx, writer, module_id, expected_rev, direction, to_index)` | `WriteResult` | POST /modules/{id}/move |
 | `remove_module(ctx, writer, module_id, expected_rev)` | `WriteResult` | DELETE /modules/{id} |
 | `update_slot(ctx, writer, slot_id, expected_rev, label)` | `WriteResult` | PATCH /slots/{id} |
-| `move_slot(ctx, writer, slot_id, expected_rev, direction, to_module_id)` | `WriteResult` | POST /slots/{id}/move |
+| `move_slot(ctx, writer, slot_id, expected_rev, direction, to_module_id, to_index)` | `WriteResult` | POST /slots/{id}/move |
 | `merge_slot(ctx, writer, slot_id, expected_rev, into_slot_id)` | `WriteResult` | POST /slots/{id}/merge |
 | `create_slot_group(ctx, writer, sequence_id, expected_rev, module_id, source_keys, confirm_off_grade, differentiation_notes)` | `WriteResult` | POST /slots |
-| `place(ctx, writer, sequence_id, expected_rev, module_id, source_key, slot_id, after_slot_id, differentiation_note, confirm_off_grade)` | `WriteResult` | POST /placements |
+| `place(ctx, writer, sequence_id, expected_rev, module_id, source_key, slot_id, after_slot_id, differentiation_note, confirm_off_grade, to_index)` | `WriteResult` | POST /placements |
 | `update_placement(ctx, writer, placement_id, expected_rev, changes: dict)` | `WriteResult` | PATCH /placements/{id} |
 | `co_place(ctx, writer, placement_id, expected_rev, target_slot_id)` | `WriteResult` | POST /placements/{id}/co-place |
+| `move_placement(ctx, writer, placement_id, expected_rev, to_module_id, to_index)` | `WriteResult` `{slot_id}` | POST /placements/{id}/move |
 | `ungroup(ctx, writer, placement_id, expected_rev)` | `WriteResult` | POST /placements/{id}/ungroup |
 | `remove_placement(ctx, writer, placement_id, expected_rev, reason)` | `WriteResult` | DELETE /placements/{id} |
 | `reattach(ctx, writer, placement_id, expected_rev, source_key)` | `WriteResult` | POST /placements/{id}/reattach |
@@ -655,13 +659,13 @@ In step 3, `place`, `reattach` and `acknowledge` build their `NodeSnap` from
 | W2 | PATCH | `/sequences/{sequence_id}` | `{expected_rev, title?, owner?, note?, archived?}` | WriteResult `{}` | `update_sequence` |
 | W3 | POST | `/sequences/{sequence_id}/modules` | `{expected_rev, title, note?}` | WriteResult `{module_id}` | `create_module` |
 | W4 | PATCH | `/modules/{module_id}` | `{expected_rev, title?, note?}` | WriteResult `{}` | `update_module` |
-| W5 | POST | `/modules/{module_id}/move` | `{expected_rev, direction}` | WriteResult `{}` | `move_module` |
+| W5 | POST | `/modules/{module_id}/move` | `{expected_rev, direction?, to_index?}` (exactly one) | WriteResult `{}` | `move_module` |
 | W6 | DELETE | `/modules/{module_id}` | query `expected_rev` | WriteResult `{}` | `remove_module` |
 | W7 | PATCH | `/slots/{slot_id}` | `{expected_rev, label}` (null clears) | WriteResult `{}` | `update_slot` |
-| W8 | POST | `/slots/{slot_id}/move` | `{expected_rev, direction?, to_module_id?}` (exactly one) | WriteResult `{}` | `move_slot` |
+| W8 | POST | `/slots/{slot_id}/move` | `{expected_rev, direction?, to_module_id?, to_index?}` (`direction` xor `to_module_id`; `to_index` only with `to_module_id`) | WriteResult `{}` | `move_slot` |
 | W9 | POST | `/slots/{slot_id}/merge` | `{expected_rev, into_slot_id}` | WriteResult `{slot_id}` | `merge_slot` |
 | W10 | POST | `/slots` | `{expected_rev, sequence_id, module_id, source_keys[1..4], confirm_off_grade=false, differentiation_notes?: {key: note}}` | WriteResult `{slot_id, placement_ids, skipped}` | `create_slot_group` |
-| W11 | POST | `/placements` | `{expected_rev, sequence_id, module_id, source_key, slot_id?, after_slot_id?, differentiation_note?, confirm_off_grade=false}` | WriteResult `{placement_id, slot_id, placed_elsewhere}` | `place` |
+| W11 | POST | `/placements` | `{expected_rev, sequence_id, module_id, source_key, slot_id?, after_slot_id?, to_index?, differentiation_note?, confirm_off_grade=false}` (`to_index` excludes `slot_id` / `after_slot_id`) | WriteResult `{placement_id, slot_id, placed_elsewhere}` | `place` |
 | W12 | PATCH | `/placements/{placement_id}` | `{expected_rev` (**placement** rev)`, calibration?, period_estimate?, differentiation_note?}` | WriteResult `{placement_id}` | `update_placement` |
 | W12c | PATCH | `/placements/{placement_id}` | `{expected_rev` (**placement** rev)`, confirm_estimate: true}`, sent alone. Keeps a ladder-autofilled estimate as the builder's (O8/O9). 422 `invalid` if the source is not `'ladder'`, if the flag is not `true`, or if it is sent with other fields | WriteResult `{placement_id}` | `update_placement` → `seq_store.confirm_estimate` |
 | W13 | POST | `/placements/{placement_id}/co-place` | `{expected_rev, target_slot_id}` | WriteResult `{slot_id}` | `co_place` |
@@ -669,6 +673,7 @@ In step 3, `place`, `reattach` and `acknowledge` build their `NodeSnap` from
 | W15 | DELETE | `/placements/{placement_id}` | query `expected_rev`, `reason?` | WriteResult `{}` | `remove_placement` |
 | W16 | POST | `/placements/{placement_id}/reattach` | `{expected_rev, source_key}` | WriteResult `{placement_id}` | `reattach` |
 | W17 | POST | `/placements/{placement_id}/acknowledge` | `{expected_rev}` | WriteResult `{placement_id}` | `acknowledge` |
+| W18 | POST | `/placements/{placement_id}/move` | `{expected_rev, to_module_id, to_index}` | WriteResult `{slot_id}` | `move_placement` |
 | V1 | GET | `/views` | `grade?` | `{views}` | `list_views` |
 | V2 | POST | `/views` | `{grade, name, state}` | `View` | `create_view` |
 | V3 | PUT | `/views/{view_id}` | `{name?, state?}` | `View` | `update_view` |
@@ -1118,7 +1123,7 @@ Float sums are accumulated in the order of the input list.
 ViewState = {hidden_stems: [stem_id], hidden_cs: [cs_id], collapsed_stems: [stem_id] | null,
              stem_order: [stem_id], context: true, leaves: false, state_ext: true,
              unplaced_only: false, pairings: false, flagged: false,
-             node: source_key|null, compare: [source_key], sheet: false}
+             node: source_key|null, compare: [source_key], sheet: false, board: false}
 ```
 
 URL query keys (only non-defaults are written; lists are comma-joined, each
@@ -1140,10 +1145,11 @@ item `encodeURIComponent`'d):
 | `node` | `node` | |
 | `compare` | `compare` | Max 4. Extras beyond 4 are dropped on load. |
 | `sheet` | `sheet` | `sheet=1` |
+| `board` | `bd` | `bd=1` (board brief §4; ignored below 1024px) |
 
 Two rules:
 
-- `saved_view.state_json` = the ViewState **without** `node`, `compare` and `sheet`. Views save a lens, not a selection.
+- `saved_view.state_json` = the ViewState **without** `node`, `compare`, `sheet` and `board`. Views save a lens, not a selection or a layout.
 - Unknown stem ids and cs ids on load are ignored silently.
 
 ---
@@ -1445,7 +1451,7 @@ Chip actions, which are real `<button>`s:
 
 - Every control is a native `<button>`, `<input>` or `<select>`. Focus rings are `box-shadow: 0 0 0 3px var(--accent-soft)`, as in the audit.
 - Chevron buttons have `aria-label="Move slot up"` and similar. On a focused slot or module card, **Alt+↑ / Alt+↓** do the same as the chevrons. Focus stays on the moved item after re-render (`data-focus-key`).
-- Esc closes the topmost of the prompt panel, the drawer and the sheet.
+- Esc closes the topmost of the prompt panel, the drawer and the sheet, then leaves the board. During a drag, Esc cancels the drag first.
 - The notice bar is `aria-live="polite"`. The drawer heading receives focus on open, and focus returns to the chip on close.
 - Colour contrast is at least 4.5:1 for text. Dimmed context chips keep full-contrast text inside a reduced-opacity border and background: apply opacity to the background, not the text.
 - `prefers-reduced-motion`: no slide animations.
@@ -1549,7 +1555,7 @@ Common conventions:
 **`tests/test_seq_api_routes.py`** (FastAPI is not importable, so everything is static):
 
 1. `py_compile.compile("seq_api.py", doraise=True)`.
-2. `ast.parse`. Collect every function decorated `@router.<get|post|patch|put|delete>("<path>")`. The set of `(METHOD, path)` equals the §4 table exactly: 33 routes (R0–R8, W1–W17, V1–V4, P1–P3). Paths in the decorator include the prefix (`"/api/seq/slice"`, `"/seq/"`). The router is created with no prefix, so the static and API routes share it.
+2. `ast.parse`. Collect every function decorated `@router.<get|post|patch|put|delete>("<path>")`. The set of `(METHOD, path)` equals the §4 table exactly: 34 routes (R0–R8, W1–W18, V1–V4, P1–P3). Paths in the decorator include the prefix (`"/api/seq/slice"`, `"/seq/"`). The router is created with no prefix, so the static and API routes share it.
 3. Every R1–V4 route body is a single `return _run(seq_service.<fn>, CTX, …)`, where `<fn>` matches the §4 mapping and the function name is `r_<fn>`. `whoami` is `r_whoami`, and the static routes are `r_page_redirect`, `r_page` and `r_asset`.
 4. Every W* and V* route has a parameter `writer` (V: `owner`) whose default is `Depends(current_writer)`.
 5. The source contains no `sqlite3`, `execute(`, `seq_store`, `seq_read`, `app.mount` or `StaticFiles`.

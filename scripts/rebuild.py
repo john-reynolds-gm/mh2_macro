@@ -3,18 +3,24 @@ rebuild.py — build the database again from data/source, beside the live one.
 
 The build goes into a temporary file and is swapped into place only once
 every step has succeeded, so a parse failure partway through leaves the
-current database serving rather than a half-populated one. data/build is
-disposable by design: if anything looks wrong, delete it and run this.
-Nothing in data/source is ever modified.
+current database serving rather than a half-populated one. mh2.db is
+disposable by design: if anything looks wrong, delete it and run this. The
+rest of data/build is NOT -- mh2_seq.db and ladder_uploads/ are durable
+writer state (config.py). Nothing in data/source is ever modified.
+
+Ladders and stems.csv are read from data/build/_effective, assembled at the
+start of each run from the repo copies with writers' uploads laid over them
+(mh2/ladder_store.py, docs/brief_ladder_uploads.md). --no-uploads reads the
+repo copies directly, for local runs that should ignore the volume.
 
     python scripts/rebuild.py
     python scripts/rebuild.py --skip-reconcile
     python scripts/rebuild.py --skip-candidates
     python scripts/rebuild.py --skip-review-reconcile
+    python scripts/rebuild.py --no-uploads
 """
 
 import argparse
-import fcntl
 import getpass
 import os
 import sqlite3
@@ -25,9 +31,16 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    import fcntl            # Mac / Linux
+except ImportError:         # Windows (local pilot copies) -- see acquire_lock
+    fcntl = None
+    import msvcrt
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
+from mh2 import ladder_store  # noqa: E402
 from mh2.load_standards import find_standard_alias_collisions  # noqa: E402
 from mh2.normalize import resolve_standard_alias  # noqa: E402
 
@@ -292,9 +305,10 @@ def report_ladder_mismatches(con) -> None:
           f" (exact match)\n    -> wrote {out}")
 
 
-def run(label: str, args: list[str]) -> None:
+def run(label: str, args: list[str], env: dict[str, str] | None = None) -> None:
     print(f"\n=== {label}")
-    result = subprocess.run([sys.executable, *args], cwd=config.ROOT)
+    result = subprocess.run([sys.executable, *args], cwd=config.ROOT,
+                            env={**os.environ, **(env or {})})
     if result.returncode != 0:
         raise StepFailed(label)
 
@@ -307,14 +321,18 @@ def acquire_lock():
     than queueing, because the useful thing to tell someone who just pressed
     a button is that a rebuild is already running.
 
-    fcntl is POSIX-only, which covers a Mac laptop and a Linux App Service.
-    A Windows host would need msvcrt.locking; that abstraction is not built
-    until something actually needs it.
+    fcntl covers a Mac laptop and a Linux host. On Windows (a writer's local
+    pilot copy) msvcrt.locking takes the same non-blocking exclusive lock on
+    the file's first byte; Windows releases it when the handle closes or the
+    process exits, matching flock.
     """
     lock_path = config.BUILD / LOCK_NAME
     handle = open(lock_path, "w")
     try:
-        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if fcntl is not None:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        else:
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
     except OSError:
         handle.close()
         raise SystemExit(
@@ -362,7 +380,18 @@ def swap_into_place(build_db: Path, live_db: Path) -> None:
             f"{build_db.name} is journal_mode={mode} with sidecars "
             f"{[p.name for p in sidecars]}. Moving the .db alone would orphan "
             "them -- checkpoint and remove the sidecars before swapping.")
-    os.replace(build_db, live_db)
+    # POSIX: a reader holding the old file keeps its inode, so this cannot
+    # collide. Windows refuses to replace a file another process has open
+    # (the app opens mh2.db per request), so retry briefly past that window.
+    attempts = 20 if sys.platform == "win32" else 1
+    for attempt in range(attempts):
+        try:
+            os.replace(build_db, live_db)
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.5)
 
 
 def ladders_ingested(db_path: Path) -> int:
@@ -418,47 +447,63 @@ def build(args, build_db: Path) -> None:
     sqlite3.connect(config.SEQ_DB).executescript(config.SCHEMA_SEQ.read_text())
     print(f"    {config.SEQ_DB}")
 
+    if args.no_uploads:
+        ladders, stems_csv = config.LADDERS, config.STEMS_CSV
+        print("=== ladder inputs: repo copies only (--no-uploads)")
+    else:
+        print("=== assembling ladder inputs (repo ladders + writer uploads)")
+        ladders, stems_csv = ladder_store.assemble_effective_inputs(
+            config.EFFECTIVE_INPUTS)
+        print(f"    {ladders.parent}")
+
     db = str(build_db)
+    # Every step gets the effective paths through config.py's env overrides,
+    # which is what reaches readers that take no argument for them
+    # (load_standards._build_stem_lookup reads config.STEMS_CSV directly).
+    step_env = {"MH2_LADDERS_DIR": str(ladders), "MH2_STEMS_CSV": str(stems_csv)}
 
-    run("loading standards + stem workbook",
-        ["-m", "mh2.load_standards", "--db", db,
-         "--project", str(config.SOURCE)])
+    def step(label: str, step_args: list[str]) -> None:
+        run(label, step_args, step_env)
 
-    run("loading stems.csv (ladder <-> workbook stem mapping)",
-        ["-m", "mh2.load_stems", "--db", db,
-         "--csv", str(config.STEMS_CSV), "--ladders", str(config.LADDERS)])
+    step("loading standards + stem workbook",
+         ["-m", "mh2.load_standards", "--db", db,
+          "--project", str(config.SOURCE)])
 
-    run("ingesting ladders",
-        ["-m", "mh2.ingest_ladders", "--db", db,
-         "--glob", config.LADDER_GLOB])
+    step("loading stems.csv (ladder <-> workbook stem mapping)",
+         ["-m", "mh2.load_stems", "--db", db,
+          "--csv", str(stems_csv), "--ladders", str(ladders)])
 
-    run("parsing node standards cells",
-        ["-m", "mh2.parse_node_standards", "--db", db,
-         "--ladders", str(config.LADDERS)])
+    step("ingesting ladders",
+         ["-m", "mh2.ingest_ladders", "--db", db,
+          "--glob", str(ladders / "*.docx"), "--csv", str(stems_csv)])
 
-    run("loading grade ruling into node_grade",
-        ["-m", "mh2.load_grade_ruling", "--db", db,
-         "--worksheet", str(config.GRADE_WORKSHEET)])
+    step("parsing node standards cells",
+         ["-m", "mh2.parse_node_standards", "--db", db,
+          "--ladders", str(ladders)])
 
-    run("loading layer 1 (standard_lessons, crosswalk, tag status)",
-        ["-m", "mh2.load_layer1", "--db", db])
+    step("loading grade ruling into node_grade",
+         ["-m", "mh2.load_grade_ruling", "--db", db,
+          "--worksheet", str(config.GRADE_WORKSHEET)])
 
-    run("loading Path C predictions (step 8)",
-        ["-m", "mh2.load_predictions", "--db", db,
-         "--predictions", str(config.PREDICTIONS)])
+    step("loading layer 1 (standard_lessons, crosswalk, tag status)",
+         ["-m", "mh2.load_layer1", "--db", db])
 
-    run("loading reranks (step 7 browse list; cache-only, no API calls)",
-        ["-m", "mh2.load_reranks", "--db", db,
-         "--cache", str(config.RERANK_CACHE)])
+    step("loading Path C predictions (step 8)",
+         ["-m", "mh2.load_predictions", "--db", db,
+          "--predictions", str(config.PREDICTIONS)])
+
+    step("loading reranks (step 7 browse list; cache-only, no API calls)",
+         ["-m", "mh2.load_reranks", "--db", db,
+          "--cache", str(config.RERANK_CACHE)])
 
     if not args.skip_candidates:
-        run("generating candidates (step 6, Paths 0/A/B)",
-            ["-m", "mh2.candidates", "--db", db])
+        step("generating candidates (step 6, Paths 0/A/B)",
+             ["-m", "mh2.candidates", "--db", db])
 
     if not args.skip_reconcile:
-        run("reconciling workbook vs ladders",
-            ["-m", "mh2.reconcile", "--db", db,
-             "--out", str(config.REPORTS)])
+        step("reconciling workbook vs ladders",
+             ["-m", "mh2.reconcile", "--db", db,
+              "--out", str(config.REPORTS)])
 
     con = sqlite3.connect(build_db)
     print("\n=== row counts")
@@ -519,9 +564,9 @@ def build(args, build_db: Path) -> None:
         # with the others -- which is the obvious reading -- a later swap
         # failure would leave mh2_seq.db reconciled against a database that
         # never went live. Durable state only ever reflects what is serving.
-        run("reconciling review state vs rebuilt ladders",
-            ["-m", "mh2.reconcile_review", "--db", str(config.DB),
-             "--seq-db", str(config.SEQ_DB), "--out", str(config.REPORTS)])
+        step("reconciling review state vs rebuilt ladders",
+             ["-m", "mh2.reconcile_review", "--db", str(config.DB),
+              "--seq-db", str(config.SEQ_DB), "--out", str(config.REPORTS)])
 
     print(f"\nDone. Database: {config.DB}\nReports: {config.REPORTS}")
 
@@ -531,6 +576,9 @@ def main() -> None:
     ap.add_argument("--skip-reconcile", action="store_true")
     ap.add_argument("--skip-candidates", action="store_true")
     ap.add_argument("--skip-review-reconcile", action="store_true")
+    ap.add_argument("--no-uploads", action="store_true",
+                    help="read the repo ladders and stems.csv directly, ignoring"
+                         " writer uploads on the volume")
     args = ap.parse_args()
 
     config.ensure_dirs()

@@ -330,6 +330,10 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
   border-radius: var(--radius-sm); background: var(--panel); color: var(--accent);
   font-weight: 600; text-decoration: none; }
 #download-edits:hover { background: var(--accent-soft); }
+#ladder-files-link { padding: 5px 13px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--panel); color: var(--text);
+  font-weight: 600; text-decoration: none; }
+#ladder-files-link:hover { border-color: var(--border-strong); background: var(--chip-bg); }
 .override-marker { margin-left: 5px; font-size: 11px; color: var(--accent); }
 .reviewed-badge { margin-left: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
   background: var(--chip-bg); color: var(--muted); }
@@ -369,6 +373,8 @@ tr.detail td { background: #fafbfc; padding: 16px 14px 22px 32px; box-shadow: in
     <span id="api-status"></span>
     <a id="download-edits" href="/api/export/ladder-edits.xlsx" download
        title="Excel list of every standard to add to or remove from a ladder node">Download latest ladder edits</a>
+    <a id="ladder-files-link" href="/files"
+       title="Upload, replace, and download the ladder .docx files the app reads">Ladder Files</a>
   </div>
   <div class="tabs" id="tabs"></div>
 </header>

@@ -81,7 +81,7 @@ function uniq(a) { var seen = {}, out = []; a.forEach(function (x) { if (!has(se
 function defaultState(slice) {
   return { hidden_stems: [], hidden_cs: [], collapsed_stems: null, stem_order: [],
     context: true, leaves: false, state_ext: true, unplaced_only: false,
-    pairings: false, flagged: false, node: null, compare: [], sheet: false };
+    pairings: false, flagged: false, node: null, compare: [], sheet: false, board: false };
 }
 
 /** All stem ids and cs ids present in a slice (used to drop unknown ids). */
@@ -134,6 +134,7 @@ function encodeState(state, slice) {
   if (state.node) q.push("node=" + encodeURIComponent(state.node));
   list("compare", (state.compare || []).slice(0, COMPARE_MAX));
   if (state.sheet) q.push("sheet=1");
+  if (state.board) q.push("bd=1");
   return q.join("&");
 }
 
@@ -184,13 +185,15 @@ function decodeState(query, slice) {
   if (has(q, "node") && q.node !== "") s.node = safeDecode(q.node);
   if (has(q, "compare")) s.compare = uniq(decList(q.compare)).slice(0, COMPARE_MAX);
   if (has(q, "sheet")) s.sheet = q.sheet === "1";
+  if (has(q, "bd")) s.board = q.bd === "1";
   return s;
 }
 
-/** Saved views keep a lens, not a selection: ViewState minus node, compare, sheet. */
+/** Saved views keep a lens, not a selection: ViewState minus node, compare, sheet, and the
+ *  board/list layout (a filter set should not switch the layout under the writer). */
 function lensOf(state) {
   var o = clone(state);
-  delete o.node; delete o.compare; delete o.sheet;
+  delete o.node; delete o.compare; delete o.sheet; delete o.board;
   return o;
 }
 
@@ -210,7 +213,7 @@ function applyLens(state, lens, slice) {
 
 /** True when a lens differs from the defaults (used to light up "Reset view"). */
 function lensIsDefault(state, slice) {
-  return encodeState(Object.assign({}, state, { node: null, compare: [], sheet: false }), slice) === "";
+  return encodeState(Object.assign({}, state, { node: null, compare: [], sheet: false, board: false }), slice) === "";
 }
 
 /* ---- export: the ordered sequence as CSV (pure) ------------------------ */
@@ -490,6 +493,258 @@ function renumber(items) { items.forEach(function (it, i) { it.order_key = ORDER
 
 function byOrder(a, b) { return a.order_key - b.order_key; }
 
+/* ---- undo: inverse of a layout write (pure; no network, no DOM) --------- */
+
+/** Where things sit in a SequenceView: {modules: {id: index}, slots: {id: {module_id, index, label, n}},
+ *  placements: {id: slot_id}}.  Indexes are 0-based among the active siblings. */
+function layoutIndex(view) {
+  var out = { modules: {}, slots: {}, placements: {} };
+  ((view && view.modules) || []).forEach(function (m, mi) {
+    out.modules[m.module_id] = mi;
+    m.slots.forEach(function (sl, si) {
+      out.slots[sl.slot_id] = { module_id: m.module_id, index: si, label: sl.label === undefined ? null : sl.label, n: sl.placements.length };
+      sl.placements.forEach(function (p) { out.placements[p.placement_id] = sl.slot_id; });
+    });
+  });
+  return out;
+}
+
+/** The writes that restore the layout from before `op`, as a list of steps
+ *  {call, id, args...} (call names are API method names).  `viewBefore` is the SequenceView held
+ *  when the op was issued; `op` names the target ids (and, for ops that create a slot, nothing more):
+ *    {type:"place", placement_id | placement_ids}   remove it (them) again
+ *    {type:"moveSlot", slot_id}                     back to its old module and index
+ *    {type:"moveModule", module_id}                 back to its old index
+ *    {type:"movePlacement"|"coPlace"|"ungroup", placement_id}   back into / out to its old slot
+ *    {type:"merge", slot_id}                        the slot that was merged away
+ *  A step value {fromPrev: "slot_id"} is read from the previous step's WriteResult.result.
+ *  Returns null when the op is not undoable or the view no longer holds what it needs. */
+function inverseOf(op, viewBefore) {
+  var ix = layoutIndex(viewBefore);
+  var oldSlotOf = function (pid) { var sid = ix.placements[pid]; return sid === undefined ? null : ix.slots[sid] && Object.assign({ slot_id: sid }, ix.slots[sid]); };
+  var rebuild = function (pid, old) {
+    // old slot survives the op only if it held other placements
+    if (old.n > 1) return [{ call: "coPlace", id: pid, target_slot_id: old.slot_id }];
+    var steps = [{ call: "movePlacement", id: pid, to_module_id: old.module_id, to_index: old.index }];
+    if (old.label) steps.push({ call: "updateSlot", slot_id: { fromPrev: "slot_id" }, label: old.label });
+    return steps;
+  };
+  var old;
+  switch (op && op.type) {
+    case "place":
+      return (op.placement_ids || [op.placement_id]).map(function (pid) { return { call: "removePlacement", id: pid }; });
+    case "moveSlot":
+      old = ix.slots[op.slot_id];
+      return old ? [{ call: "moveSlot", id: op.slot_id, to_module_id: old.module_id, to_index: old.index }] : null;
+    case "moveModule":
+      return ix.modules[op.module_id] === undefined ? null : [{ call: "moveModule", id: op.module_id, to_index: ix.modules[op.module_id] }];
+    case "movePlacement":
+    case "coPlace":
+      old = oldSlotOf(op.placement_id);
+      return old ? rebuild(op.placement_id, old) : null;
+    case "ungroup":
+      old = oldSlotOf(op.placement_id);
+      return old ? [{ call: "coPlace", id: op.placement_id, target_slot_id: old.slot_id }] : null;
+    case "merge":
+      var src = ix.slots[op.slot_id];
+      if (!src) return null;
+      var ids = [];
+      viewBefore.modules.forEach(function (m) { m.slots.forEach(function (sl) { if (sl.slot_id === op.slot_id) sl.placements.forEach(function (p) { ids.push(p.placement_id); }); }); });
+      if (!ids.length) return null;
+      var steps = [{ call: "movePlacement", id: ids[0], to_module_id: src.module_id, to_index: src.index }];
+      ids.slice(1).forEach(function (pid) { steps.push({ call: "coPlace", id: pid, target_slot_id: { fromPrev: "slot_id" }, keepPrev: true }); });
+      if (src.label) steps.push({ call: "updateSlot", slot_id: { fromPrev: "slot_id" }, label: src.label, keepPrev: true });
+      return steps;
+    default:
+      return null;
+  }
+}
+
+/** Run inverse steps through `api` one write at a time, threading the sequence rev.
+ *  `view` is the current SequenceView.  Resolves to the final SequenceView; a step that fails rejects. */
+async function runUndoSteps(steps, api, view) {
+  var rev = view.sequence.rev, anchor = {}, out = view;
+  var pick = function (v) { return v !== null && typeof v === "object" && "fromPrev" in v ? anchor[v.fromPrev] : v; };
+  for (var i = 0; i < steps.length; i++) {
+    var st = steps[i], res;
+    if (st.call === "removePlacement") res = await api.removePlacement(st.id, rev, "undo");
+    else if (st.call === "moveSlot") res = await api.moveSlot(st.id, rev, { to_module_id: st.to_module_id, to_index: st.to_index });
+    else if (st.call === "moveModule") res = await api.moveModule(st.id, rev, { to_index: st.to_index });
+    else if (st.call === "movePlacement") res = await api.movePlacement(st.id, rev, st.to_module_id, st.to_index);
+    else if (st.call === "coPlace") res = await api.coPlace(st.id, rev, pick(st.target_slot_id));
+    else if (st.call === "updateSlot") res = await api.updateSlot(pick(st.slot_id), rev, st.label);
+    else throw new Error("unknown undo step " + st.call);
+    out = res.sequence; rev = out.sequence.rev;
+    if (res.result && res.result.slot_id !== undefined && !st.keepPrev) anchor.slot_id = res.result.slot_id;
+  }
+  return out;
+}
+
+/* ---- layout: rail width, board picker (pure) ------------------------------ */
+
+var RAIL_MIN = 300, SLICE_MIN = 360, RAIL_STEP = 20;
+var PICKER_MIN = 240, PICKER_DEF = 300, COLS_MIN = 320;   // COLS_MIN: one 280px module column plus padding
+
+/** Clamp a panel width (px): at least `min`, and never so wide that what sits beside it in `totalW`
+ *  drops under `reserve`.  When the area is too narrow for both, the minimum wins. */
+function clampPanelWidth(w, totalW, min, reserve) {
+  var max = Math.max(min, Math.round(totalW) - reserve);
+  w = Math.round(Number(w));
+  if (isNaN(w)) return null;
+  return Math.max(min, Math.min(max, w));
+}
+
+/** Rail width for a main area `mainW` px wide: at least 300; the slice keeps 360. */
+function clampRailWidth(w, mainW) { return clampPanelWidth(w, mainW, RAIL_MIN, SLICE_MIN); }
+
+/** Board node-picker width for a board `boardW` px wide: at least 240; one module column stays visible. */
+function clampPickerWidth(w, boardW) { return clampPanelWidth(w, boardW, PICKER_MIN, COLS_MIN); }
+
+/** The board's node picker: visible chips (after the toolbar filters) as one flat list, narrowed by a
+ *  search over node ID and text, one stem, and "unplaced only".  vis = visibleSlice(...). */
+function pickerNodes(vis, placedIndex, o) {
+  o = o || {};
+  var q = String(o.query || "").trim().toLowerCase(), out = [], seen = {}, placed = placedIndex || {};
+  ((vis && vis.super_stems) || []).forEach(function (ss) {
+    ss.stems.forEach(function (st) {
+      if (o.stemId && st.stem_id !== o.stemId) return;
+      st.concept_skills.forEach(function (c) {
+        c.nodes.forEach(function (n) {
+          if (has(seen, n.source_key)) return;
+          if (o.unplacedOnly && has(placed, n.source_key)) return;
+          if (q && String(n.node_id || "").toLowerCase().indexOf(q) < 0 && String(n.node_text || "").toLowerCase().indexOf(q) < 0) return;
+          seen[n.source_key] = 1;
+          out.push(Object.assign({}, n, { stem_name: st.stem_name, stem_id: st.stem_id }));
+        });
+      });
+    });
+  });
+  return out;
+}
+
+/* ---- drag-and-drop: where a drop lands and what it writes (pure) ------------ */
+
+/** Hit zone over a slot row: top 25 % inserts before, bottom 25 % after, the middle half is "onto"
+ *  (co-place or merge).  rowRect needs {top, height}. */
+function dropTarget(pointerY, rowRect) {
+  var h = rowRect.height || 1, rel = (pointerY - rowRect.top) / h;
+  return rel < 0.25 ? "before" : (rel > 0.75 ? "after" : "onto");
+}
+
+/** 0-based index among `ids` for a drop before/after `targetId`, counted WITHOUT `excludeId` (the
+ *  dragged item), which is how the server reads to_index.  Dropping beside the dragged item itself
+ *  gives its current index, so the move is a no-op.  null when targetId is not in ids. */
+function toIndex(ids, targetId, zone, excludeId) {
+  if (excludeId !== null && excludeId !== undefined && targetId === excludeId) return ids.indexOf(excludeId);
+  var list = ids.filter(function (x) { return x !== excludeId; }), i = list.indexOf(targetId);
+  if (i < 0) return null;
+  return zone === "after" ? i + 1 : i;
+}
+
+/** What a drop does (board brief section 5.2).
+ *  drag:   {kind:"node", key} | {kind:"slot", slotId} | {kind:"placement", placementId} | {kind:"module", moduleId}
+ *  target: {kind:"slot", slotId, zone:"before"|"onto"|"after"} | {kind:"module-end", moduleId}
+ *          | {kind:"module", moduleId, zone:"before"|"after"}
+ *  Returns null when the drop is not allowed there, else a plan:
+ *    {call, ...write args, op (for inverseOf), label, noop}   or, for an unplaced node,
+ *    {place:true, key, module_id, slot_id?, to_index?, label}.
+ *  A node chip that is already placed is dragged as its placement. */
+function planDrop(drag, target, view) {
+  if (!drag || !target || !view || !view.modules) return null;
+  var ix = layoutIndex(view), mods = view.modules;
+  var modOf = function (id) { return mods.filter(function (m) { return m.module_id === id; })[0] || null; };
+  var slotIds = function (mid) { var m = modOf(mid); return m ? m.slots.map(function (sl) { return sl.slot_id; }) : []; };
+  var mname = function (mid) { var m = modOf(mid); return m ? "M" + m.position : "the module"; };
+  if (drag.kind === "node" && view.placed_index && view.placed_index[drag.key]) {
+    drag = { kind: "placement", placementId: view.placed_index[drag.key].placement_id };
+  }
+  var tslot = target.kind === "slot" ? ix.slots[target.slotId] : null;
+  if (target.kind === "slot" && !tslot) return null;
+  var tmod = target.kind === "slot" ? tslot.module_id : target.moduleId;
+  if (!modOf(tmod)) return null;
+  var spos = function () { return tslot.index + 1; };
+  var idx;
+
+  if (drag.kind === "module") {
+    if (target.kind !== "module" || ix.modules[drag.moduleId] === undefined) return null;
+    idx = toIndex(mods.map(function (m) { return m.module_id; }), target.moduleId, target.zone, drag.moduleId);
+    return { call: "moveModule", id: drag.moduleId, to_index: idx, op: { type: "moveModule", module_id: drag.moduleId },
+      label: "Move module to position " + (idx + 1), noop: idx === ix.modules[drag.moduleId] };
+  }
+  if (target.kind === "module") return null;
+
+  if (drag.kind === "slot") {
+    var from = ix.slots[drag.slotId];
+    if (!from) return null;
+    var sop = { type: "moveSlot", slot_id: drag.slotId };
+    if (target.kind === "slot" && target.zone === "onto") {
+      if (target.slotId === drag.slotId) return null;
+      return { call: "mergeSlot", id: drag.slotId, into_slot_id: target.slotId, op: { type: "merge", slot_id: drag.slotId },
+        label: "Merge into slot " + spos() + " in " + mname(tmod), noop: false };
+    }
+    idx = target.kind === "slot" ? toIndex(slotIds(tmod), target.slotId, target.zone, drag.slotId)
+      : slotIds(tmod).filter(function (x) { return x !== drag.slotId; }).length;
+    return { call: "moveSlot", id: drag.slotId, to_module_id: tmod, to_index: idx, op: sop,
+      label: target.kind === "slot" ? "Insert as slot " + (idx + 1) + " in " + mname(tmod) : "Move to the end of " + mname(tmod),
+      noop: tmod === from.module_id && idx === from.index };
+  }
+
+  if (drag.kind === "placement") {
+    var own = ix.placements[drag.placementId];
+    if (own === undefined) return null;
+    var src = ix.slots[own], alone = src.n === 1, excl = alone ? own : null;
+    if (target.kind === "slot" && target.zone === "onto") {
+      if (target.slotId === own) return null;
+      return { call: "coPlace", id: drag.placementId, target_slot_id: target.slotId, op: { type: "coPlace", placement_id: drag.placementId },
+        label: "Co-place with slot " + spos() + " in " + mname(tmod), noop: false };
+    }
+    idx = target.kind === "slot" ? toIndex(slotIds(tmod), target.slotId, target.zone, excl)
+      : slotIds(tmod).filter(function (x) { return x !== excl; }).length;
+    return { call: "movePlacement", id: drag.placementId, to_module_id: tmod, to_index: idx,
+      op: { type: "movePlacement", placement_id: drag.placementId },
+      label: target.kind === "slot" ? "Insert as slot " + (idx + 1) + " in " + mname(tmod) : "Move to the end of " + mname(tmod),
+      noop: alone && tmod === src.module_id && idx === src.index };
+  }
+
+  if (drag.kind === "node") {
+    if (target.kind === "slot" && target.zone === "onto") {
+      return { place: true, key: drag.key, module_id: tmod, slot_id: target.slotId, label: "Co-place with slot " + spos() + " in " + mname(tmod), noop: false };
+    }
+    idx = target.kind === "slot" ? toIndex(slotIds(tmod), target.slotId, target.zone, null) : slotIds(tmod).length;
+    return { place: true, key: drag.key, module_id: tmod, to_index: idx,
+      label: target.kind === "slot" ? "Insert as slot " + (idx + 1) + " in " + mname(tmod) : "Add at the end of " + mname(tmod), noop: false };
+  }
+  return null;
+}
+
+/** "Moved NS-FRAC-0012 to Module 2, slot 3." for the aria-live region, read from the view after the write. */
+function dropAnnouncement(plan, view, index) {
+  var mods = (view && view.modules) || [], name = function (k) { return index && index[k] ? index[k].node_id : k; };
+  var where = function (pid) {
+    var out = null;
+    mods.forEach(function (m) { m.slots.forEach(function (sl) { sl.placements.forEach(function (p) { if (p.placement_id === pid) out = { m: m, s: sl, p: p }; }); }); });
+    return out;
+  };
+  if (plan.place) {
+    var pi = view && view.placed_index && view.placed_index[plan.key];
+    return pi ? "Placed " + name(plan.key) + " in Module " + pi.module_position + ", slot " + pi.slot_position + "." : "Placed " + name(plan.key) + ".";
+  }
+  if (plan.call === "moveModule") {
+    var mm = mods.filter(function (m) { return m.module_id === plan.id; })[0];
+    return mm ? "Moved module " + mm.title + " to position " + mm.position + "." : "Moved the module.";
+  }
+  if (plan.call === "moveSlot" || plan.call === "mergeSlot") {
+    var hit = null, tgt = plan.call === "moveSlot" ? plan.id : plan.into_slot_id;
+    mods.forEach(function (m) { m.slots.forEach(function (sl) { if (sl.slot_id === tgt) hit = { m: m, s: sl }; }); });
+    if (!hit) return "Moved the slot.";
+    var first = hit.s.placements[0], nid = first ? (first.node_id || first.node_id_seen) : "";
+    return (plan.call === "moveSlot" ? "Moved slot " + nid + " to Module " : "Merged into Module ") + hit.m.position + ", slot " + hit.s.position + ".";
+  }
+  var w = where(plan.id);
+  if (!w) return "Moved.";
+  return (plan.call === "coPlace" ? "Co-placed " : "Moved ") + (w.p.node_id || w.p.node_id_seen) + (plan.call === "coPlace" ? " with" : " to") + " Module " + w.m.position + ", slot " + w.s.position + ".";
+}
+
 /* ---- display helpers shared by renderers ---------------------------- */
 
 function nowIso() { return new Date().toISOString(); }
@@ -614,7 +869,11 @@ class HttpApi {
   updateSequence(id, rev, fields) { return this.req("PATCH", "sequences/" + id, null, Object.assign({ expected_rev: rev }, fields)); }
   createModule(seqId, rev, title) { return this.req("POST", "sequences/" + seqId + "/modules", null, { expected_rev: rev, title: title }); }
   updateModule(id, rev, fields) { return this.req("PATCH", "modules/" + id, null, Object.assign({ expected_rev: rev }, fields)); }
-  moveModule(id, rev, dir) { return this.req("POST", "modules/" + id + "/move", null, { expected_rev: rev, direction: dir }); }
+  /** dirOrOpts: "up" | "down", or { to_index } for a positional move. */
+  moveModule(id, rev, dirOrOpts) {
+    var o = typeof dirOrOpts === "string" ? { direction: dirOrOpts } : dirOrOpts;
+    return this.req("POST", "modules/" + id + "/move", null, Object.assign({ expected_rev: rev }, o));
+  }
   removeModule(id, rev) { return this.req("DELETE", "modules/" + id, { expected_rev: rev }); }
   updateSlot(id, rev, label) { return this.req("PATCH", "slots/" + id, null, { expected_rev: rev, label: label }); }
   moveSlot(id, rev, opts) { return this.req("POST", "slots/" + id + "/move", null, Object.assign({ expected_rev: rev }, opts)); }
@@ -629,12 +888,14 @@ class HttpApi {
       confirm_off_grade: !!opts.confirm_off_grade };
     if (opts.slot_id) body.slot_id = opts.slot_id;
     if (opts.after_slot_id) body.after_slot_id = opts.after_slot_id;
+    if (opts.to_index !== undefined && opts.to_index !== null) body.to_index = opts.to_index;
     if (opts.differentiation_note) body.differentiation_note = opts.differentiation_note;
     return this.req("POST", "placements", null, body);
   }
   updatePlacement(id, prev, changes) { return this.req("PATCH", "placements/" + id, null, Object.assign({ expected_rev: prev }, changes)); }
   confirmEstimate(id, prev) { return this.updatePlacement(id, prev, { confirm_estimate: true }); }
   coPlace(id, rev, slotId) { return this.req("POST", "placements/" + id + "/co-place", null, { expected_rev: rev, target_slot_id: slotId }); }
+  movePlacement(id, rev, toModuleId, toIndex) { return this.req("POST", "placements/" + id + "/move", null, { expected_rev: rev, to_module_id: toModuleId, to_index: toIndex }); }
   ungroup(id, rev) { return this.req("POST", "placements/" + id + "/ungroup", null, { expected_rev: rev }); }
   removePlacement(id, rev, reason) { return this.req("DELETE", "placements/" + id, { expected_rev: rev, reason: reason || null }); }
   reattach(id, rev, key) { return this.req("POST", "placements/" + id + "/reattach", null, { expected_rev: rev, source_key: key }); }
@@ -773,6 +1034,17 @@ class DemoApi {
   }
 
   /* -- container ordering helpers -- */
+  /** Validate a positional index against `others` (the siblings without the moved item). */
+  _checkIndex(toIndex, others) {
+    if (typeof toIndex !== "number" || toIndex % 1 !== 0 || toIndex < 0 || toIndex > others.length)
+      throw this._invalid("to_index must be between 0 and " + others.length);
+  }
+  /** Put `moved` at toIndex among `others` (already in order) and renumber the lot, which
+   *  gives the same observable order as the server's key arithmetic. */
+  _setAt(others, moved, toIndex, field) {
+    var list = others.slice(); list.splice(toIndex, 0, moved);
+    list.forEach(function (it, i) { it[field] = ORDER_STEP * (i + 1); });
+  }
   /** Key for a new slot placed between lo and hi inside a module; renumbers the module if it must. */
   _slotKeyBetween(moduleId, loKey, hiKey) {
     var k = orderBetween(loKey, hiKey);
@@ -910,8 +1182,18 @@ class DemoApi {
     if (has(fields, "note")) m.note = fields.note;
     return this._commit([{ action: "module_update", module_id: id }], {});
   }
-  async moveModule(id, rev, dir) {
+  async moveModule(id, rev, dirOrOpts) {
     var m = this._module(id); this._checkRev(rev);
+    var o = typeof dirOrOpts === "string" ? { direction: dirOrOpts } : (dirOrOpts || {}), dir = o.direction;
+    var hasIdx = o.to_index !== undefined && o.to_index !== null;
+    if ((dir === undefined || dir === null) === !hasIdx) throw this._invalid("Give exactly one of direction or to_index");
+    if (hasIdx) {
+      var mods0 = this._activeModules(), others = mods0.filter(function (x) { return x !== m; });
+      this._checkIndex(o.to_index, others);
+      if (mods0.indexOf(m) === o.to_index) return { sequence: this._view(), result: {} };   // no-op: no rev bump
+      this._setAt(others, m, o.to_index, "order_key");
+      return this._commit([{ action: "module_move", module_id: id }], {});
+    }
     if (dir !== "up" && dir !== "down") throw this._invalid("direction must be up or down");
     var mods = this._activeModules(), i = mods.indexOf(m), j = dir === "up" ? i - 1 : i + 1;
     if (j < 0 || j >= mods.length) throw this._err(422, "at_edge", "Already at the " + (dir === "up" ? "top" : "bottom"));
@@ -936,6 +1218,18 @@ class DemoApi {
     var s = this._slot(id); this._checkRev(rev);
     var hasDir = opts && opts.direction, hasTo = opts && opts.to_module_id !== undefined && opts.to_module_id !== null;
     if ((hasDir && hasTo) || (!hasDir && !hasTo)) throw this._invalid("Give exactly one of direction or to_module_id");
+    var hasIdx = opts && opts.to_index !== undefined && opts.to_index !== null;
+    if (hasIdx && !hasTo) throw this._invalid("to_index goes with to_module_id, not direction");
+    if (hasTo && hasIdx) {
+      var tm = this._module(opts.to_module_id);
+      var others = this._slotsOf(tm.module_id).filter(function (x) { return x !== s; });
+      this._checkIndex(opts.to_index, others);
+      if (tm.module_id === s.module_id && this._slotsOf(tm.module_id).indexOf(s) === opts.to_index)
+        return { sequence: this._view(), result: {} };   // no-op: no rev bump
+      s.module_id = tm.module_id;
+      this._setAt(others, s, opts.to_index, "order_key");
+      return this._commit([{ action: "slot_move", slot_id: id, module_id: tm.module_id }], {});
+    }
     if (hasTo) {
       var target = this._module(opts.to_module_id);
       s.module_id = target.module_id;
@@ -966,11 +1260,13 @@ class DemoApi {
   async mergeSlot(id, rev, intoId) {
     var s = this._slot(id), into = this._slot(intoId); this._checkRev(rev);
     if (s === into) throw this._invalid("Cannot merge a slot into itself");
+    var srcIndex = this._slotsOf(s.module_id).indexOf(s);
     var target = this._placementsOf(into.slot_id), moving = this._placementsOf(s.slot_id);
     var next = orderAppend(target.map(function (p) { return p.order_in_slot; }));
     moving.forEach(function (p, i) { p.slot_id = into.slot_id; p.order_in_slot = next + i * ORDER_STEP; p.rev += 1; });
     s.removed = true;
-    return this._commit([{ action: "slot_merge", slot_id: intoId, module_id: into.module_id }], { slot_id: intoId });
+    return this._commit([{ action: "slot_merge", slot_id: intoId, module_id: into.module_id,
+      before: { slot_id: id, module_id: s.module_id, slot_label: s.label, to_index: srcIndex } }], { slot_id: intoId });
   }
 
   /* --------------------------------------------------------- placements */
@@ -1039,6 +1335,9 @@ class DemoApi {
     this._seqOf(seqId); var mod = this._module(moduleId); this._snap(key);
     var slot = opts.slot_id ? this._slot(opts.slot_id) : null;
     var after = opts.after_slot_id ? this._slot(opts.after_slot_id) : null;
+    var hasIdx = opts.to_index !== undefined && opts.to_index !== null;
+    if (hasIdx && (slot || after)) throw this._invalid("to_index cannot be combined with slot_id / after_slot_id");
+    if (hasIdx) this._checkIndex(opts.to_index, this._slotsOf(moduleId));
     this._checkRev(rev);
     var ex = this._activeKeyPlacement(key, null);
     if (ex) throw this._err(409, "already_placed", "That node is already placed in this sequence", { placement_id: ex.placement_id });
@@ -1049,15 +1348,23 @@ class DemoApi {
       slotId = slot.slot_id;
     } else {
       var slots = this._slotsOf(moduleId), ok;
-      if (after && after.module_id === moduleId) {
+      if (hasIdx) {
+        slotId = this._nextId("slot");
+        var ns = { slot_id: slotId, module_id: moduleId, label: null, order_key: 0, removed: false };
+        this.st.slots.push(ns);
+        this._setAt(slots, ns, opts.to_index, "order_key");
+        ok = ns.order_key;
+      } else if (after && after.module_id === moduleId) {
         var ai = slots.indexOf(after), nxt = slots[ai + 1] ? slots[ai + 1].order_key : null;
         ok = orderBetween(after.order_key, nxt);
         if (ok === null) { renumber(slots); this._log("renumber", { module_id: moduleId }); ok = orderBetween(after.order_key, nxt === null ? null : slots[ai + 1].order_key); }
       } else {
         ok = orderAppend(slots.map(function (x) { return x.order_key; }));
       }
-      slotId = this._nextId("slot");
-      this.st.slots.push({ slot_id: slotId, module_id: moduleId, label: null, order_key: ok, removed: false });
+      if (!hasIdx) {
+        slotId = this._nextId("slot");
+        this.st.slots.push({ slot_id: slotId, module_id: moduleId, label: null, order_key: ok, removed: false });
+      }
     }
     var inSlot = this._placementsOf(slotId);
     var p = this._newPlacement(key, slotId, opts.differentiation_note, orderAppend(inSlot.map(function (x) { return x.order_in_slot; })));
@@ -1125,12 +1432,33 @@ class DemoApi {
   async coPlace(id, rev, targetSlotId) {
     var p = this._placement(id), target = this._slot(targetSlotId); this._checkRev(rev);
     if (p.slot_id === targetSlotId) throw this._invalid("Already in that slot");
-    var old = p.slot_id;
+    var old = p.slot_id, oldSlot = this._slot(old), oldIdx = this._slotsOf(oldSlot.module_id).indexOf(oldSlot);
     p.slot_id = targetSlotId;
     p.order_in_slot = orderAppend(this._placementsOf(targetSlotId).filter(function (x) { return x !== p; }).map(function (x) { return x.order_in_slot; }));
     p.rev += 1;
     this._dropIfEmpty(old);
-    return this._commit([{ action: "co_place", placement_id: id, slot_id: targetSlotId, module_id: target.module_id }], { slot_id: targetSlotId });
+    var dropped = oldSlot.removed;
+    return this._commit([{ action: "co_place", placement_id: id, slot_id: targetSlotId, module_id: target.module_id,
+      before: dropped ? { slot_id: old, module_id: oldSlot.module_id, slot_label: oldSlot.label, to_index: oldIdx } : { slot_id: old } }],
+      { slot_id: targetSlotId });
+  }
+
+  async movePlacement(id, rev, toModuleId, toIndex) {
+    var p = this._placement(id), tm = this._module(toModuleId); this._checkRev(rev);
+    var src = this._slot(p.slot_id), alone = this._placementsOf(src.slot_id).length === 1;
+    var srcIdx = this._slotsOf(src.module_id).indexOf(src);
+    var others = this._slotsOf(toModuleId).filter(function (x) { return !(alone && x === src); });
+    this._checkIndex(toIndex, others);
+    if (alone && src.module_id === toModuleId && srcIdx === toIndex) return { sequence: this._view(), result: { slot_id: src.slot_id } };
+    var slotId = this._nextId("slot"), ns = { slot_id: slotId, module_id: toModuleId, label: null, order_key: 0, removed: false };
+    this.st.slots.push(ns);
+    this._setAt(others, ns, toIndex, "order_key");
+    p.slot_id = slotId; p.order_in_slot = ORDER_STEP; p.rev += 1;
+    this._dropIfEmpty(src.slot_id);
+    var dropped = src.removed;
+    return this._commit([{ action: "move", placement_id: id, slot_id: slotId, module_id: toModuleId,
+      before: Object.assign({ slot_id: src.slot_id, module_id: src.module_id, slot_label: src.label }, dropped ? { to_index: srcIdx } : {}),
+      after: { slot_id: slotId, module_id: toModuleId, to_index: toIndex, source_slot_removed: dropped } }], { slot_id: slotId });
   }
 
   async ungroup(id, rev) {
@@ -1313,10 +1641,19 @@ function renderHeader(state, M) {
       button("Reset demo", { action: "reset-demo" }, { cls: "linklike", title: "Discard demo edits and start again" });
   }
   var ss = saveStatusText(M.ui.save, null, M.demo.on ? (M.demo.persisted ? true : "session") : false);
-  var status = '<span class="savestat ' + ss.kind + '" aria-live="polite">' + esc(ss.text) + "</span>";
+  var status = '<span class="savestat ' + ss.kind + '" aria-live="polite">' + esc(ss.text) + "</span>" + renderUndoButton(M);
   return '<div class="hdr-row"><h1>MH2 Grade Sequencing</h1>' +
     '<label class="grade-pick" title="' + esc(GRADE_TIP) + '"><span class="lbl">Grade</span><select' + da({ action: "pick-grade" }) + ' aria-label="Grade" title="' + esc(GRADE_TIP) + '">' + opts + "</select></label>" +
     renderTargetPicker(M) + status + stamp + '<span class="grow"></span>' + demo + who + "</div>";
+}
+
+/** "\u21b6 Undo" beside the save status; the tooltip names what it would undo (board brief 6.2). */
+function renderUndoButton(M) {
+  var st = M.ui.undo || [], top = st.length ? st[st.length - 1] : null;
+  if (!seqOf(M)) return "";
+  return button("\u21b6 Undo", { action: "undo" }, { cls: "tbtn sm undo-btn", disabled: !top || !!M.ui.undoBusy,
+    title: top ? "Undo: " + top.label + " (Ctrl+Z / \u2318Z)" : "Nothing to undo yet. Moves, places, co-places, merges and ungroups can be undone.",
+    aria: top ? "Undo: " + top.label : "Undo (nothing to undo)" });
 }
 
 /** "Adding to: [M2 \u00b7 Fractions intro]": always visible; bound to ui.targetModuleId like the rail radios. */
@@ -1436,7 +1773,7 @@ function renderChip(n, state, M) {
   act += button(inCmp ? "\u2713 compare" : "\u2295 compare", { action: "toggle-compare", id: n.source_key },
     { cls: "cbtn", pressed: inCmp, disabled: full, aria: (inCmp ? "Remove " : "Add ") + n.node_id + (inCmp ? " from" : " to") + " compare", title: full ? "Compare holds at most 4" : "Compare up to 4 nodes" });
   return '<li class="chip-li"><div class="' + cls.join(" ") + '" data-node="' + esc(n.source_key) + '">' +
-    '<button type="button" class="chip-body"' + da({ action: "open-node", id: n.source_key }) + fk("chip:" + n.source_key) + ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '">' +
+    '<button type="button" class="chip-body"' + da({ action: "open-node", id: n.source_key, drag: "node", key: n.source_key }) + fk("chip:" + n.source_key) + ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '">' +
     '<span class="c-id">' + esc(n.node_id) + "</span>" +
     '<span class="c-text" title="' + esc(n.node_text) + '">' + esc(n.node_text) + "</span>" +
     '<span class="c-pills">' + gradePills(n.grades, M.grade) + "</span>" +
@@ -1647,12 +1984,23 @@ function renderPlacement(p, M, ctx) {
       button("Save note", { action: "note-save", id: p.placement_id }, { cls: "tbtn primary sm" }) + button("Cancel", { action: "note-cancel" }, { cls: "tbtn sm" }) + "</div>"
     : button(p.differentiation_note ? "Note: " + esc(firstLine(p.differentiation_note)) : "Add note", { action: "note-edit", id: p.placement_id }, { cls: "notebtn", focus: "noteb:" + p.placement_id, title: p.differentiation_note || "Add a differentiation note", aria: p.differentiation_note ? "Edit note" : "Add a note" });
   return '<div class="pl' + (p.status && p.status !== "ok" ? " pl-warn" : "") + '" data-pl="' + esc(p.placement_id) + '"' + fk("pl:" + p.placement_id) + ' tabindex="-1">' +
-    '<div class="pl-top"><span class="pl-id">' + esc(p.node_id || p.node_id_seen) + " \u00b7 " + esc(p.stem_name) + "</span>" + statusChip + badges + elsewhere + "</div>" +
+    '<div class="pl-top">' + (ctx.multi ? placementGrip(p) : "") + '<span class="pl-id">' + esc(p.node_id || p.node_id_seen) + " \u00b7 " + esc(p.stem_name) + "</span>" + statusChip + badges + elsewhere + "</div>" +
     '<div class="pl-text">' + esc(p.node_text) + "</div>" + renderCalibration(p) + renderPeriods(p) + '<div class="pl-note">' + note + "</div>" +
     '<div class="pl-tools">' + (ctx.multi ? button("Ungroup", { action: "ungroup", id: p.placement_id }, { cls: "tbtn sm", title: "Give this node a slot of its own" }) : "") +
     coPlaceSelect(p, M) +
-    button(confirming ? "Confirm remove" : "Remove", { action: "remove-placement", id: p.placement_id }, { cls: "tbtn sm danger", aria: "Remove " + (p.node_id || p.node_id_seen) + " from the sequence", title: confirming ? "Click again to remove. History keeps a record." : "Remove from the sequence" }) +
+    button(confirming ? "Confirm remove" : "Remove", { action: "remove-placement", id: p.placement_id }, { cls: "tbtn sm danger", aria: confirming ? "Confirm removing " + (p.node_id || p.node_id_seen) + ". This can\u2019t be undone." : "Remove " + (p.node_id || p.node_id_seen) + " from the sequence", title: confirming ? "Click again to remove. This can\u2019t be undone; History keeps a record." : "Remove from the sequence" }) +
+    (confirming ? '<span class="warn-inline">This can\u2019t be undone.</span>' : "") +
     (p.status === "orphaned" ? "" : button("Open in drawer", { action: "open-node", id: p.source_key }, { cls: "tbtn sm" })) + "</div></div>";
+}
+
+/** Drag handles (board brief 5.3): labelled, never the only focusable thing in a row; every drag has a
+ *  button or select that does the same. */
+function slotGrip(s) {
+  return '<span class="grip grip-slot"' + da({ drag: "slot", id: s.slot_id }) + ' role="img" aria-label="Drag handle: move slot ' + esc(s.position) + '" title="Drag to move this slot">\u283f</span>';
+}
+function placementGrip(p) {
+  var nid = p.node_id || p.node_id_seen;
+  return '<span class="grip grip-pl"' + da({ drag: "placement", id: p.placement_id }) + ' role="img" aria-label="Drag handle: move ' + esc(nid) + ' on its own" title="Drag to move this node out of the co-placed slot">\u22ee</span>';
 }
 
 /** Is this slot shown as the full card?  Per-slot toggle, else the rail-wide density; an open edit or a
@@ -1681,15 +2029,16 @@ function renderCompactSlot(s, M, flat) {
     var main = '<div class="plrow-main" role="button" tabindex="0" aria-expanded="false" data-row="1"' + da({ action: "row-toggle", id: s.slot_id }) + fk("pl:" + p.placement_id) +
       ' aria-label="' + esc(label) + '" title="Show the full card">' +
       '<span class="pr-slot">' + (i === 0 ? esc(s.position) : "\u21b3") + "</span>" +
-      '<span class="pr-body"><span class="pr-l1"><b>' + esc(nid) + "</b> \u00b7 " + esc(p.stem_name) + '</span><span class="pr-l2">' + esc(truncateText(p.node_text, 60)) + "</span></span>" +
+      '<span class="pr-body"><span class="pr-l1"><b>' + esc(nid) + '</b><span class="pr-stem"> \u00b7 ' + esc(p.stem_name) + "</span></span>" + '<span class="pr-l2">' + esc(truncateText(p.node_text, 60)) + "</span></span>" +
       '<span class="pr-meta"><span class="pr-cal' + (cal ? " seg-" + p.calibration : "") + '" title="' + esc(cal ? cal + " (" + CAL_TEACHER[p.calibration] + ")" : "Calibration not set") + '">' + (cal ? cal.charAt(0) : "\u2013") + "</span>" +
       '<span class="pr-per" title="' + esc(per === null ? "Periods not set" : per + " periods") + '">' + (per === null ? "\u2013" : esc(per)) + "p</span>" +
       '<span class="pr-dots">' + flags.map(function (f) { return '<i class="dot tier-' + esc(f.tier) + '" title="' + esc(f.label) + '"></i>'; }).join("") + "</span></span></div>";
     var chev = i === 0
-      ? '<span class="pr-chev">' + button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. Moves across module boundaries at the ends", disabled: idx === 0, focus: "slot:" + s.slot_id + ":up" }) +
+      ? '<span class="pr-chev">' + (multi ? slotGrip(s) : "") + button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. Moves across module boundaries at the ends", disabled: idx === 0, focus: "slot:" + s.slot_id + ":up" }) +
         button("\u25bc", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. Moves across module boundaries at the ends", disabled: idx === flat.length - 1, focus: "slot:" + s.slot_id + ":down" }) + "</span>"
       : "";
-    return '<div class="plrow' + (p.status && p.status !== "ok" ? " pl-warn" : "") + '" data-pl="' + esc(p.placement_id) + '">' + main + chev + "</div>";
+    var grip = multi ? placementGrip(p) : (i === 0 ? slotGrip(s) : "");
+    return '<div class="plrow' + (p.status && p.status !== "ok" ? " pl-warn" : "") + '" data-pl="' + esc(p.placement_id) + '">' + grip + main + chev + "</div>";
   }).join("");
   return '<div class="slot compact' + (multi ? " multi" : "") + '" role="group" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="-1" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' + rows + "</div>";
 }
@@ -1707,7 +2056,7 @@ function renderSlot(s, mod, M, flat) {
   var moveTo = '<select class="mini"' + da({ action: "slot-move-to", id: s.slot_id }) + ' aria-label="Move slot to module"><option value="">Move to module\u2026</option>' +
     others.map(function (m) { return '<option value="' + esc(m.module_id) + '">M' + esc(m.position) + " " + esc(m.title) + "</option>"; }).join("") + "</select>";
   return '<div class="slot' + (multi ? " multi" : "") + '" role="group" data-kind="slot" data-id="' + esc(s.slot_id) + '"' + fk("slot:" + s.slot_id) + ' tabindex="0" aria-label="Slot ' + esc(s.position) + (s.label ? ": " + esc(s.label) : "") + '. Alt plus arrow up or down moves it.">' +
-    '<div class="slot-h"><span class="slot-pos">Slot ' + esc(s.position) + (multi ? " \u00b7 co-placed" : "") + "</span>" + label + '<span class="grow"></span>' +
+    '<div class="slot-h">' + slotGrip(s) + '<span class="slot-pos">Slot ' + esc(s.position) + (multi ? " \u00b7 co-placed" : "") + "</span>" + label + '<span class="grow"></span>' +
     button("Collapse", { action: "row-toggle", id: s.slot_id }, { cls: "tbtn sm", aria: "Collapse slot " + s.position + " to a compact row", title: "Show this slot as a compact row", focus: "slotc:" + s.slot_id }) +
     button("\u25b2", { action: "slot-move", id: s.slot_id, val: "up" }, { cls: "ibtn", aria: "Move slot up", title: "Move slot up. " + tip, disabled: firstOfAll, focus: "slot:" + s.slot_id + ":up" }) +
     button("\u25bc", { action: "slot-move", id: s.slot_id, val: "down" }, { cls: "ibtn", aria: "Move slot down", title: "Move slot down. " + tip, disabled: lastOfAll, focus: "slot:" + s.slot_id + ":down" }) +
@@ -1715,20 +2064,48 @@ function renderSlot(s, mod, M, flat) {
     s.placements.map(function (p) { return renderPlacement(p, M, { multi: multi }); }).join("") + "</div>";
 }
 
-function renderModule(mod, M, flat, isFirst, isLast, target) {
-  var ed = M.ui.editing && M.ui.editing.kind === "module" && M.ui.editing.id === mod.module_id;
+/** One module: a card in the list rail, or (ctx.board) a 280px column on the board.  Both share the
+ *  slot rows (renderSlot / renderCompactSlot); only the header and the container differ.
+ *  ctx: {board, prompt} where prompt is HTML shown above this module's slots. */
+function renderModule(mod, M, flat, isFirst, isLast, target, ctx) {
+  ctx = ctx || {};
+  var ed = M.ui.editing && M.ui.editing.kind === "module" && M.ui.editing.id === mod.module_id, b = !!ctx.board;
   var title = ed
     ? '<input type="text" class="mod-title-in" maxlength="120" value="' + esc(mod.title) + '"' + da({ action: "module-title", id: mod.module_id }) + fk("modtitle:" + mod.module_id) + ' aria-label="Module title">'
-    : '<h3 class="mod-title" title="Double-click to rename"' + da({ action: "module-edit-dbl", id: mod.module_id }) + ">" + esc(mod.title) + "</h3>" + button("Edit", { action: "module-edit", id: mod.module_id }, { cls: "linklike", aria: "Rename module " + mod.title, focus: "modedit:" + mod.module_id });
+    : '<h3 class="mod-title" title="' + esc(b ? mod.title + " (double-click to rename)" : "Double-click to rename") + '"' + da({ action: "module-edit-dbl", id: mod.module_id }) + ">" + esc(mod.title) + "</h3>" +
+      button(b ? "\u270e" : "Edit", { action: "module-edit", id: mod.module_id }, { cls: b ? "ibtn" : "linklike", aria: "Rename module " + mod.title, title: b ? "Rename" : undefined, focus: "modedit:" + mod.module_id });
   var isT = target && target.module_id === mod.module_id;
-  return '<section class="module' + (isT ? " target" : "") + '" role="group" data-kind="module" data-id="' + esc(mod.module_id) + '"' + fk("module:" + mod.module_id) + ' tabindex="0" aria-label="Module ' + esc(mod.position) + ": " + esc(mod.title) + '. Alt plus arrow up or down moves it.">' +
-    '<header class="mod-h"><span class="mod-pos">M' + esc(mod.position) + "</span>" + title + '<span class="grow"></span>' +
-    button("\u25b2", { action: "module-move", id: mod.module_id, val: "up" }, { cls: "ibtn", aria: "Move module up", title: "Move module up", disabled: isFirst, focus: "module:" + mod.module_id + ":up" }) +
-    button("\u25bc", { action: "module-move", id: mod.module_id, val: "down" }, { cls: "ibtn", aria: "Move module down", title: "Move module down", disabled: isLast, focus: "module:" + mod.module_id + ":down" }) + "</header>" +
-    '<div class="mod-sub"><label class="target-pick"><input type="radio" name="target-module" value="' + esc(mod.module_id) + '"' + (isT ? " checked" : "") + da({ action: "target-module", id: mod.module_id }) + "> Place into this module</label>" +
-    '<span class="mod-sum">' + esc(moduleSummaryText(mod.guardrail)) + "</span></div>" +
-    (mod.slots.length ? mod.slots.map(function (s) { return renderSlot(s, mod, M, flat); }).join("") : '<div class="mod-empty">Empty. Use \u201c+ Place\u201d on a chip.</div>') +
+  var grip = '<span class="grip grip-mod" role="img" aria-label="Drag handle: move module ' + esc(mod.position) + '" title="Drag to reorder modules">⠿</span>';
+  var moves = b
+    ? button("‹", { action: "module-move", id: mod.module_id, val: "up" }, { cls: "ibtn", aria: "Move module left", title: "Move module left", disabled: isFirst, focus: "module:" + mod.module_id + ":up" }) +
+      button("›", { action: "module-move", id: mod.module_id, val: "down" }, { cls: "ibtn", aria: "Move module right", title: "Move module right", disabled: isLast, focus: "module:" + mod.module_id + ":down" })
+    : button("▲", { action: "module-move", id: mod.module_id, val: "up" }, { cls: "ibtn", aria: "Move module up", title: "Move module up", disabled: isFirst, focus: "module:" + mod.module_id + ":up" }) +
+      button("▼", { action: "module-move", id: mod.module_id, val: "down" }, { cls: "ibtn", aria: "Move module down", title: "Move module down", disabled: isLast, focus: "module:" + mod.module_id + ":down" });
+  var sub = b
+    ? '<div class="mod-sub"><label class="target-pick"><input type="radio" name="target-module" value="' + esc(mod.module_id) + '"' + (isT ? " checked" : "") + da({ action: "target-module", id: mod.module_id }) + "> Adding to</label>" +
+      renderMiniBars(mod.guardrail) + "</div>"
+    : '<div class="mod-sub"><label class="target-pick"><input type="radio" name="target-module" value="' + esc(mod.module_id) + '"' + (isT ? " checked" : "") + da({ action: "target-module", id: mod.module_id }) + "> Place into this module</label>" +
+      '<span class="mod-sum">' + esc(moduleSummaryText(mod.guardrail)) + "</span></div>";
+  var body = mod.slots.length ? mod.slots.map(function (s) { return renderSlot(s, mod, M, flat); }).join("")
+    : '<div class="mod-empty">' + (b ? "Empty. Drag a node here, or use “+ Place”." : "Empty. Use “+ Place” on a chip, or drag one here.") + "</div>";
+  return '<section class="module' + (b ? " col" : "") + (isT ? " target" : "") + '" role="group" data-kind="module" data-id="' + esc(mod.module_id) + '"' + fk("module:" + mod.module_id) + ' tabindex="0" aria-label="Module ' + esc(mod.position) + ": " + esc(mod.title) + '. Alt plus arrow up or down moves it.">' +
+    '<header class="mod-h"' + da({ drag: "module", id: mod.module_id }) + ">" + grip + '<span class="mod-pos">M' + esc(mod.position) + "</span>" + title + '<span class="grow"></span>' + moves + "</header>" + sub +
+    '<div class="slots' + (b ? " col-body" : "") + '"' + da({ module: mod.module_id }) + (b ? ' data-scroll="y"' : "") + ">" + (ctx.prompt || "") + body + "</div>" +
     '<footer class="mod-f">' + button("Remove module", { action: "module-remove", id: mod.module_id }, { cls: "tbtn sm danger", disabled: mod.slots.length > 0, title: mod.slots.length ? "Only an empty module can be removed" : "Remove this empty module" }) + "</footer></section>";
+}
+
+/** A column's guardrail in two thin bars (count, time) with one caption; same reference ticks as the
+ *  Balance panel.  The numbers come from the server's Guardrail object (R-S10); nothing is recomputed. */
+function renderMiniBars(g) {
+  if (!g) return "";
+  var bar = function (shares, target, show) {
+    var segs = CALIBRATIONS.map(function (l) { var w = shares[l]; return w ? '<span class="seg seg-' + l + '" style="width:' + (w * 100) + '%"></span>' : ""; }).join("");
+    var acc = 0, ticks = show ? CALIBRATIONS.slice(0, 2).map(function (l) { acc += target[l]; return '<span class="tick" style="left:' + roundHalfUp(acc * 100, 2) + '%"></span>'; }).join("") : "";
+    return '<span class="mbar"><span class="segs">' + segs + "</span>" + ticks + "</span>";
+  };
+  var cap = plural(g.n, "placement") + " · " + fmtNum(g.total_periods) + " periods";
+  return '<span class="mini-g" role="img" aria-label="' + esc(moduleSummaryText(g)) + '" title="' + esc(moduleSummaryText(g) + ". Reference marks, not quotas.") + '">' +
+    bar(g.count_share, g.count_target, true) + bar(g.time_share, g.time_target, g.show_time_targets) + '<span class="mcap">' + esc(cap) + "</span></span>";
 }
 
 /** The place prompt (contract 7.3): cross-grade differentiation note and/or off-grade bridge confirm. */
@@ -1766,6 +2143,12 @@ function renderHistory(state, M) {
   return '<section class="history"><button type="button" class="disc"' + da({ action: "disclose", id: "history" }) + ' aria-expanded="' + (open ? "true" : "false") + '">History</button>' + body + "</section>";
 }
 
+/** The module the place prompt is about (a drop names one; "+ Place" uses the target module). */
+function promptModuleId(M) {
+  var pr = M.ui.prompt, t = targetModuleOf(M);
+  return pr && pr.moduleId ? pr.moduleId : (t ? t.module_id : null);
+}
+
 function renderRail(state, M) {
   var seq = seqOf(M), gl = GRADE_LABELS[M.grade] || M.grade;
   if (!seq) {
@@ -1774,11 +2157,11 @@ function renderRail(state, M) {
   }
   var mods = M.seqView.modules, flat = [];
   mods.forEach(function (m) { m.slots.forEach(function (s) { flat.push(s.slot_id); }); });
-  var target = targetModuleOf(M), prompt = renderPrompt(state, M);
+  var target = targetModuleOf(M), prompt = renderPrompt(state, M), pmod = promptModuleId(M);
   var cards = mods.map(function (m, i) {
-    return (prompt && target && m.module_id === target.module_id ? prompt : "") + renderModule(m, M, flat, i === 0, i === mods.length - 1, target);
+    return (prompt && m.module_id === pmod ? prompt : "") + renderModule(m, M, flat, i === 0, i === mods.length - 1, target, { board: false });
   }).join("");
-  if (prompt && !target) cards = prompt + cards;
+  if (prompt && !mods.some(function (m) { return m.module_id === pmod; })) cards = prompt + cards;
   var ed = M.ui.editing && M.ui.editing.kind === "seqtitle";
   var head = '<div class="seq-h">' + (ed
     ? '<input type="text" class="mod-title-in" maxlength="120" value="' + esc(seq.title) + '"' + da({ action: "seq-title" }) + fk("seqtitle") + ' aria-label="Sequence title">'
@@ -1786,7 +2169,10 @@ function renderRail(state, M) {
     '<div class="seq-meta">Owner ' + esc(seq.owner) + " \u00b7 " + plural(mods.length, "module") + " \u00b7 " + button("Download CSV", { action: "export-csv" }, { cls: "linklike", title: "The ordered sequence as a spreadsheet file" }) + '</div>' +
     '<div class="seq-meta rows-ctl">Rows: ' + button("Expand all", { action: "rows-expand-all" }, { cls: "linklike", pressed: M.ui.railDensity === "expanded", aria: "Expand all placements to full cards" }) + " \u00b7 " +
     button("Collapse all", { action: "rows-collapse-all" }, { cls: "linklike", pressed: M.ui.railDensity !== "expanded", aria: "Collapse all placements to compact rows" }) + "</div></div>";
-  return renderGuardrail(state, M) + renderAttention(state, M) + head + '<div class="modules">' + cards + "</div>" +
+  // Sticky at the top of the rail, so it is in view however far the writer has scrolled.
+  var board = '<div class="board-cta">' + button('<span class="board-ico" aria-hidden="true">\u2922</span> Open board', { action: "open-board" },
+    { cls: "tbtn board-btn", title: "Full-screen board: modules side by side, for rearranging", focus: "open-board" }) + "</div>";
+  return board + renderGuardrail(state, M) + renderAttention(state, M) + head + '<div class="modules">' + cards + "</div>" +
     button("+ Add module", { action: "add-module" }, { cls: "tbtn add", focus: "add-module" }) + renderHistory(state, M) + renderDemoFootnote(M);
 }
 
@@ -1799,6 +2185,86 @@ function renderTabs(M) {
   }
   return '<div class="vtabs" role="tablist" aria-label="Show nodes or the sequence">' + tab("nodes", "Nodes", !seqOn) + tab("seq", "Sequence (" + n + ")", seqOn) + "</div>";
 }
+
+/* ---- board (board brief section 4) --------------------------------------------- */
+
+function renderPicker(state, M) {
+  var ui = M.ui, open = !!ui.pickerOpen;
+  var head = '<div class="picker-h">' + (open ? "<h3>Nodes</h3>" : "") + '<span class="grow"></span>' +
+    button(open ? "\u25c0" : "\u25b6", { action: "picker-toggle" }, { cls: "ibtn", aria: open ? "Collapse the node picker" : "Expand the node picker", title: open ? "Collapse" : "Show the node picker", pressed: open, focus: "picker-toggle" }) + "</div>";
+  if (!open) return '<aside class="picker collapsed" aria-label="Node picker (collapsed)">' + head + "</aside>";
+  var stems = [];
+  M.slice.super_stems.forEach(function (ss) { ss.stems.forEach(function (st) { stems.push(st); }); });
+  var nodes = pickerNodes(visOf(state, M), placedOf(M), { query: ui.pickerQuery, stemId: ui.pickerStem, unplacedOnly: ui.pickerUnplaced });
+  var placed = placedOf(M), tmod = targetModuleOf(M);
+  function chip(n) {
+    var ph = placed[n.source_key];
+    return '<li class="pchip' + (ph ? " placed" : "") + (state.node === n.source_key ? " selected" : "") + '" data-node="' + esc(n.source_key) + '">' +
+      '<button type="button" class="pchip-body"' + da({ action: "open-node", id: n.source_key, drag: "node", key: n.source_key }) + fk("pick:" + n.source_key) +
+      ' aria-label="Open details for ' + esc(n.node_id) + ": " + esc(n.node_text) + '" title="' + esc(n.node_text) + '">' +
+      '<span class="pc-l1"><b>' + esc(n.node_id) + "</b> \u00b7 " + esc(n.stem_name) + (ph ? ' <span class="pill here">M' + esc(ph.module_position) + " \u00b7 " + esc(ph.slot_position) + "</span>" : "") + "</span>" +
+      '<span class="pc-l2">' + esc(truncateText(n.node_text, 70)) + "</span></button>" +
+      (ph ? "" : button("+ Place", { action: "place-chip", id: n.source_key }, { cls: "cbtn", aria: (tmod ? "Place in " + moduleLabel(tmod) : "Place") + ": " + n.node_id, title: tmod ? "Place in " + moduleLabel(tmod) : "Place in the target module", focus: "pickplace:" + n.source_key })) + "</li>";
+  }
+  // Chips grouped under their stem.  Collapse and Hide are the slice's own stem state (collapsed_stems,
+  // hidden_stems), so the two views agree.  A search or a one-stem pick shows its matches even in a
+  // collapsed stem: otherwise typing could find nothing visible.
+  var collapsed = effectiveCollapsed(state, M.slice), searching = !!(String(ui.pickerQuery || "").trim() || ui.pickerStem);
+  var groups = [], byStem = {};
+  nodes.forEach(function (n) {
+    if (!has(byStem, n.stem_id)) { byStem[n.stem_id] = { stem_id: n.stem_id, stem_name: n.stem_name, nodes: [] }; groups.push(byStem[n.stem_id]); }
+    byStem[n.stem_id].nodes.push(n);
+  });
+  var list = groups.map(function (g) {
+    var isC = !searching && !!collapsed[g.stem_id];
+    var head = '<div class="pstem-h">' +
+      button('<span class="pstem-car" aria-hidden="true">' + (isC ? "\u25b8" : "\u25be") + "</span>" + esc(g.stem_name) + ' <span class="pstem-n">' + g.nodes.length + "</span>",
+        { action: "stem-collapse", id: g.stem_id },
+        { cls: "pstem-t", pressed: !isC, disabled: searching, focus: "pstem:" + g.stem_id,
+          aria: (isC ? "Expand " : "Collapse ") + g.stem_name + " (" + plural(g.nodes.length, "node") + ")",
+          title: searching ? "Clear the search and stem filter to collapse stems" : (isC ? "Show this stem\u2019s nodes" : "Collapse this stem") }) +
+      button("Hide", { action: "stem-hide", id: g.stem_id }, { cls: "linklike", aria: "Hide stem " + g.stem_name, title: "Hide this stem here and in the list view", focus: "pstemhide:" + g.stem_id }) + "</div>";
+    return '<li class="pstem' + (isC ? " collapsed" : "") + '" data-stem="' + esc(g.stem_id) + '">' + head +
+      (isC ? "" : '<ul class="pstem-list">' + g.nodes.map(chip).join("") + "</ul>") + "</li>";
+  }).join("");
+  var nHidden = state.hidden_stems.filter(function (id) { return stems.some(function (st) { return st.stem_id === id; }); }).length;
+  var stemCtl = '<div class="picker-stems">Stems: ' +
+    button("Expand all", { action: "stems-expand-all" }, { cls: "linklike", disabled: searching }) + " \u00b7 " +
+    button("Collapse all", { action: "stems-collapse-all" }, { cls: "linklike", disabled: searching }) +
+    (nHidden ? " \u00b7 " + button("Show " + plural(nHidden, "hidden stem"), { action: "stems-show-all" }, { cls: "linklike", focus: "stems-show-all" }) : "") + "</div>";
+  var w = ui.pickerW || PICKER_DEF;
+  var grip = '<div class="picker-divider" role="separator" aria-orientation="vertical" tabindex="0"' + fk("picker-divider") +
+    ' aria-label="Resize the node picker. Arrow keys change the width; double-click resets it."' +
+    ' aria-valuenow="' + w + '" aria-valuemin="' + PICKER_MIN + '"></div>';
+  return '<aside class="picker" aria-label="Node picker">' + grip + head +
+    '<div class="picker-f"><input type="search" class="picker-q" placeholder="Search ID or text" value="' + esc(ui.pickerQuery || "") + '"' + da({ action: "picker-q" }) + fk("picker-q") + ' aria-label="Search nodes by ID or text">' +
+    '<select class="mini"' + da({ action: "picker-stem" }) + ' aria-label="Stem"><option value="">All stems</option>' +
+    stems.map(function (st) { return '<option value="' + esc(st.stem_id) + '"' + (ui.pickerStem === st.stem_id ? " selected" : "") + ">" + esc(st.stem_name) + "</option>"; }).join("") + "</select>" +
+    button("Unplaced only", { action: "picker-unplaced" }, { cls: "tog", pressed: !!ui.pickerUnplaced, title: "Only nodes not yet placed in this sequence" }) +
+    '<span class="picker-n" aria-live="polite">' + plural(nodes.length, "node") + "</span>" + stemCtl + "</div>" +
+    '<ul class="picker-list" data-scroll="y">' + (list || '<li class="muted picker-none">No nodes match.</li>') + "</ul></aside>";
+}
+
+function renderBoard(state, M) {
+  var seq = seqOf(M), back = button("\u2190 Back to list", { action: "close-board" }, { cls: "tbtn", focus: "close-board", title: "Back to the list (Esc)" });
+  if (!seq) {
+    return '<div class="board-bar">' + back + '</div><div class="board-empty"><p>No ' + esc(GRADE_LABELS[M.grade] || M.grade) + " sequence yet.</p>" +
+      button("Start the " + esc(GRADE_LABELS[M.grade] || M.grade) + " sequence", { action: "start-sequence" }, { cls: "tbtn primary big", focus: "start-seq" }) + "</div>";
+  }
+  var mods = M.seqView.modules, flat = [], target = targetModuleOf(M), prompt = renderPrompt(state, M), pmod = promptModuleId(M);
+  mods.forEach(function (m) { m.slots.forEach(function (sl) { flat.push(sl.slot_id); }); });
+  var cols = mods.map(function (m, i) {
+    return renderModule(m, M, flat, i === 0, i === mods.length - 1, target, { board: true, prompt: prompt && m.module_id === pmod ? prompt : "" });
+  }).join("");
+  var bar = '<div class="board-bar">' + back + "<h2>" + esc(seq.title) + "</h2>" + '<span class="board-meta">' + plural(mods.length, "module") + " \u00b7 " +
+    plural(M.seqView.guardrail.n, "placement") + "</span>" + renderMiniBars(M.seqView.guardrail) + '<span class="grow"></span>' +
+    '<span class="board-meta">Rows: ' + button("Expand all", { action: "rows-expand-all" }, { cls: "linklike", pressed: M.ui.railDensity === "expanded" }) + " \u00b7 " +
+    button("Collapse all", { action: "rows-collapse-all" }, { cls: "linklike", pressed: M.ui.railDensity !== "expanded" }) + "</span></div>";
+  return bar + '<div class="board-body">' + renderPicker(state, M) + '<div class="board-cols" data-scroll="x">' + cols +
+    '<div class="col add-col">' + button("+ Module", { action: "add-module" }, { cls: "tbtn add", focus: "add-module" }) + "</div></div></div>";
+}
+
+function renderLive(M) { return esc(M.ui.live || ""); }
 
 function renderDemoFootnote(M) {
   return M.demo && M.demo.on ? '<p class="footnote">' + esc(DEMO_NOTICE_ORDERING) + ".</p>" : "";
@@ -1972,10 +2438,15 @@ function newUi(userName) {
     railOpen: false, guardTab: "seq", targetModuleId: null, viewMode: null, viewDraft: "", selectedViewId: null,
     events: [], eventsNext: null, showAllFields: false, cmpHideEmpty: true, cmpSharedFirst: false, cmpModuleId: null,
     save: { status: "idle" }, railDensity: "compact", rowOpen: {},
-    userName: userName || "", sheetH: 45, confirmRemove: null, noteDraft: {}, focusOverride: null, flashIds: [], scrollTo: null };
+    userName: userName || "", sheetH: 45, confirmRemove: null, noteDraft: {}, focusOverride: null, flashIds: [], scrollTo: null,
+    undo: [], undoBusy: false, live: "", dragging: false, railW: null,
+    pickerOpen: null, pickerQuery: "", pickerStem: "", pickerUnplaced: true, pickerW: null };
 }
 
-var REGIONS = ["hdr", "banner", "toolbar", "tabs", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts", "foot"];
+var REGIONS = ["hdr", "banner", "toolbar", "tabs", "rail", "board", "slice", "drawer", "sheet", "tray", "notice", "toasts", "foot", "live"];
+var UNDO_MAX = 30;
+var UNDO_CLEARED_409 = "The sequence changed elsewhere, so undo history was cleared.";
+var UNDO_FAILED = "Couldn\u2019t fully undo; the sequence has been reloaded.";
 
 function createApp(env) {
   var doc = env.doc, api = env.api, hist = env.hist || null, loc = env.loc || { search: "", pathname: "" };
@@ -1993,6 +2464,14 @@ function createApp(env) {
     drawer: null, compareData: null, vis: null,
     demo: { on: !!api.isDemo, persisted: !!api.persisted, source: env.demoSource || null, generatedAt: env.demoGeneratedAt || null } };
   var ui = M.ui; ui.railDensity = storeGet("mh2seq-rail-density") === "expanded" ? "expanded" : "compact";
+  var win = env.win !== undefined ? env.win : (typeof window !== "undefined" ? window : null);
+  /** Window width; tests pass env.width.  Without a window (node) the page counts as wide. */
+  function viewW() { return env.width ? env.width() : (win && win.innerWidth) || 1920; }
+  function boardOn() { return !!state.board && viewW() >= 1024; }
+  var storedW = Number(storeGet("mh2seq-rail-width"));
+  ui.railW = storedW > 0 ? storedW : null;
+  var storedPW = Number(storeGet("mh2seq-picker-width"));
+  ui.pickerW = storedPW > 0 ? storedPW : null;
   var busy = false, nodeCache = {}, lastHtml = {}, tokNode = 0, tokCmp = 0, lastPlace = null;
   var R = {};
   REGIONS.forEach(function (id) { R[id] = doc.getElementById(id); });
@@ -2039,7 +2518,26 @@ function createApp(env) {
       if (a && a.getAttribute) k = a.getAttribute("data-focus-key");
       if (!k && a && a.closest) { var c = a.closest("[data-focus-key]"); k = c ? c.getAttribute("data-focus-key") : null; }
     } catch (e) { k = null; }
-    return { focus: k, slice: R.slice ? R.slice.scrollTop : 0, rail: R.rail ? R.rail.scrollTop : 0 };
+    var caret = null;
+    try { if (a && typeof a.selectionStart === "number" && a.type !== "number") caret = [a.selectionStart, a.selectionEnd]; } catch (e) { caret = null; }
+    return { focus: k, caret: caret, slice: R.slice ? R.slice.scrollTop : 0, rail: R.rail ? R.rail.scrollTop : 0, cols: boardScroll() };
+  }
+  /** Scroll offsets on the board (columns area and each column body) so a write does not jump them. */
+  function boardScroll() {
+    var out = {};
+    if (!R.board || !R.board.querySelectorAll) return out;
+    try {
+      var cols = R.board.querySelector(".board-cols"); if (cols) out.x = cols.scrollLeft;
+      Array.prototype.forEach.call(R.board.querySelectorAll(".col-body, .picker-list"), function (el) { out[el.getAttribute("data-module") || "picker"] = el.scrollTop; });
+    } catch (e) { /* ignore */ }
+    return out;
+  }
+  function restoreBoardScroll(o) {
+    if (!o || !R.board || !R.board.querySelectorAll) return;
+    try {
+      var cols = R.board.querySelector(".board-cols"); if (cols && o.x !== undefined) cols.scrollLeft = o.x;
+      Array.prototype.forEach.call(R.board.querySelectorAll(".col-body, .picker-list"), function (el) { var k = el.getAttribute("data-module") || "picker"; if (has(o, k)) el.scrollTop = o[k]; });
+    } catch (e) { /* ignore */ }
   }
   function focusKey(key) {
     var el = findBy("data-focus-key", key);
@@ -2049,9 +2547,14 @@ function createApp(env) {
   function restore(k) {
     if (R.slice) R.slice.scrollTop = k.slice;
     if (R.rail) R.rail.scrollTop = k.rail;
+    restoreBoardScroll(k.cols);
     var want = ui.focusOverride || k.focus;
     ui.focusOverride = null;
     if (want) focusKey(want);
+    if (want && k.caret && !ui.focusOverride) {
+      var a = doc.activeElement;
+      try { if (a && a.setSelectionRange && a.getAttribute && a.getAttribute("data-focus-key") === k.focus) a.setSelectionRange(k.caret[0], k.caret[1]); } catch (e) { /* ignore */ }
+    }
   }
   function put(id, html) {
     if (!R[id] || lastHtml[id] === html) return;
@@ -2075,6 +2578,8 @@ function createApp(env) {
     // Do not swap the DOM between mousedown and mouseup: the browser would drop the click.
     // A native <select> menu can swallow the mouseup, so the guard expires after 1.5 s and
     // any change event ends it (integrator fix: otherwise the page stopped re-rendering).
+    // A drag (ui.dragging) defers every re-render until drop or cancel, however long it takes (brief 5.6).
+    if (ui.dragging) { renderPending = true; return; }
     if (pointerDown && Date.now() - pointerDownAt > 1500) pointerDown = false;
     if (pointerDown) { renderPending = true; setT(function () { if (renderPending) renderAll(); }, 1600); return; }
     renderPending = false;
@@ -2083,7 +2588,11 @@ function createApp(env) {
     M.demo.persisted = !!api.persisted;
     var keep = capture();
     put("hdr", renderHeader(state, M)); put("banner", renderBanner(state, M)); put("toolbar", renderToolbar(state, M)); put("tabs", renderTabs(M));
-    put("slice", renderSlice(state, M)); put("rail", renderRail(state, M)); put("drawer", renderDrawer(state, M));
+    var bOn = boardOn();
+    // collapsed by default up to 1440px wide (the brief's target sizes: "1440 x 900: picker collapsed")
+    if (bOn && ui.pickerOpen === null) ui.pickerOpen = viewW() > 1440;
+    put("slice", renderSlice(state, M)); put("rail", bOn ? "" : renderRail(state, M)); put("board", bOn ? renderBoard(state, M) : "");
+    put("drawer", renderDrawer(state, M)); put("live", renderLive(M));
     put("sheet", renderSheet(state, M)); put("tray", renderTray(state, M)); put("notice", renderNotice(M));
     put("toasts", renderToasts(M)); put("foot", renderFooter(M));
     if (R.drawer) R.drawer.hidden = !M.drawer;
@@ -2092,15 +2601,98 @@ function createApp(env) {
     if (root && root.classList) {
       root.classList.toggle("drawer-open", !!M.drawer);
       root.classList.toggle("rail-open", !!ui.railOpen);
+      root.classList.toggle("board-on", bOn);
     }
+    if (R.board) R.board.hidden = !bOn;
+    applyPickerWidth();
     restore(keep);
     afterRender();
+    layoutCheck();
   }
   function syncUrl() {
     if (!hist || !hist.replaceState || !M.slice) return;
     try { hist.replaceState(null, "", "?" + encodeUrlQuery(M.grade, state, M.slice)); } catch (e) { /* e.g. sandboxed file:// */ }
   }
   function setState(next) { state = next; syncUrl(); renderAll(); }
+
+  /* ---- layout: resizable rail divider and drawer overlay (board brief section 3) ---- */
+  var mainEl = doc.getElementById("main"), divider = doc.getElementById("divider");
+  function rectW(el) { try { return el && el.getBoundingClientRect ? el.getBoundingClientRect().width : 0; } catch (e) { return 0; } }
+  function mainWidth() { return env.mainWidth ? env.mainWidth() : (rectW(mainEl) || viewW()); }
+  /** Only the CSS variable changes during a resize: no re-render. */
+  function applyRailWidth() {
+    var st = mainEl && mainEl.style;
+    if (st) {
+      if (ui.railW) { if (st.setProperty) st.setProperty("--rail-w", ui.railW + "px"); }
+      else if (st.removeProperty) st.removeProperty("--rail-w");
+    }
+    if (divider && divider.setAttribute) {
+      var now = ui.railW || Math.round(rectW(R.rail)) || 380;
+      divider.setAttribute("aria-valuenow", String(now));
+      divider.setAttribute("aria-valuemin", String(RAIL_MIN));
+      divider.setAttribute("aria-valuemax", String(Math.max(RAIL_MIN, Math.round(mainWidth()) - SLICE_MIN)));
+    }
+    layoutCheck();
+  }
+  /** Set (and remember) the rail width; null goes back to the default for this breakpoint. */
+  function setRailWidth(w, persist) {
+    ui.railW = w === null ? null : clampRailWidth(w, mainWidth());
+    if (persist !== false) storeSet("mh2seq-rail-width", ui.railW === null ? null : String(ui.railW));
+    applyRailWidth();
+    return ui.railW;
+  }
+  function currentRailWidth() { return ui.railW || Math.round(rectW(R.rail)) || 380; }
+  /** Divider keys: arrows 20px, Home/End to min/max.  Returns true when it handled the key. */
+  function railKey(k) {
+    var cur = currentRailWidth();
+    if (k === "ArrowLeft") setRailWidth(cur - RAIL_STEP);
+    else if (k === "ArrowRight") setRailWidth(cur + RAIL_STEP);
+    else if (k === "Home") setRailWidth(RAIL_MIN);
+    else if (k === "End") setRailWidth(Number.MAX_SAFE_INTEGER);
+    else return false;
+    return true;
+  }
+  /* The board's node picker: same handle behaviour as the rail divider, driven by --picker-w on the
+     board region (which survives re-renders; only its innerHTML is replaced). */
+  function boardWidth() { return env.boardWidth ? env.boardWidth() : (rectW(R.board) || viewW()); }
+  function applyPickerWidth() {
+    var st = R.board && R.board.style;
+    if (st) {
+      if (ui.pickerW) { if (st.setProperty) st.setProperty("--picker-w", ui.pickerW + "px"); }
+      else if (st.removeProperty) st.removeProperty("--picker-w");
+    }
+    var h = R.board && R.board.querySelector ? R.board.querySelector(".picker-divider") : null;
+    if (h && h.setAttribute) {
+      h.setAttribute("aria-valuenow", String(ui.pickerW || PICKER_DEF));
+      h.setAttribute("aria-valuemax", String(Math.max(PICKER_MIN, Math.round(boardWidth()) - COLS_MIN)));
+    }
+  }
+  function setPickerWidth(w, persist) {
+    ui.pickerW = w === null ? null : clampPickerWidth(w, boardWidth());
+    if (persist !== false) storeSet("mh2seq-picker-width", ui.pickerW === null ? null : String(ui.pickerW));
+    applyPickerWidth();
+    return ui.pickerW;
+  }
+  function pickerKey(k) {
+    var cur = ui.pickerW || PICKER_DEF;
+    if (k === "ArrowLeft") setPickerWidth(cur - RAIL_STEP);
+    else if (k === "ArrowRight") setPickerWidth(cur + RAIL_STEP);
+    else if (k === "Home") setPickerWidth(PICKER_MIN);
+    else if (k === "End") setPickerWidth(Number.MAX_SAFE_INTEGER);
+    else return false;
+    return true;
+  }
+
+  /** With the drawer open, overlay it when rail + drawer would leave the slice under 360px. */
+  function layoutCheck() {
+    if (!root || !root.classList || !win) return;
+    var w = viewW(), over = false;
+    if (M.drawer && !boardOn() && w >= 1280) {
+      var drawerW = w >= 1600 ? 420 : 380;
+      over = mainWidth() - currentRailWidth() - drawerW < SLICE_MIN;
+    }
+    root.classList.toggle("drawer-overlay", over);
+  }
 
   function notice(text, kind, link) { ui.notice = text ? { text: text, kind: kind || "info", link: link || null } : null; }
   function toast(text) {
@@ -2115,6 +2707,7 @@ function createApp(env) {
     if (e.error === "stale_revision" && e.detail && e.detail.sequence) {
       M.seqView = e.detail.sequence; ui.prompt = null; ui.editing = null;
       notice(STALE_MESSAGE, "warn");
+      if (ui.undo.length) { ui.undo = []; toast(UNDO_CLEARED_409); }
     } else if (e.error === "confirm_off_grade_required" && lastPlace) {
       ui.prompt = Object.assign({}, lastPlace, { keys: e.detail.source_keys || lastPlace.keys, notes: lastPlace.notes || {} });
       ui.railOpen = true;
@@ -2157,6 +2750,46 @@ function createApp(env) {
   function seqWrite(fn) {
     return write(function () { var s = seqOf(M); return fn(s.sequence_id, s.rev); });
   }
+
+  /* ---- undo (board brief section 6) ---- */
+  /** A layout write that can be undone: run it, then push the inverse computed from the view held before
+   *  it.  opFn(res) names what was written (see inverseOf).  A no-op (rev unchanged) pushes nothing. */
+  async function layoutWrite(opFn, label, fn) {
+    var before = M.seqView, s0 = seqOf(M), rev0 = s0 ? s0.rev : null;
+    var res = await seqWrite(fn);
+    if (res && res.sequence && res.sequence.sequence && res.sequence.sequence.rev !== rev0) {
+      var steps = inverseOf(opFn(res), before);
+      if (steps && steps.length) {
+        ui.undo.push({ label: label, steps: steps });
+        if (ui.undo.length > UNDO_MAX) ui.undo.shift();
+        renderAll();
+      }
+    }
+    return res;
+  }
+  async function undo() {
+    if (busy || ui.undoBusy || !ui.undo.length || !seqOf(M)) return null;
+    var e = ui.undo.pop();
+    busy = true; ui.undoBusy = true; ui.notice = null; ui.save = { status: "saving" };
+    renderAll();
+    try {
+      M.seqView = await runUndoSteps(e.steps, api, M.seqView);
+      ui.save = { status: "saved", at: nowFn() };
+      announce("Undid: " + e.label + ".");
+    } catch (err) {
+      try { M.seqView = await api.sequence(M.grade); } catch (e2) { /* keep what we have */ }
+      ui.undo = []; ui.save = { status: "error", reason: "undo incomplete" };
+      toast(UNDO_FAILED);
+    } finally { busy = false; ui.undoBusy = false; }
+    fixTarget();
+    if (isOpen(M, "history", false)) { try { await loadEvents(true); } catch (e3) { /* ignore */ } }
+    renderAll();
+    return M.seqView;
+  }
+  function announce(text) { ui.live = text + (ui.live === text ? "\u200b" : ""); }
+  function slotName(id) { var f = findSlot(id); return f ? "slot " + f.slot.position + " in M" + f.module.position : "a slot"; }
+  function plName(pid) { var f = findPlacement(pid); return f ? (f.placement.node_id || f.placement.node_id_seen) : "a node"; }
+  function modName(id) { var m = findModule(id); return m ? "M" + m.position + " " + m.title : "a module"; }
   async function loadEvents(reset) {
     var s = seqOf(M); if (!s) return;
     var r = await api.events(s.sequence_id, 50, reset ? undefined : ui.eventsNext);
@@ -2172,7 +2805,7 @@ function createApp(env) {
     M.drawer = null; M.compareData = null; nodeCache = {};
     ui.prompt = null; ui.editing = null; ui.selectedViewId = null; ui.viewMode = null; ui.events = []; ui.eventsNext = null;
     var want = storeGet(targetKey(grade)), wantId = want === null || want === "" || isNaN(Number(want)) ? null : Number(want);
-    ui.targetModuleId = wantId; ui.guardTab = "seq"; ui.notice = null; ui.rowOpen = {};
+    ui.targetModuleId = wantId; ui.guardTab = "seq"; ui.notice = null; ui.rowOpen = {}; ui.undo = [];
     fixTarget();
     if (want !== null && ui.targetModuleId !== wantId) storeSet(targetKey(grade), null);     // that module is gone: forget it
   }
@@ -2242,7 +2875,8 @@ function createApp(env) {
     if (!mod) { notice("Add a module first, then place nodes into it.", "warn"); ui.railOpen = true; renderAll(); focusKey("add-module"); return null; }
     var placed = placedOf(M), todo = keys.filter(function (k) { return !has(placed, k); });
     if (!todo.length) { notice(keys.length === 1 ? "That node is already placed in this sequence." : "All of these nodes are already placed.", "info"); renderAll(); return null; }
-    var pr = { keys: todo, allKeys: keys, moduleId: mod.module_id, slotId: o.slotId || null, afterSlotId: o.afterSlotId || null, notes: {} };
+    var pr = { keys: todo, allKeys: keys, moduleId: mod.module_id, slotId: o.slotId || null, afterSlotId: o.afterSlotId || null,
+      toIndex: o.toIndex === undefined ? null : o.toIndex, notes: {} };
     var needs = todo.some(function (k) { var n = M.index[k]; return n && (n.requires_confirm || (n.placed_elsewhere && n.placed_elsewhere.length)); });
     if (needs) {
       ui.prompt = pr; ui.railOpen = true; renderAll(); ui.scrollTo = { attr: "data-focus-key", value: "prompt" }; afterRender(); focusKey("prompt");
@@ -2255,9 +2889,10 @@ function createApp(env) {
     var notes = {};
     if (withNote) pr.keys.forEach(function (k) { var t = pr.notes && pr.notes[k]; if (t && String(t).trim()) notes[k] = String(t).trim(); });
     var confirm = pr.keys.some(function (k) { return M.index[k] && M.index[k].requires_confirm; });
-    var res = await seqWrite(function (sid, rev) {
+    var m0 = findModule(pr.moduleId), label = "place " + pr.keys.map(function (k) { return M.index[k] ? M.index[k].node_id : k; }).join(", ") + (m0 ? " in M" + m0.position : "");
+    var res = await layoutWrite(function (r) { return { type: "place", placement_ids: r.result.placement_ids || [r.result.placement_id] }; }, label, function (sid, rev) {
       return pr.keys.length === 1
-        ? api.place(sid, rev, pr.moduleId, pr.keys[0], { slot_id: pr.slotId, after_slot_id: pr.afterSlotId, differentiation_note: notes[pr.keys[0]], confirm_off_grade: confirm })
+        ? api.place(sid, rev, pr.moduleId, pr.keys[0], { slot_id: pr.slotId, after_slot_id: pr.afterSlotId, to_index: pr.toIndex, differentiation_note: notes[pr.keys[0]], confirm_off_grade: confirm })
         : api.createSlotGroup(sid, rev, pr.moduleId, pr.keys, confirm, notes);
     });
     if (res) {
@@ -2266,6 +2901,7 @@ function createApp(env) {
       ui.flashIds = ids;
       var mod = findModule(pr.moduleId), names = pr.keys.map(function (k) { return M.index[k] ? M.index[k].node_id : k; }).join(", ");
       var skipped = (res.result.skipped || []).length;
+      announce(pr.keys.length === 1 ? dropAnnouncement({ place: true, key: pr.keys[0] }, M.seqView, M.index) : "Placed " + names + (mod ? " in Module " + mod.position : "") + ".");
       notice("Placed " + names + (mod ? " in M" + mod.position : "") + (skipped ? " (" + skipped + " skipped: already placed)" : "") + ".", "ok",
         ids.length ? { label: "Show in sequence", action: "show-in-rail", id: ids[0] } : null);
       renderAll();
@@ -2288,6 +2924,7 @@ function createApp(env) {
   });
   on("click", "stems-expand-all", function () { setState(Object.assign({}, state, { collapsed_stems: [] })); });
   on("click", "stems-collapse-all", function () { setState(Object.assign({}, state, { collapsed_stems: Object.keys(sliceIds(M.slice).stems) })); });
+  on("click", "stems-show-all", function () { setState(Object.assign({}, state, { hidden_stems: [] })); });
   on("click", "show-all-hidden", function () { setState(Object.assign({}, state, { hidden_stems: [], hidden_cs: [] })); });
   on("change", "stem-visible", function (d) { setState(Object.assign({}, state, { hidden_stems: d.checked ? state.hidden_stems.filter(function (x) { return x !== d.id; }) : state.hidden_stems.concat([d.id]) })); });
   on("click", "cs-show", function (d) { setState(Object.assign({}, state, { hidden_cs: state.hidden_cs.filter(function (x) { return x !== d.id; }) })); });
@@ -2421,7 +3058,11 @@ function createApp(env) {
     if (!t || (cur && cur.title === t)) { renderAll(); return; }
     return seqWrite(function (sid, rev) { return api.updateModule(num(d.id), rev, { title: t }); });
   });
-  on("click", "module-move", function (d) { ui.focusOverride = "module:" + d.id + ":" + d.val; return seqWrite(function (sid, rev) { return api.moveModule(num(d.id), rev, d.val); }); });
+  on("click", "module-move", function (d) {
+    ui.focusOverride = "module:" + d.id + ":" + d.val;
+    var label = "move " + modName(num(d.id)) + (d.val === "up" ? " earlier" : " later");
+    return layoutWrite(function () { return { type: "moveModule", module_id: num(d.id) }; }, label, function (sid, rev) { return api.moveModule(num(d.id), rev, d.val); });
+  });
   on("click", "module-remove", function (d) { return seqWrite(function (sid, rev) { return api.removeModule(num(d.id), rev); }); });
   on("change", "target-module", function (d) { setTarget(num(d.id)); renderAll(); });
   on("change", "header-target", function (d) {
@@ -2444,17 +3085,23 @@ function createApp(env) {
   on("click", "rows-expand-all", function () { setDensity("expanded"); });
   on("click", "rows-collapse-all", function () { setDensity("compact"); });
   // rail: slots
-  on("click", "slot-move", function (d) { if (!ui.focusOverride) ui.focusOverride = "slot:" + d.id + ":" + d.val; return seqWrite(function (sid, rev) { return api.moveSlot(num(d.id), rev, { direction: d.val }); }); });
+  var slotOp = function (id) { return function () { return { type: "moveSlot", slot_id: id }; }; };
+  on("click", "slot-move", function (d) {
+    if (!ui.focusOverride) ui.focusOverride = "slot:" + d.id + ":" + d.val;
+    return layoutWrite(slotOp(num(d.id)), "move " + slotName(num(d.id)) + " " + d.val, function (sid, rev) { return api.moveSlot(num(d.id), rev, { direction: d.val }); });
+  });
   on("change", "slot-move-to", function (d) {
     if (!d.value) return;
     ui.focusOverride = "slot:" + d.id;
-    return seqWrite(function (sid, rev) { return api.moveSlot(num(d.id), rev, { to_module_id: num(d.value) }); });
+    var m = findModule(num(d.value));
+    return layoutWrite(slotOp(num(d.id)), "move " + slotName(num(d.id)) + " to " + (m ? "M" + m.position : "another module"), function (sid, rev) { return api.moveSlot(num(d.id), rev, { to_module_id: num(d.value) }); });
   });
   on("click", "slot-merge", function (d) {
     var flat = flatSlots(), i = flat.map(function (s) { return s.slot_id; }).indexOf(num(d.id));
     if (i <= 0) return;
     ui.focusOverride = "slot:" + flat[i - 1].slot_id;
-    return seqWrite(function (sid, rev) { return api.mergeSlot(num(d.id), rev, flat[i - 1].slot_id); });
+    return layoutWrite(function () { return { type: "merge", slot_id: num(d.id) }; }, "merge " + slotName(num(d.id)) + " into the slot above",
+      function (sid, rev) { return api.mergeSlot(num(d.id), rev, flat[i - 1].slot_id); });
   });
   on("click", "slot-label-edit", function (d) { ui.editing = { kind: "slot", id: num(d.id) }; renderAll(); focusKey("slotlabel:" + d.id); });
   on("change", "slot-label", function (d) {
@@ -2493,10 +3140,13 @@ function createApp(env) {
     if (t === (f.placement.differentiation_note || null)) { renderAll(); return; }
     return write(function () { return api.updatePlacement(f.placement.placement_id, f.placement.rev, { differentiation_note: t }); });
   });
-  on("click", "ungroup", function (d) { return seqWrite(function (sid, rev) { return api.ungroup(num(d.id), rev); }); });
+  on("click", "ungroup", function (d) {
+    return layoutWrite(function () { return { type: "ungroup", placement_id: num(d.id) }; }, "ungroup " + plName(num(d.id)), function (sid, rev) { return api.ungroup(num(d.id), rev); });
+  });
   on("change", "coplace-to", function (d) {
     if (!d.value) return;
-    return seqWrite(function (sid, rev) { return api.coPlace(num(d.id), rev, num(d.value)); });
+    return layoutWrite(function () { return { type: "coPlace", placement_id: num(d.id) }; }, "co-place " + plName(num(d.id)) + " with " + slotName(num(d.value)),
+      function (sid, rev) { return api.coPlace(num(d.id), rev, num(d.value)); });
   });
   on("click", "remove-placement", function (d) {
     if (ui.confirmRemove !== num(d.id)) { ui.confirmRemove = num(d.id); renderAll(); return; }
@@ -2507,6 +3157,105 @@ function createApp(env) {
   on("click", "reattach", function (d) { return seqWrite(function (sid, rev) { return api.reattach(num(d.id), rev, d.key); }); });
   on("click", "acknowledge", function (d) { return seqWrite(function (sid, rev) { return api.acknowledge(num(d.id), rev); }); });
   on("click", "history-more", async function () { await loadEvents(false); renderAll(); });
+  on("click", "undo", function () { return undo(); });
+
+  // board
+  function setBoard(onOff) {
+    state = Object.assign({}, state, { board: !!onOff }); syncUrl();
+    ui.focusOverride = onOff ? "close-board" : "open-board";
+    renderAll();
+  }
+  on("click", "open-board", function () { setBoard(true); });
+  on("click", "close-board", function () { setBoard(false); });
+  on("click", "picker-toggle", function () { ui.pickerOpen = !ui.pickerOpen; renderAll(); });
+  on("input", "picker-q", function (d) { ui.pickerQuery = d.value || ""; renderAll(); });
+  on("change", "picker-stem", function (d) { ui.pickerStem = d.value || ""; renderAll(); });
+  on("click", "picker-unplaced", function () { ui.pickerUnplaced = !ui.pickerUnplaced; renderAll(); });
+
+  /* ---- drag-and-drop: writes (board brief section 5; the pointer machine is createDnd below) ---- */
+  function callPlan(plan, rev) {
+    if (plan.call === "moveSlot") return api.moveSlot(plan.id, rev, { to_module_id: plan.to_module_id, to_index: plan.to_index });
+    if (plan.call === "mergeSlot") return api.mergeSlot(plan.id, rev, plan.into_slot_id);
+    if (plan.call === "movePlacement") return api.movePlacement(plan.id, rev, plan.to_module_id, plan.to_index);
+    if (plan.call === "coPlace") return api.coPlace(plan.id, rev, plan.target_slot_id);
+    if (plan.call === "moveModule") return api.moveModule(plan.id, rev, { to_index: plan.to_index });
+    throw new Error("unknown drop " + plan.call);
+  }
+  /** The Undo tooltip for a drop, named before the write changes the positions. */
+  function dropUndoLabel(plan) {
+    var m = findModule(plan.to_module_id), where = m ? "M" + m.position : "another module";
+    if (plan.call === "moveSlot") return "move " + slotName(plan.id) + " to " + where;
+    if (plan.call === "mergeSlot") return "merge " + slotName(plan.id) + " into " + slotName(plan.into_slot_id);
+    if (plan.call === "movePlacement") return "move " + plName(plan.id) + " to " + where;
+    if (plan.call === "coPlace") return "co-place " + plName(plan.id) + " with " + slotName(plan.target_slot_id);
+    if (plan.call === "moveModule") return "move " + modName(plan.id);
+    return "drop";
+  }
+  /** Run a drop: show it at once (best effort, DOM only), then write.  Success renders the server's view;
+   *  an error puts the layout back from the unchanged M.seqView; a 409 also clears Undo (handleError). */
+  async function dropWrite(drag, target, plan) {
+    preview(plan);
+    lastHtml.rail = lastHtml.board = lastHtml.slice = null;          // the preview touched the DOM: always redraw
+    var res;
+    if (plan.place) {
+      res = await startPlace([plan.key], { moduleId: plan.module_id, slotId: plan.slot_id || null, toIndex: plan.slot_id ? undefined : plan.to_index });
+    } else {
+      res = await layoutWrite(function () { return plan.op; }, dropUndoLabel(plan), function (sid, rev) { return callPlan(plan, rev); });
+    }
+    if (res && !plan.place) announce(dropAnnouncement(plan, M.seqView, M.index));     // executePlace announces places
+    lastHtml.rail = lastHtml.board = lastHtml.slice = null;
+    renderAll();
+    return res;
+  }
+  /** Optimistic move of the DOM nodes with a "saving" style; any failure here is harmless (the next
+   *  render replaces it). */
+  function preview(plan) {
+    if (!doc.querySelector || !doc.createElement) return;
+    try {
+      var q = function (sel) { return doc.querySelector(sel); };
+      var slotEl = function (id) { return q('[data-kind="slot"][data-id="' + id + '"]'); };
+      var saving = function (el) { if (el && el.classList) el.classList.add("saving"); };
+      var insertAt = function (cont, el, idx) {
+        var kids = Array.prototype.filter.call(cont.children, function (c) { return c !== el && c.getAttribute("data-kind") === "slot"; });
+        var empty = cont.querySelector(".mod-empty"); if (empty) empty.parentNode.removeChild(empty);
+        if (kids[idx]) cont.insertBefore(el, kids[idx]); else cont.appendChild(el);
+      };
+      var dropEmpty = function (sl) { if (sl && sl.parentNode && !sl.querySelector("[data-pl]")) sl.parentNode.removeChild(sl); };
+      var newSlot = function () { var d = doc.createElement("div"); d.className = "slot compact saving"; d.setAttribute("data-kind", "slot"); return d; };
+      var cont = q('.slots[data-module="' + (plan.to_module_id || plan.module_id) + '"]');
+      if (plan.call === "moveModule") {
+        var m = q('[data-kind="module"][data-id="' + plan.id + '"]'), par = m && m.parentNode;
+        var sibs = Array.prototype.filter.call(par.children, function (c) { return c !== m && c.getAttribute("data-kind") === "module"; });
+        par.insertBefore(m, sibs[plan.to_index] || sibs.length && sibs[sibs.length - 1].nextSibling || null); saving(m);
+      } else if (plan.call === "moveSlot") {
+        var se = slotEl(plan.id); insertAt(cont, se, plan.to_index); saving(se);
+      } else if (plan.call === "mergeSlot") {
+        var from = slotEl(plan.id), into = slotEl(plan.into_slot_id);
+        Array.prototype.slice.call(from.querySelectorAll("[data-pl]")).forEach(function (r) { into.appendChild(r); saving(r); });
+        dropEmpty(from);
+      } else if (plan.call === "movePlacement" || plan.call === "coPlace") {
+        var row = q('[data-pl="' + plan.id + '"]'), src = row.parentNode && row.parentNode.closest ? row.parentNode.closest('[data-kind="slot"]') : null;
+        if (plan.call === "coPlace") { slotEl(plan.target_slot_id).appendChild(row); saving(row); }
+        else { var ns = newSlot(); ns.appendChild(row); insertAt(cont, ns, plan.to_index); }
+        dropEmpty(src);
+      } else if (plan.place) {
+        var t = newSlot(); t.textContent = "Placing " + (M.index[plan.key] ? M.index[plan.key].node_id : plan.key) + "\u2026";
+        if (plan.slot_id) { var ts = slotEl(plan.slot_id); t.className = "plrow saving"; ts.appendChild(t); } else insertAt(cont, t, plan.to_index);
+      }
+    } catch (e) { /* preview only */ }
+  }
+  var dnd = createDnd({
+    doc: doc, win: win, setT: setT, clearT: env.clearTimeout || (typeof clearTimeout !== "undefined" ? clearTimeout : function () {}),
+    hit: env.dndHit || null, isBoard: boardOn,
+    plan: function (drag, target) { return planDrop(drag, target, M.seqView); },
+    onStart: function () { ui.dragging = true; ui.notice = null; if (root && root.classList) root.classList.toggle("dragging", true); },
+    onEnd: function () {
+      ui.dragging = false; pointerDown = false;
+      if (root && root.classList) root.classList.toggle("dragging", false);
+      if (renderPending) { renderPending = false; renderAll(); }
+    },
+    onDrop: dropWrite
+  });
 
   /** Run a named action. Used by the DOM layer and directly by tests. */
   function act(name, data) {
@@ -2527,11 +3276,19 @@ function createApp(env) {
     if (ui.open.stemsmenu) { ui.open.stemsmenu = false; renderAll(); return true; }
     if (state.node) { closeDrawer(); return true; }
     if (state.sheet) { act("close-sheet"); return true; }
+    if (boardOn()) { setBoard(false); return true; }
     return false;
+  }
+  /** Ctrl+Z / Cmd+Z, except while typing in a field (the field's own undo wins there). */
+  function isUndoKey(ev) {
+    if (!(ev.ctrlKey || ev.metaKey) || ev.shiftKey || ev.altKey || String(ev.key).toLowerCase() !== "z") return false;
+    var t = ev.target, tag = t && t.tagName ? String(t.tagName).toLowerCase() : "";
+    return !(tag === "input" || tag === "textarea" || tag === "select" || (t && t.isContentEditable));
   }
   function onKeydown(ev) {
     var k = ev.key;
     if (k === "Escape") { if (escapeKey() && ev.preventDefault) ev.preventDefault(); return; }
+    if (isUndoKey(ev)) { if (ev.preventDefault) ev.preventDefault(); act("undo"); return; }
     var t = ev.target, actEl = t && t.closest ? t.closest("[data-action]") : null;
     if (ev.altKey && (k === "ArrowUp" || k === "ArrowDown")) {
       var card = t && t.closest ? t.closest("[data-kind]") : null;
@@ -2565,20 +3322,67 @@ function createApp(env) {
       value: el.value, checked: el.checked, el: el });
   }
   function bind() {
-    ["hdr", "toolbar", "tabs", "rail", "slice", "drawer", "sheet", "tray", "notice", "toasts"].forEach(function (id) {
+    ["hdr", "toolbar", "tabs", "rail", "board", "slice", "drawer", "sheet", "tray", "notice", "toasts"].forEach(function (id) {
       var el = R[id]; if (!el || !el.addEventListener) return;
       ["click", "change", "input", "keydown", "dblclick"].forEach(function (type) { el.addEventListener(type, function (ev) { onEvent(type, ev); }); });
     });
     if (doc.addEventListener) {
       // Regions already handle Esc (and preventDefault when they closed something); the document
       // listener only covers focus outside the regions, so one Esc never closes two layers.
-      doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !ev.defaultPrevented) onKeydown(ev); });
+      doc.addEventListener("keydown", function (ev) { if ((ev.key === "Escape" || isUndoKey(ev)) && !ev.defaultPrevented) onKeydown(ev); });
       doc.addEventListener("mousedown", function () { pointerDown = true; pointerDownAt = Date.now(); }, true);
       doc.addEventListener("mouseup", function () {
         pointerDown = false;
         if (renderPending) setT(function () { if (!pointerDown && renderPending) { renderPending = false; renderAll(); } }, 0);
       }, true);
     }
+    dnd.bind();
+    if (divider && divider.addEventListener && win) {
+      divider.addEventListener("pointerdown", function (ev) {
+        if (ev.button) return;
+        ev.preventDefault();
+        var left = 0; try { left = mainEl.getBoundingClientRect().left; } catch (e) { left = 0; }
+        try { divider.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+        if (root && root.classList) root.classList.toggle("resizing", true);
+        function mv(e) { setRailWidth(e.clientX - left, false); }
+        function upd() {
+          divider.removeEventListener("pointermove", mv); divider.removeEventListener("pointerup", upd); divider.removeEventListener("pointercancel", upd);
+          if (root && root.classList) root.classList.toggle("resizing", false);
+          setRailWidth(ui.railW);                                    // persist once, at the end
+        }
+        divider.addEventListener("pointermove", mv); divider.addEventListener("pointerup", upd); divider.addEventListener("pointercancel", upd);
+      });
+      divider.addEventListener("keydown", function (ev) { if (railKey(ev.key)) ev.preventDefault(); });
+      divider.addEventListener("dblclick", function () { setRailWidth(null); });
+      win.addEventListener("resize", function () {
+        if (ui.railW) setRailWidth(ui.railW, false); else applyRailWidth();
+        if (state.board) { if (ui.pickerW) setPickerWidth(ui.pickerW, false); renderAll(); }
+      });
+    }
+    if (R.board && R.board.addEventListener) {
+      R.board.addEventListener("pointerdown", function (ev) {
+        var h = ev.target && ev.target.closest ? ev.target.closest(".picker-divider") : null;
+        if (!h || ev.button) return;
+        ev.preventDefault();
+        var pk = h.closest(".picker"), left = 0; try { left = pk.getBoundingClientRect().left; } catch (e) { left = 0; }
+        try { h.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+        if (root && root.classList) root.classList.toggle("resizing", true);
+        function mv(e) { setPickerWidth(e.clientX - left, false); }
+        function upd() {
+          h.removeEventListener("pointermove", mv); h.removeEventListener("pointerup", upd); h.removeEventListener("pointercancel", upd);
+          if (root && root.classList) root.classList.toggle("resizing", false);
+          setPickerWidth(ui.pickerW);                                // persist once, at the end
+        }
+        h.addEventListener("pointermove", mv); h.addEventListener("pointerup", upd); h.addEventListener("pointercancel", upd);
+      });
+      R.board.addEventListener("keydown", function (ev) {
+        if (ev.target && ev.target.classList && ev.target.classList.contains("picker-divider") && pickerKey(ev.key)) ev.preventDefault();
+      });
+      R.board.addEventListener("dblclick", function (ev) {
+        if (ev.target && ev.target.classList && ev.target.classList.contains("picker-divider")) setPickerWidth(null);
+      });
+    }
+    applyRailWidth();
     if (R.sheet && R.sheet.addEventListener) {
       R.sheet.addEventListener("pointerdown", function (ev) {
         var g = ev.target && ev.target.closest ? ev.target.closest(".sheet-grip") : null;
@@ -2593,7 +3397,223 @@ function createApp(env) {
 
   bind();
   return { init: init, act: act, api: api, M: M, ui: ui, getState: function () { return state; }, setState: setState,
-    renderAll: renderAll, openNode: openNode, escapeKey: escapeKey, onEvent: onEvent, loadGrade: loadGrade, regions: R };
+    renderAll: renderAll, openNode: openNode, escapeKey: escapeKey, onEvent: onEvent, loadGrade: loadGrade, regions: R,
+    dnd: dnd, setRailWidth: setRailWidth, railKey: railKey, setPickerWidth: setPickerWidth, pickerKey: pickerKey, undo: undo };
+}
+
+/* ========================================================================
+ * 6b. drag-and-drop pointer machine (board brief section 5)
+ *
+ * Pointer Events, not the HTML5 drag API: one path for mouse, pen and touch.
+ * A mouse or pen drag starts after 5px of movement (so clicks still work);
+ * touch needs a 300ms long-press (so scrolling still works).  The machine
+ * never writes: on drop it hands (drag, target, plan) to o.onDrop.  Esc or
+ * pointercancel aborts with no write.
+ *
+ * o.hit(x, y, drag) -> target is injectable so node tests can run whole
+ * pointer sequences; in the browser it is domHit (elementFromPoint and
+ * getBoundingClientRect).  The ghost, the drop indicator and auto-scroll are
+ * DOM-only and skipped when there is no window.
+ * ===================================================================== */
+
+var DRAG_THRESHOLD = 5, TOUCH_SLOP = 8, LONG_PRESS_MS = 300, EDGE_PX = 40, EDGE_SPEED = 14;
+
+/** The drag source an element describes (data-drag + data-id / data-key). */
+function dragSourceOf(el) {
+  var k = el.getAttribute("data-drag"), id = Number(el.getAttribute("data-id"));
+  if (k === "node") return { kind: "node", key: el.getAttribute("data-key") };
+  if (k === "slot") return { kind: "slot", slotId: id };
+  if (k === "placement") return { kind: "placement", placementId: id };
+  if (k === "module") return { kind: "module", moduleId: id };
+  return null;
+}
+
+function createDnd(o) {
+  // the timers are called bare: native setTimeout throws "Illegal invocation" when called as setT(...)
+  var setT = o.setT, clearT = o.clearT;
+  var doc = o.doc, win = o.win, pend = null, cur = null, eatClick = false, dom = { ghost: null, line: null, tag: null, lit: null, src: null, raf: null };
+
+  function clearPend() { if (pend && pend.timer) clearT(pend.timer); pend = null; }
+  /** pointerdown on a drag source.  el is the element (DOM only). */
+  function down(src, x, y, pointerType, el, pointerId) {
+    if (cur) cancel();
+    clearPend();
+    if (!src) return false;
+    var p = pend = { src: src, x0: x, y0: y, x: x, y: y, touch: pointerType === "touch", ready: pointerType !== "touch", el: el || null, pid: pointerId, timer: null };
+    if (p.touch) p.timer = setT(function () { if (pend === p) { p.ready = true; start(); } }, LONG_PRESS_MS);
+    return true;
+  }
+  function start() {
+    var p = pend; pend = null;
+    if (p.timer) clearT(p.timer);
+    cur = { drag: p.src, el: p.el, x: p.x, y: p.y, target: null, plan: null, pid: p.pid };
+    o.onStart(cur.drag);
+    domStart();
+    update();
+  }
+  function move(x, y) {
+    if (pend) {
+      pend.x = x; pend.y = y;
+      var d = Math.max(Math.abs(x - pend.x0), Math.abs(y - pend.y0));
+      if (!pend.ready) { if (d > TOUCH_SLOP) clearPend(); return false; }    // a scroll, not a long-press
+      if (d < DRAG_THRESHOLD) return false;
+      start();
+    }
+    if (!cur) return false;
+    cur.x = x; cur.y = y;
+    update();
+    return true;
+  }
+  function update() {
+    cur.target = (o.hit || domHit)(cur.x, cur.y, cur.drag);
+    cur.plan = cur.target ? o.plan(cur.drag, cur.target) : null;
+    domOver();
+  }
+  /** pointerup: a plain click when no drag started; else the drop (resolves to the write's result). */
+  function up(x, y) {
+    if (pend) { clearPend(); return Promise.resolve(null); }
+    if (!cur) return Promise.resolve(null);
+    if (x !== undefined && x !== null) { cur.x = x; cur.y = y; update(); }
+    var c = cur; cur = null;
+    eatClick = true; setT(function () { eatClick = false; }, 0);
+    domEnd();
+    o.onEnd(c, false);
+    if (!c.plan || c.plan.noop) return Promise.resolve(null);
+    return Promise.resolve(o.onDrop(c.drag, c.target, c.plan));
+  }
+  /** Esc / pointercancel: abort, no write.  True when a drag was running. */
+  function cancel() {
+    clearPend();
+    if (!cur) return false;
+    var c = cur; cur = null;
+    domEnd();
+    o.onEnd(c, true);
+    return true;
+  }
+
+  /* ---- DOM: hit test, ghost, indicator, auto-scroll ---- */
+  function domHit(x, y, drag) {
+    if (!doc.elementFromPoint) return null;
+    var el = doc.elementFromPoint(x, y);
+    if (!el || !el.closest) return null;
+    var mod = el.closest('[data-kind="module"]');
+    if (drag.kind === "module") {
+      if (!mod) return null;
+      var r = mod.getBoundingClientRect(), b = o.isBoard();
+      return { kind: "module", moduleId: Number(mod.getAttribute("data-id")),
+        zone: b ? (x < r.left + r.width / 2 ? "before" : "after") : (y < r.top + r.height / 2 ? "before" : "after") };
+    }
+    var sl = el.closest('[data-kind="slot"]');
+    if (sl && sl.getAttribute("data-id")) return { kind: "slot", slotId: Number(sl.getAttribute("data-id")), zone: dropTarget(y, sl.getBoundingClientRect()) };
+    if (!mod) return null;
+    var mid = Number(mod.getAttribute("data-id"));
+    if (el.closest(".mod-h, .mod-sub")) return { kind: "module-end", moduleId: mid };
+    // between slots: the next slot down, as "before"; below the last one, the end of the module
+    var rows = mod.querySelectorAll('[data-kind="slot"][data-id]');
+    for (var i = 0; i < rows.length; i++) {
+      var q = rows[i].getBoundingClientRect();
+      if (y < q.top) return { kind: "slot", slotId: Number(rows[i].getAttribute("data-id")), zone: "before" };
+      if (y <= q.bottom) return { kind: "slot", slotId: Number(rows[i].getAttribute("data-id")), zone: dropTarget(y, q) };
+    }
+    return { kind: "module-end", moduleId: mid };
+  }
+  function srcElOf(c) {
+    if (!c.el || !c.el.closest) return null;
+    var k = c.drag.kind;
+    return k === "slot" ? c.el.closest('[data-kind="slot"]') : k === "placement" ? c.el.closest(".plrow, .pl")
+      : k === "module" ? c.el.closest('[data-kind="module"]') : c.el.closest(".chip, .pchip") || c.el;
+  }
+  function mk(cls) { var d = doc.createElement("div"); d.className = cls; d.setAttribute("aria-hidden", "true"); doc.body.appendChild(d); return d; }
+  function domStart() {
+    if (!win || !doc.createElement || !doc.body) return;
+    try { if (win.getSelection) win.getSelection().removeAllRanges(); } catch (e) { /* ignore */ }
+    var src = srcElOf(cur);
+    if (src) {
+      dom.src = src; src.classList.add("drag-src");
+      var r = src.getBoundingClientRect();
+      dom.ghost = src.cloneNode(true); dom.ghost.removeAttribute("id");
+      dom.ghost.className += " dnd-ghost"; dom.ghost.setAttribute("aria-hidden", "true");
+      dom.ghost.style.width = Math.min(r.width, 320) + "px";
+      doc.body.appendChild(dom.ghost);
+    }
+    if (cur.el && cur.el.setPointerCapture && cur.pid !== undefined) { try { cur.el.setPointerCapture(cur.pid); } catch (e) { /* ignore */ } }
+    dom.line = mk("dnd-line"); dom.tag = mk("dnd-tag");
+    loop();
+  }
+  function unlight() { if (dom.lit) { dom.lit.classList.remove("drop-onto", "drop-end"); dom.lit = null; } }
+  function domOver() {
+    if (!dom.line) return;
+    var c = cur, t = c.target, plan = c.plan;
+    if (dom.ghost) { dom.ghost.style.left = (c.x + 14) + "px"; dom.ghost.style.top = (c.y + 10) + "px"; dom.ghost.classList.toggle("no-drop", !plan); }
+    unlight(); dom.line.style.display = "none"; dom.tag.style.display = "none";
+    if (!t) return;
+    var el = t.kind === "slot" ? doc.querySelector('[data-kind="slot"][data-id="' + t.slotId + '"]') : doc.querySelector('[data-kind="module"][data-id="' + t.moduleId + '"]');
+    if (!el) return;
+    var r = el.getBoundingClientRect(), tx = r.left, ty = r.top;
+    if (plan && (t.zone === "before" || t.zone === "after")) {
+      var vert = t.kind === "module" && o.isBoard();
+      var ls = dom.line.style; ls.display = "block";
+      if (vert) { ls.left = ((t.zone === "before" ? r.left : r.right) - 2) + "px"; ls.top = r.top + "px"; ls.width = "4px"; ls.height = r.height + "px"; tx = r.left; ty = r.top - 24; }
+      else { ls.left = r.left + "px"; ls.top = ((t.zone === "before" ? r.top : r.bottom) - 2) + "px"; ls.width = r.width + "px"; ls.height = "4px"; ty = (t.zone === "before" ? r.top : r.bottom) - 26; }
+    } else if (plan) {
+      dom.lit = el; el.classList.add(t.zone === "onto" ? "drop-onto" : "drop-end");
+      ty = r.top - 24;
+    }
+    dom.tag.textContent = plan ? (plan.noop ? "Already here" : plan.label) : "Can’t drop here";
+    dom.tag.classList.toggle("bad", !plan);
+    dom.tag.style.display = "block"; dom.tag.style.left = Math.max(4, tx) + "px"; dom.tag.style.top = Math.max(4, ty) + "px";
+  }
+  /** Auto-scroll any [data-scroll] container whose edge (40px) the pointer is near. */
+  function loop() {
+    if (!win || !win.requestAnimationFrame) return;
+    dom.raf = win.requestAnimationFrame(function () {
+      if (!cur) return;
+      var moved = false;
+      Array.prototype.forEach.call(doc.querySelectorAll("[data-scroll]"), function (el) {
+        var r = el.getBoundingClientRect(), x = cur.x, y = cur.y;
+        if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+        if (el.scrollHeight > el.clientHeight) {
+          if (y < r.top + EDGE_PX && el.scrollTop > 0) { el.scrollTop -= EDGE_SPEED; moved = true; }
+          else if (y > r.bottom - EDGE_PX && el.scrollTop + el.clientHeight < el.scrollHeight) { el.scrollTop += EDGE_SPEED; moved = true; }
+        }
+        if (el.scrollWidth > el.clientWidth) {
+          if (x < r.left + EDGE_PX && el.scrollLeft > 0) { el.scrollLeft -= EDGE_SPEED; moved = true; }
+          else if (x > r.right - EDGE_PX && el.scrollLeft + el.clientWidth < el.scrollWidth) { el.scrollLeft += EDGE_SPEED; moved = true; }
+        }
+      });
+      if (moved) update();
+      loop();
+    });
+  }
+  function domEnd() {
+    if (dom.raf && win && win.cancelAnimationFrame) win.cancelAnimationFrame(dom.raf);
+    dom.raf = null; unlight();
+    [dom.ghost, dom.line, dom.tag].forEach(function (el) { if (el && el.parentNode) el.parentNode.removeChild(el); });
+    if (dom.src && dom.src.classList) dom.src.classList.remove("drag-src");
+    dom.ghost = dom.line = dom.tag = dom.src = null;
+  }
+
+  /** Browser wiring: document-level pointer listeners, Esc, the click that follows a drop, touch scroll. */
+  function bind() {
+    if (!doc.addEventListener || !win) return;
+    doc.addEventListener("pointerdown", function (ev) {
+      var t = ev.target, el = t && t.closest ? t.closest("[data-drag]") : null;
+      if (!el || (ev.button !== undefined && ev.button !== 0) || ev.isPrimary === false) return;
+      var field = t.closest("button, input, select, textarea, a, label");
+      if (field && field !== el) return;                      // the buttons inside a module header stay buttons
+      down(dragSourceOf(el), ev.clientX, ev.clientY, ev.pointerType, el, ev.pointerId);
+    });
+    doc.addEventListener("pointermove", function (ev) { if ((pend || cur) && move(ev.clientX, ev.clientY) && ev.cancelable) ev.preventDefault(); });
+    doc.addEventListener("pointerup", function (ev) { if (pend || cur) up(ev.clientX, ev.clientY); });
+    doc.addEventListener("pointercancel", function () { cancel(); });
+    doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && cur) { cancel(); ev.preventDefault(); ev.stopPropagation(); } }, true);
+    doc.addEventListener("click", function (ev) { if (eatClick) { eatClick = false; ev.preventDefault(); ev.stopPropagation(); } }, true);
+    doc.addEventListener("touchmove", function (ev) { if (cur && ev.cancelable) ev.preventDefault(); }, { passive: false });
+    doc.addEventListener("contextmenu", function (ev) { if (cur || (pend && pend.touch)) ev.preventDefault(); });
+  }
+
+  return { down: down, move: move, up: up, cancel: cancel, bind: bind,
+    active: function () { return !!cur; }, pending: function () { return !!pend; }, current: function () { return cur; } };
 }
 
 /* ========================================================================
@@ -2624,7 +3644,8 @@ function boot(env0) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { esc, encodeState, decodeState, defaultState, computeGuardrail, assembleCompare,
-    visibleSlice, DemoApi, HttpApi, ApiError, renderSlice, renderDrawer,
+    visibleSlice, DemoApi, HttpApi, ApiError, inverseOf, runUndoSteps, layoutIndex, renderSlice, renderDrawer,
+    clampRailWidth, clampPickerWidth, pickerNodes, dropTarget, toIndex, planDrop, dropAnnouncement, dragSourceOf, createDnd, renderBoard, renderPicker, renderMiniBars,
     renderRail, renderSheet, renderGuardrail, renderAttention, renderToolbar,
     // extras used by the tests
     encodeUrlQuery, decodeGrade, lensOf, applyLens, toggleCompare, toggleCollapse, moveStem, effectiveCollapsed,

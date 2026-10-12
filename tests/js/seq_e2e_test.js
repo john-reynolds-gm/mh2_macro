@@ -204,6 +204,27 @@ async function scenario(api, label, opts) {
   assert.deepStrictEqual([view.placed_index[K["NS-BASE10-0012"]].module_id, view.placed_index[K["NS-BASE10-0012"]].slot_position], [m2, 1]);
   await W("slot_cross_up", () => api.moveSlot(slotOf(K["NS-BASE10-0012"]), rev(), { direction: "up" }));
   assert.strictEqual(view.placed_index[K["NS-BASE10-0012"]].module_id, m1);
+  // positional moves (board brief section 2): to_index, counted without the moved item; each pair puts the layout back
+  const B12 = K["NS-BASE10-0012"], C12p = K["NS-COMP-ORDER-0012"], B10 = K["NS-BASE10-0010"];
+  await W("pos_module_first", () => api.moveModule(m2, rev(), { to_index: 0 }));
+  assert.strictEqual(view.modules[0].module_id, m2);
+  await W("pos_module_back", () => api.moveModule(m2, rev(), { to_index: 1 }));
+  const r0 = rev();
+  await W("pos_module_noop", () => api.moveModule(m1, rev(), { to_index: 0 }));
+  assert.strictEqual(rev(), r0, label + ": a positional no-op does not bump rev");
+  await W("pos_module_range", () => api.moveModule(m1, rev(), { to_index: 2 }), "invalid");
+  await W("pos_slot_to_m2_top", () => api.moveSlot(slotOf(B12), rev(), { to_module_id: m2, to_index: 0 }));
+  assert.deepStrictEqual([view.placed_index[B12].module_id, view.placed_index[B12].slot_position], [m2, 1]);
+  await W("pos_slot_back", () => api.moveSlot(slotOf(B12), rev(), { to_module_id: m1, to_index: 1 }));
+  assert.deepStrictEqual([view.placed_index[B12].module_id, view.placed_index[B12].slot_position], [m1, 2]);
+  await W("pos_slot_range", () => api.moveSlot(slotOf(B12), rev(), { to_module_id: m1, to_index: 5 }), "invalid");
+  await W("pos_placement_out", () => api.movePlacement(pid(C12p), rev(), m1, 0));
+  assert.deepStrictEqual([view.placed_index[C12p].module_id, view.placed_index[C12p].slot_position], [m1, 1]);
+  assert.strictEqual(steps.pos_placement_out.result.slot_id, slotOf(C12p));
+  await W("pos_placement_range", () => api.movePlacement(pid(C12p), rev(), m1, 3), "invalid");
+  await W("pos_placement_stale", () => api.movePlacement(pid(C12p), rev() - 1, m2, 0), "stale_revision");
+  await W("pos_placement_back", () => api.coPlace(pid(C12p), rev(), slotOf(B10)));
+  assert.strictEqual(slotOf(C12p), slotOf(B10));
   // labels and titles
   await W("slot_label", () => api.updateSlot(slotOf(K["NS-BASE10-0010"]), rev(), "Co-taught: compare"));
   await W("module_title", () => api.updateModule(m1, rev(), { title: "M1 Place value and order" }));

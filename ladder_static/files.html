@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MH2 Ladder Files</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7; --panel: #ffffff; --border: #e2e4e9; --border-strong: #cbcfd8;
+  --text: #1a1d23; --muted: #6b7080; --muted-2: #8a8f9c;
+  --accent: #3457d5; --accent-fg: #ffffff; --accent-soft: #eaeefc; --accent-soft-bd: #c3ccf3;
+  --green-bg: #e6f4ea; --green-fg: #1e7a37; --green-bd: #b3ddbf;
+  --yellow-bg: #fdf1d6; --yellow-fg: #8a5a00; --yellow-bd: #efd694;
+  --red-bg: #fbe6e4; --red-fg: #ab2f24; --red-bd: #f0bab2;
+  --chip-bg: #eef0f3; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 33, .05);
+  --shadow-md: 0 2px 8px rgba(20, 24, 33, .06), 0 1px 2px rgba(20, 24, 33, .04);
+  --shadow-lg: 0 8px 24px rgba(20, 24, 33, .08), 0 2px 6px rgba(20, 24, 33, .05);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  padding: 16px 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5; box-shadow: var(--shadow-sm);
+}
+.head-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: 17px; font-weight: 650; letter-spacing: -.01em; margin: 0; }
+.back { font-size: 12.5px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.back:hover { text-decoration: underline; }
+.spacer { flex: 1; }
+.note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; max-width: 900px; }
+.note b { color: var(--text); }
+.btn {
+  display: inline-flex; align-items: center; padding: 5px 13px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--panel); color: var(--text);
+  font: inherit; font-size: 12.5px; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.btn:hover { border-color: var(--border-strong); background: var(--chip-bg); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.outline { border-color: var(--accent); color: var(--accent); }
+.btn.outline:hover { background: var(--accent-soft); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.small { padding: 3px 9px; font-size: 12px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--chip-bg); color: var(--muted);
+}
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pill.idle { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-bd); }
+.pill.running { background: var(--yellow-bg); color: var(--yellow-fg); border-color: var(--yellow-bd); }
+.pill.failed { background: var(--red-bg); color: var(--red-fg); border-color: var(--red-bd); cursor: pointer; }
+.filters {
+  padding: 14px 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-end;
+}
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-group .label { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-2); }
+select, input[type=text], textarea {
+  padding: 6px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font: inherit; font-size: 13px; background: var(--panel);
+}
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+main { padding: 24px 24px 48px; }
+#fail-box { margin-bottom: 16px; }
+.alert { padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--red-bd); background: var(--red-bg); color: var(--red-fg); font-size: 13px; }
+.alert.warn { border-color: var(--yellow-bd); background: var(--yellow-bg); color: var(--yellow-fg); }
+.alert pre { white-space: pre-wrap; font-size: 11.5px; max-height: 260px; overflow: auto; background: rgba(255,255,255,.6); padding: 8px; border-radius: var(--radius-sm); color: var(--text); }
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0; background: var(--panel);
+  border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+}
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
+th { font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-2); background: #fbfbfc; }
+thead th:first-child { border-top-left-radius: var(--radius-lg); }
+thead th:last-child { border-top-right-radius: var(--radius-lg); }
+tbody tr:last-child td { border-bottom: none; }
+td.stem b { font-weight: 650; }
+.sub { color: var(--muted); font-size: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+.chip {
+  display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 650;
+  border: 1px solid var(--border); background: var(--chip-bg); color: var(--muted); white-space: nowrap;
+}
+.chip.uploaded { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-bd); }
+.chip.repo { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft-bd); }
+.chip.empty { background: var(--chip-bg); color: var(--muted); }
+.chip.rejected { background: var(--red-bg); color: var(--red-fg); border-color: var(--red-bd); }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+tr.history td { background: #fafbfc; padding: 10px 14px 14px 40px; }
+.versions { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: none; }
+.versions th, .versions td { padding: 6px 10px; font-size: 12.5px; }
+.live-tag { color: var(--green-fg); font-weight: 650; font-size: 11.5px; }
+.empty-msg { padding: 32px; text-align: center; color: var(--muted); }
+dialog {
+  border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  padding: 0; width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); color: var(--text);
+}
+dialog::backdrop { background: rgba(20, 24, 33, .35); }
+.dlg-head { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.dlg-head h2 { font-size: 15px; margin: 0; }
+.dlg-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.dlg-foot { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; }
+.stat .n { font-size: 18px; font-weight: 650; }
+.stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.removed-list { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); }
+.issues { font-size: 12px; color: var(--muted); }
+label.confirm { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; font-weight: 600; }
+textarea { width: 100%; min-height: 54px; resize: vertical; }
+@media (max-width: 720px) {
+  header, .filters, main { padding-left: 16px; padding-right: 16px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  th:nth-child(2), td:nth-child(2), th:nth-child(6), td:nth-child(6) { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <a class="back" href="/">&larr; Coverage</a>
+    <h1>Ladder Files</h1>
+    <span id="rebuild-pill" class="pill" title="Database rebuild status"><span class="dot"></span><span id="rebuild-text">Checking…</span></span>
+    <span class="spacer"></span>
+    <a class="btn outline" href="/api/ladders/export.zip" download
+       title="Every live ladder plus a manifest CSV — the team's backup and the hand-off back to SharePoint">Download all (zip)</a>
+  </div>
+  <p class="note">For any stem that has an upload, <b>the uploaded file is the source of truth</b>.
+    The copy in the repo is only a seed for stems that have never been uploaded; a newer ladder committed
+    to the repo does not replace an upload. Each upload or revert triggers a database rebuild — the
+    coverage page reflects it once the status above returns to “Up to date”.</p>
+</header>
+<div class="filters">
+  <div class="filter-group"><span class="label">Band</span>
+    <select id="f-band"><option value="">All</option><option value="PK5">PK5</option><option value="6_9">6_9</option></select></div>
+  <div class="filter-group"><span class="label">Stem group</span>
+    <select id="f-group"><option value="">All</option></select></div>
+  <div class="filter-group"><span class="label">Status</span>
+    <select id="f-status">
+      <option value="">All</option><option value="uploaded">Uploaded</option><option value="repo">Repo copy</option>
+      <option value="empty">Empty</option><option value="rejected">Rejected/error</option>
+    </select></div>
+  <div class="filter-group"><span class="label">Search</span>
+    <input id="f-search" type="text" placeholder="stem name or code" autocomplete="off"></div>
+  <span class="sub" id="count"></span>
+</div>
+<main>
+  <div id="fail-box"></div>
+  <table>
+    <thead><tr><th>Band</th><th>Group</th><th>Stem</th><th>Status</th><th>Last updated</th><th>Versions</th><th>Actions</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="7" class="empty-msg">Loading…</td></tr></tbody>
+  </table>
+</main>
+
+<dialog id="upload-dlg">
+  <form method="dialog" id="upload-form" onsubmit="return false">
+    <div class="dlg-head"><h2 id="dlg-title">Upload ladder</h2><div class="sub" id="dlg-sub"></div></div>
+    <div class="dlg-body">
+      <div>
+        <input type="file" id="dlg-file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        <div class="sub" id="dlg-hint">The file is checked first; nothing changes until you press Commit.</div>
+      </div>
+      <div id="dlg-msg"></div>
+      <div id="dlg-preview" hidden></div>
+      <div id="dlg-commit-fields" hidden>
+        <label class="confirm" id="dlg-confirm-wrap" hidden><input type="checkbox" id="dlg-confirm">
+          <span id="dlg-confirm-text"></span></label>
+        <div class="filter-group" style="margin-top:10px"><span class="label">Note (optional)</span>
+          <textarea id="dlg-note" placeholder="What changed in this version?"></textarea></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" id="dlg-cancel">Cancel</button>
+      <button type="button" class="btn outline" id="dlg-validate" disabled>Check file</button>
+      <button type="button" class="btn primary" id="dlg-commit" hidden disabled>Commit</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+  var ladders = [];
+  var openHistory = {};
+  var current = null;      // { stem, preview }
+  var pollTimer = null;
+  var lastState = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    return isNaN(d) ? iso : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function fmtSize(n) { return n == null ? '' : (n / (1024 * 1024)).toFixed(1) + ' MB'; }
+  function errText(body, status) {
+    var d = body && body.detail;
+    if (d && typeof d === 'object' && d.message) return d.message;
+    if (typeof d === 'string') return d;
+    return 'Request failed (' + status + ')';
+  }
+  function api(method, url, body) {
+    var opts = { method: method, headers: {} };
+    if (body instanceof FormData) opts.body = body;
+    else if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(url, opts).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (data) {
+        if (!r.ok) { var e = new Error(errText(data, r.status)); e.status = r.status; e.body = data; throw e; }
+        return data;
+      });
+    });
+  }
+
+  var STATUS_LABEL = { uploaded: 'Uploaded', repo: 'Repo copy', empty: 'Empty', rejected: 'Rejected/error' };
+
+  // ------------------------------------------------------------ table
+  function loadLadders() {
+    return api('GET', '/api/ladders').then(function (rows) {
+      ladders = rows;
+      var groups = {};
+      rows.forEach(function (r) { if (r.stem_group) groups[r.stem_group] = 1; });
+      var sel = $('f-group'), keep = sel.value;
+      sel.innerHTML = '<option value="">All</option>' + Object.keys(groups).sort().map(function (g) {
+        return '<option value="' + esc(g) + '">' + esc(g) + '</option>';
+      }).join('');
+      sel.value = keep;
+      render();
+    }).catch(function (e) {
+      $('rows').innerHTML = '<tr><td colspan="7" class="empty-msg">Could not load ladders: ' + esc(e.message) + '</td></tr>';
+    });
+  }
+
+  function filtered() {
+    var band = $('f-band').value, group = $('f-group').value, status = $('f-status').value;
+    var q = $('f-search').value.trim().toLowerCase();
+    return ladders.filter(function (r) {
+      if (band && r.band !== band) return false;
+      if (group && r.stem_group !== group) return false;
+      if (status && r.status !== status) return false;
+      if (q && (r.masterlist_name + ' ' + r.stem_id + ' ' + r.workbook_stems.join(' ')).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    var rows = filtered();
+    $('count').textContent = rows.length + ' of ' + ladders.length + ' stems';
+    if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty-msg">No stems match these filters.</td></tr>'; return; }
+    $('rows').innerHTML = rows.map(function (r) {
+      var updated = '';
+      if (r.live) updated = esc(fmtDate(r.live.uploaded_at)) + '<div class="sub">by ' + esc(r.live.uploaded_by) + '</div>';
+      else if (r.source === 'repo') updated = '<span class="sub">repo seed</span>';
+      var statusCell = '<span class="chip ' + r.status + '">' + STATUS_LABEL[r.status] + '</span>';
+      if (r.rejection) {
+        statusCell += '<div class="sub" style="color:var(--red-fg)">' + esc(r.rejection.reason) + '</div>' +
+          '<div class="sub">' + esc(fmtDate(r.rejection.attempted_at)) + ' · ' + esc(r.rejection.attempted_by) + '</div>' +
+          '<div class="sub">Serving: ' + (r.source === 'upload' ? 'last upload' : r.source === 'repo' ? 'repo copy' : 'nothing') + '</div>';
+      }
+      var names = r.workbook_stems.length > 1 ? '<div class="sub">covers ' + r.workbook_stems.map(esc).join(' + ') + '</div>' : '';
+      var hasFile = r.source !== 'none';
+      var html = '<tr data-stem="' + esc(r.stem_id) + '">' +
+        '<td>' + esc(r.band) + '</td>' +
+        '<td>' + esc(r.stem_group) + '</td>' +
+        '<td class="stem"><b>' + esc(r.masterlist_name) + '</b><div class="sub mono">' + esc(r.stem_id) + '</div>' + names + '</td>' +
+        '<td>' + statusCell + '</td>' +
+        '<td>' + updated + '</td>' +
+        '<td>' + (r.version_count || '') + '</td>' +
+        '<td><div class="actions">' +
+          '<button class="btn small primary" data-act="upload">' + (hasFile ? 'Replace' : 'Upload') + '</button>' +
+          (hasFile ? '<a class="btn small" href="/api/ladders/' + encodeURIComponent(r.stem_id) + '/file" download title="' + esc(r.canonical_name) + '">Download</a>' : '') +
+          (r.version_count ? '<button class="btn small" data-act="history">' + (openHistory[r.stem_id] ? 'Hide history' : 'History') + '</button>' : '') +
+        '</div></td></tr>';
+      if (openHistory[r.stem_id]) html += '<tr class="history" data-history="' + esc(r.stem_id) + '"><td colspan="7"><span class="sub">Loading…</span></td></tr>';
+      return html;
+    }).join('');
+    Object.keys(openHistory).forEach(function (sid) { if (openHistory[sid]) loadHistory(sid); });
+  }
+
+  function loadHistory(stemId) {
+    api('GET', '/api/ladders/' + encodeURIComponent(stemId) + '/versions').then(function (vs) {
+      var cell = document.querySelector('tr[data-history="' + CSS.escape(stemId) + '"] td');
+      if (!cell) return;
+      cell.innerHTML = '<table class="versions"><thead><tr><th>#</th><th>Uploaded</th><th>File</th><th>Nodes</th><th>Note</th><th></th></tr></thead><tbody>' +
+        vs.map(function (v) {
+          var base = '/api/ladders/' + encodeURIComponent(stemId) + '/versions/' + v.upload_id;
+          return '<tr><td>' + v.upload_id + (v.is_live ? ' <span class="live-tag">LIVE</span>' : '') + '</td>' +
+            '<td>' + esc(fmtDate(v.uploaded_at)) + '<div class="sub">by ' + esc(v.uploaded_by) + '</div></td>' +
+            '<td>' + esc(v.original_name) + '<div class="sub">' + fmtSize(v.size_bytes) + ' · <span class="mono">' + esc(v.sha256.slice(0, 8)) + '</span></div></td>' +
+            '<td>' + v.node_count + '</td>' +
+            '<td>' + esc(v.note || '') + '</td>' +
+            '<td><div class="actions"><a class="btn small" href="' + base + '/file" download>Download</a>' +
+            (v.is_live ? '' : '<button class="btn small outline" data-revert="' + v.upload_id + '" data-stem="' + esc(stemId) + '">Revert to this</button>') +
+            '</div></td></tr>';
+        }).join('') + '</tbody></table>';
+    }).catch(function (e) {
+      var cell = document.querySelector('tr[data-history="' + CSS.escape(stemId) + '"] td');
+      if (cell) cell.innerHTML = '<span class="sub">Could not load history: ' + esc(e.message) + '</span>';
+    });
+  }
+
+  $('rows').addEventListener('click', function (ev) {
+    var rv = ev.target.closest('[data-revert]');
+    if (rv) {
+      var sid = rv.getAttribute('data-stem'), uid = rv.getAttribute('data-revert');
+      if (!confirm('Make version #' + uid + ' the live ladder for ' + sid + '? The database will rebuild.')) return;
+      rv.disabled = true;
+      api('POST', '/api/ladders/' + encodeURIComponent(sid) + '/revert/' + uid).then(function (res) {
+        showRebuild(res.rebuild); loadLadders();
+      }).catch(function (e) { alert(e.message); rv.disabled = false; });
+      return;
+    }
+    var btn = ev.target.closest('[data-act]');
+    if (!btn) return;
+    var stemId = btn.closest('tr').getAttribute('data-stem');
+    var r = ladders.filter(function (x) { return x.stem_id === stemId; })[0];
+    if (btn.getAttribute('data-act') === 'history') { openHistory[stemId] = !openHistory[stemId]; render(); }
+    else openUpload(r);
+  });
+  ['f-band', 'f-group', 'f-status'].forEach(function (id) { $(id).addEventListener('change', render); });
+  $('f-search').addEventListener('input', render);
+
+  // ------------------------------------------------------------ upload modal
+  function resetDialog() {
+    $('dlg-file').value = '';
+    $('dlg-msg').innerHTML = '';
+    $('dlg-preview').hidden = true; $('dlg-preview').innerHTML = '';
+    $('dlg-commit-fields').hidden = true;
+    $('dlg-confirm-wrap').hidden = true; $('dlg-confirm').checked = false;
+    $('dlg-note').value = '';
+    $('dlg-validate').hidden = false; $('dlg-validate').disabled = true;
+    $('dlg-commit').hidden = true; $('dlg-commit').disabled = true;
+  }
+
+  function openUpload(r) {
+    current = { stem: r, preview: null };
+    resetDialog();
+    $('dlg-title').textContent = (r.source === 'none' ? 'Upload' : 'Replace') + ' ladder — ' + r.masterlist_name;
+    $('dlg-sub').innerHTML = '<span class="mono">' + esc(r.stem_id) + '</span> · saved as <span class="mono">' + esc(r.canonical_name) + '</span>' +
+      (r.drafted_in_repo || r.source === 'upload' ? '' : ' · first upload registers this stem');
+    $('upload-dlg').showModal();
+  }
+
+  $('dlg-file').addEventListener('change', function () {
+    current.preview = null;
+    $('dlg-preview').hidden = true; $('dlg-commit-fields').hidden = true;
+    $('dlg-commit').hidden = true; $('dlg-validate').hidden = false;
+    $('dlg-msg').innerHTML = '';
+    $('dlg-validate').disabled = !$('dlg-file').files.length;
+  });
+  $('dlg-cancel').addEventListener('click', function () { $('upload-dlg').close(); });
+  $('upload-dlg').addEventListener('close', function () { current = null; });
+
+  $('dlg-validate').addEventListener('click', function () {
+    var f = $('dlg-file').files[0];
+    if (!f) return;
+    var fd = new FormData(); fd.append('file', f);
+    $('dlg-validate').disabled = true;
+    $('dlg-msg').innerHTML = '<span class="sub">Checking ' + esc(f.name) + '… large ladders take a few seconds.</span>';
+    var stem = current.stem;
+    api('POST', '/api/ladders/' + encodeURIComponent(stem.stem_id) + '/validate', fd).then(function (p) {
+      if (!current || current.stem !== stem) return;
+      current.preview = p;
+      $('dlg-msg').innerHTML = '';
+      showPreview(p);
+    }).catch(function (e) {
+      $('dlg-msg').innerHTML = '<div class="alert">' + esc(e.message) + '</div>';
+      $('dlg-validate').disabled = false;
+      loadLadders();
+    });
+  });
+
+  function showPreview(p) {
+    var d = p.diff, html = '';
+    html += '<div class="stats">' +
+      '<div class="stat"><div class="n">' + p.node_count + '</div><div class="l">Nodes</div></div>' +
+      '<div class="stat"><div class="n">' + d.matched + '</div><div class="l">Unchanged</div></div>' +
+      '<div class="stat"><div class="n">' + d.new + '</div><div class="l">New / reworded</div></div>' +
+      '<div class="stat"><div class="n">' + d.removed + '</div><div class="l">Removed / reworded</div></div></div>';
+    if (d.live_node_count === 0) html += '<div class="sub">No nodes are live for this stem yet, so everything counts as new.</div>';
+    if (p.same_as_live) html += '<div class="alert warn">This file is identical to the current live version.</div>';
+    if (d.removed_texts.length) {
+      html += '<div><div class="sub">Live nodes this version no longer contains' + (d.removed > d.removed_texts.length ? ' (first ' + d.removed_texts.length + ' of ' + d.removed + ')' : '') + ':</div>' +
+        '<ul class="removed-list">' + d.removed_texts.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>';
+    }
+    if (p.issues && p.issues.length) {
+      html += '<div class="issues"><b>Parse notes:</b> ' + p.issues.map(function (i) {
+        return esc(i.kind + (i.detail ? ' — ' + i.detail : ''));
+      }).join('; ') + '</div>';
+    }
+    if (p.orphaned_review_count > 0) {
+      var o = p.orphans, parts = [];
+      if (o.tag_reviews) parts.push(o.tag_reviews + ' tag review' + (o.tag_reviews === 1 ? '' : 's'));
+      if (o.open_proposals) parts.push(o.open_proposals + ' open proposal' + (o.open_proposals === 1 ? '' : 's'));
+      if (o.candidate_rulings) parts.push(o.candidate_rulings + ' candidate ruling' + (o.candidate_rulings === 1 ? '' : 's'));
+      if (o.placements) parts.push(o.placements + ' sequence placement' + (o.placements === 1 ? '' : 's'));
+      html += '<div class="alert">' + p.orphaned_review_count + ' review decision' + (p.orphaned_review_count === 1 ? ' is' : 's are') +
+        ' attached to nodes this version removes or rewords (' + esc(parts.join(', ')) + '). ' +
+        'A reworded node becomes a new node, and those decisions will no longer attach to it.</div>';
+      $('dlg-confirm-text').textContent = 'I understand ' + p.orphaned_review_count + ' review decision' +
+        (p.orphaned_review_count === 1 ? '' : 's') + ' will be detached. Commit anyway.';
+      $('dlg-confirm-wrap').hidden = false;
+    }
+    $('dlg-preview').innerHTML = html; $('dlg-preview').hidden = false;
+    $('dlg-commit-fields').hidden = false;
+    $('dlg-validate').hidden = true;
+    $('dlg-commit').hidden = false;
+    syncCommit();
+  }
+
+  function syncCommit() {
+    var p = current && current.preview;
+    $('dlg-commit').disabled = !p || (p.orphaned_review_count > 0 && !$('dlg-confirm').checked);
+  }
+  $('dlg-confirm').addEventListener('change', syncCommit);
+
+  $('dlg-commit').addEventListener('click', function () {
+    var p = current.preview, stem = current.stem;
+    $('dlg-commit').disabled = true;
+    api('POST', '/api/ladders/' + encodeURIComponent(stem.stem_id) + '/commit', {
+      token: p.token, note: $('dlg-note').value, confirm_orphans: $('dlg-confirm').checked
+    }).then(function (res) {
+      $('upload-dlg').close();
+      showRebuild(res.rebuild);
+      loadLadders();
+    }).catch(function (e) {
+      $('dlg-msg').innerHTML = '<div class="alert">' + esc(e.message) + '</div>';
+      syncCommit();
+    });
+  });
+
+  // ------------------------------------------------------------ rebuild status
+  function showRebuild(s) {
+    var pill = $('rebuild-pill'), text = $('rebuild-text');
+    var running = s.state === 'running' || s.pending;
+    pill.className = 'pill ' + (running ? 'running' : s.state);
+    if (running) text.textContent = s.waiting_for_lock ? 'Waiting for another rebuild…' : 'Rebuilding…';
+    else if (s.state === 'failed') text.textContent = 'Rebuild failed';
+    else text.textContent = s.last_success_at ? 'Up to date · rebuilt ' + fmtDate(s.last_success_at) : 'Up to date';
+    pill.title = s.last_success_at ? 'Last successful rebuild ' + fmtDate(s.last_success_at) + ' by ' + (s.last_success_actor || '?') : '';
+    $('fail-box').innerHTML = s.state === 'failed' && !running
+      ? '<div class="alert"><b>The last rebuild failed</b> at step “' + esc(s.failed_step) + '” (' + esc(fmtDate(s.last_failure_at)) +
+        '). The app is still serving the database from before it, so the most recent upload has not taken effect. ' +
+        'Fix the file and upload again, or revert to an earlier version.<pre>' + esc((s.error_tail || []).join('\n')) + '</pre></div>'
+      : '';
+    var key = running ? 'running' : s.state;
+    if (lastState === 'running' && key !== 'running') loadLadders();
+    lastState = key;
+    clearTimeout(pollTimer);
+    if (running) pollTimer = setTimeout(pollRebuild, 5000);
+  }
+  function pollRebuild() {
+    api('GET', '/api/rebuild/status').then(showRebuild).catch(function () {
+      clearTimeout(pollTimer); pollTimer = setTimeout(pollRebuild, 5000);
+    });
+  }
+
+  loadLadders();
+  pollRebuild();
+})();
+</script>
+</body>
+</html>

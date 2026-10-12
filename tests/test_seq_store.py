@@ -755,6 +755,165 @@ def test_no_fastapi_and_no_mh2db_access():
     assert mods <= {"__future__", "json", "sqlite3", "contextlib", "datetime", "pathlib"}, mods
 
 
+# ------------------------------------------------- positional moves (to_index)
+
+def _order(con, kind, container):
+    return [p for p, _ in S._siblings(con, kind, container)]
+
+
+def _rev(con, sid):
+    return seq_rev(con, sid)
+
+
+def _fill(con, n_mods=2, per=3):
+    """n_mods modules, `per` single-node slots each; returns (sid, mids, {module: [slot ids]})."""
+    sid, mids = setup_seq(con, modules=n_mods)
+    slots = {m: [] for m in mids}
+    for mi, m in enumerate(mids):
+        for i in range(per):
+            r = S.place(con, "amy", sid, _rev(con, sid), snap(f"k{mi}{i}"), module_id=m)
+            slots[m].append(r["slot_id"])
+    return sid, mids, slots
+
+
+def test_move_module_to_index_start_middle_end_noop_range():
+    con = fresh()
+    sid, mids = setup_seq(con, modules=4)
+    a, b, c, d = mids
+    S.move_module(con, "amy", d, _rev(con, sid), to_index=0)
+    assert _order(con, "module", sid) == [d, a, b, c]
+    S.move_module(con, "amy", d, _rev(con, sid), to_index=2)
+    assert _order(con, "module", sid) == [a, b, d, c]
+    S.move_module(con, "amy", a, _rev(con, sid), to_index=3)
+    assert _order(con, "module", sid) == [b, d, c, a]
+    rev, ev = _rev(con, sid), n_events(con, sid)
+    S.move_module(con, "amy", d, rev, to_index=1)          # already there
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=4), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=-1), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=True), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, "up", to_index=0), "invalid")
+    expect(S.StaleRevision, lambda: S.move_module(con, "amy", d, rev - 1, to_index=0))
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)   # failures wrote nothing
+    row = con.execute("SELECT before_json, after_json FROM placement_event WHERE"
+                      " action='module_move' ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert json.loads(row[1])["to_index"] == 3 and json.loads(row[0])["to_index"] == 0
+
+
+def test_move_slot_to_index_same_module_across_modules_and_empty_module():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 3)
+    s1, s2, s3 = slots[m1]
+    S.move_slot(con, "amy", s3, _rev(con, sid), to_module_id=m1, to_index=0)
+    assert _order(con, "slot", m1) == [s3, s1, s2]
+    S.move_slot(con, "amy", s3, _rev(con, sid), to_module_id=m1, to_index=2)   # counted without s3
+    assert _order(con, "slot", m1) == [s1, s2, s3]
+    S.move_slot(con, "amy", s1, _rev(con, sid), to_module_id=m2, to_index=1)   # across
+    assert _order(con, "slot", m2) == [slots[m2][0], s1, slots[m2][1], slots[m2][2]]
+    assert _order(con, "slot", m1) == [s2, s3]
+    m3 = S.create_module(con, "amy", sid, _rev(con, sid), "M3")                # empty module
+    S.move_slot(con, "amy", s2, _rev(con, sid), to_module_id=m3, to_index=0)
+    assert _order(con, "slot", m3) == [s2]
+    rev, ev = _rev(con, sid), n_events(con, sid)
+    S.move_slot(con, "amy", s2, rev, to_module_id=m3, to_index=0)              # no-op
+    S.move_slot(con, "amy", s3, rev, to_module_id=m1, to_index=0)              # no-op
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)
+    expect(S.Invalid, lambda: S.move_slot(con, "amy", s3, rev, to_module_id=m1, to_index=2), "invalid")
+    expect(S.Invalid, lambda: S.move_slot(con, "amy", s3, rev, direction="up", to_index=0), "invalid")
+    expect(S.StaleRevision, lambda: S.move_slot(con, "amy", s3, rev - 1, to_module_id=m1, to_index=0))
+    # no to_index: still appends at the end
+    S.move_slot(con, "amy", s2, _rev(con, sid), to_module_id=m1)
+    assert _order(con, "slot", m1)[-1] == s2
+
+
+def test_place_to_index_and_exclusions():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 2)
+    a, b = slots[m1]
+    r = S.place(con, "amy", sid, _rev(con, sid), snap("new0"), module_id=m1, to_index=0)
+    r2 = S.place(con, "amy", sid, _rev(con, sid), snap("new1"), module_id=m1, to_index=2)
+    r3 = S.place(con, "amy", sid, _rev(con, sid), snap("new2"), module_id=m2, to_index=0)
+    assert _order(con, "slot", m1) == [r["slot_id"], a, r2["slot_id"], b]
+    assert _order(con, "slot", m2)[0] == r3["slot_id"]
+    rev = _rev(con, sid)
+    for kw in ({"to_index": 1, "slot_id": a}, {"to_index": 1, "after_slot_id": a}):
+        expect(S.Invalid, lambda kw=kw: S.place(con, "amy", sid, rev, snap("x"), module_id=m1, **kw), "invalid")
+    expect(S.Invalid, lambda: S.place(con, "amy", sid, rev, snap("x"), module_id=m1, to_index=5), "invalid")
+    assert _rev(con, sid) == rev
+
+
+def test_move_placement_new_slot_drop_noop_and_event_keeps_label():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 2)
+    a, b = slots[m1]
+    S.update_slot(con, "amy", a, _rev(con, sid), "Alpha")
+    pa = con.execute("SELECT placement_id FROM placement WHERE slot_id=?", (a,)).fetchone()[0]
+    # alone in a labelled slot: the source is dropped, its label survives in the event
+    new = S.move_placement(con, "amy", pa, _rev(con, sid), m2, 1)
+    assert new != a and _order(con, "slot", m1) == [b]
+    assert _order(con, "slot", m2)[1] == new
+    assert con.execute("SELECT removed_at IS NOT NULL FROM slot WHERE slot_id=?", (a,)).fetchone()[0]
+    ev = con.execute("SELECT action, module_id, slot_id, placement_id, before_json, after_json"
+                     " FROM placement_event ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert (ev[0], ev[1], ev[2], ev[3]) == ("move", m2, new, pa)
+    assert json.loads(ev[4]) == {"slot_id": a, "module_id": m1, "slot_label": "Alpha", "to_index": 0}
+    assert json.loads(ev[5]) == {"slot_id": new, "module_id": m2, "to_index": 1,
+                                 "source_slot_removed": True}
+    # no-op: alone and already at that position (index excludes its own slot)
+    rev, n = _rev(con, sid), n_events(con, sid)
+    assert S.move_placement(con, "amy", pa, rev, m2, 1) == new
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, n)
+    expect(S.Invalid, lambda: S.move_placement(con, "amy", pa, rev, m2, 3), "invalid")   # 2 others
+    expect(S.StaleRevision, lambda: S.move_placement(con, "amy", pa, rev - 1, m2, 0))
+    expect(S.NotFound, lambda: S.move_placement(con, "amy", pa, rev, 9999, 0))
+    # out of a shared slot: the source slot stays and keeps its label
+    S.update_slot(con, "amy", b, _rev(con, sid), "Beta")
+    S.co_place(con, "amy", pa, _rev(con, sid), b)
+    new2 = S.move_placement(con, "amy", pa, _rev(con, sid), m1, 0)
+    assert _order(con, "slot", m1) == [new2, b]
+    assert S._slot_row(con, b)["label"] == "Beta"
+    last = con.execute("SELECT before_json, after_json FROM placement_event WHERE action='move'"
+                       " ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert "to_index" not in json.loads(last[0]) and json.loads(last[1])["source_slot_removed"] is False
+
+
+def test_co_place_and_merge_events_carry_label_and_index_when_slot_dropped():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 3)
+    s1, s2, s3 = slots[m1]
+    S.update_slot(con, "amy", s2, _rev(con, sid), "Mid")
+    p2 = con.execute("SELECT placement_id FROM placement WHERE slot_id=?", (s2,)).fetchone()[0]
+    S.co_place(con, "amy", p2, _rev(con, sid), s1)
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='co_place'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s2, "module_id": m1, "slot_label": "Mid", "to_index": 1}
+    p1 = con.execute("SELECT placement_id FROM placement WHERE slot_id=? AND placement_id!=?",
+                     (s1, p2)).fetchone()[0]
+    S.co_place(con, "amy", p1, _rev(con, sid), s3)      # s1 still holds p2: nothing dropped
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='co_place'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s1}
+    S.update_slot(con, "amy", s3, _rev(con, sid), "Three")
+    S.merge_slot(con, "amy", s3, _rev(con, sid), s1)
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='slot_merge'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s3, "module_id": m1, "slot_label": "Three", "to_index": 1}
+
+
+def test_to_index_survives_a_gap_exhaustion_renumber():
+    con = fresh()
+    sid, (m1,), slots = _fill(con, 1, 2)
+    a, b = slots[m1]
+    placed = []
+    for i in range(15):     # always at index 1: the gap after `a` halves until it must renumber
+        r = S.place(con, "amy", sid, _rev(con, sid), snap(f"gap{i}"), module_id=m1, to_index=1)
+        placed.append(r["slot_id"])
+    assert _order(con, "slot", m1) == [a] + placed[::-1] + [b]
+    n = con.execute("SELECT COUNT(*) FROM placement_event WHERE action='renumber'").fetchone()[0]
+    assert n >= 1, "this test must actually exercise the renumber path"
+
+
 def _main():
     failed = 0
     for name, fn in sorted(globals().items()):

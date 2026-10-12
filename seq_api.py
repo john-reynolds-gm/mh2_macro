@@ -104,7 +104,8 @@ class UpdateModuleBody(_Body):
 
 class MoveBody(_Body):
     expected_rev: int
-    direction: str
+    direction: str | None = None
+    to_index: int | None = None
 
 
 class UpdateSlotBody(_Body):
@@ -116,6 +117,7 @@ class MoveSlotBody(_Body):
     expected_rev: int
     direction: str | None = None
     to_module_id: int | None = None
+    to_index: int | None = None
 
 
 class MergeSlotBody(_Body):
@@ -139,6 +141,7 @@ class PlaceBody(_Body):
     source_key: str
     slot_id: int | None = None
     after_slot_id: int | None = None
+    to_index: int | None = None
     differentiation_note: str | None = None
     confirm_off_grade: bool = False
 
@@ -149,6 +152,12 @@ class UpdatePlacementBody(_Body):
     period_estimate: float | None = None
     differentiation_note: str | None = None
     confirm_estimate: bool | None = None   # true: keep the ladder number as the builder's
+
+
+class MovePlacementBody(_Body):
+    expected_rev: int
+    to_module_id: int
+    to_index: int
 
 
 class CoPlaceBody(_Body):
@@ -261,7 +270,7 @@ def r_update_module(module_id: int, body: UpdateModuleBody,
 @router.post("/api/seq/modules/{module_id}/move")
 def r_move_module(module_id: int, body: MoveBody, writer: str = Depends(current_writer)):
     return _run(seq_service.move_module, CTX, writer, module_id, body.expected_rev,
-                body.direction)
+                body.direction, body.to_index)
 
 
 @router.delete("/api/seq/modules/{module_id}")
@@ -278,7 +287,7 @@ def r_update_slot(slot_id: int, body: UpdateSlotBody, writer: str = Depends(curr
 @router.post("/api/seq/slots/{slot_id}/move")
 def r_move_slot(slot_id: int, body: MoveSlotBody, writer: str = Depends(current_writer)):
     return _run(seq_service.move_slot, CTX, writer, slot_id, body.expected_rev,
-                body.direction, body.to_module_id)
+                body.direction, body.to_module_id, body.to_index)
 
 
 @router.post("/api/seq/slots/{slot_id}/merge")
@@ -298,7 +307,7 @@ def r_create_slot_group(body: CreateSlotGroupBody, writer: str = Depends(current
 def r_place(body: PlaceBody, writer: str = Depends(current_writer)):
     return _run(seq_service.place, CTX, writer, body.sequence_id, body.expected_rev,
                 body.module_id, body.source_key, body.slot_id, body.after_slot_id,
-                body.differentiation_note, body.confirm_off_grade)
+                body.differentiation_note, body.confirm_off_grade, body.to_index)
 
 
 @router.patch("/api/seq/placements/{placement_id}")
@@ -312,6 +321,13 @@ def r_update_placement(placement_id: int, body: UpdatePlacementBody,
 def r_co_place(placement_id: int, body: CoPlaceBody, writer: str = Depends(current_writer)):
     return _run(seq_service.co_place, CTX, writer, placement_id, body.expected_rev,
                 body.target_slot_id)
+
+
+@router.post("/api/seq/placements/{placement_id}/move")
+def r_move_placement(placement_id: int, body: MovePlacementBody,
+                     writer: str = Depends(current_writer)):
+    return _run(seq_service.move_placement, CTX, writer, placement_id, body.expected_rev,
+                body.to_module_id, body.to_index)
 
 
 @router.post("/api/seq/placements/{placement_id}/ungroup")

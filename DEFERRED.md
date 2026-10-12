@@ -809,3 +809,79 @@ and `data/reranks/cache.jsonl.bak-pre-ladder-codes-20261008113557`.
   section's crosswalk is in git (`git log -p data/source/workbooks/stems.csv`).
   **Trigger:** an external artifact keyed on an old code (an export, a
   KG Builder import) needs to be matched back.
+
+---
+
+## 11. Ladder Files — writer uploads (2026-10-12)
+
+Brief: `docs/brief_ladder_uploads.md`. Writers upload and replace ladder
+`.docx` files through `/files` on the hosted app; uploads live on the volume
+(`data/build/ladder_uploads/`), metadata in `mh2_seq.db`
+(`ladder_upload`, `stem_registry_override`), all logic in
+`mh2/ladder_store.py`. `rebuild.py` lays live uploads over the repo ladders
+in `data/build/_effective/` and points every step there through
+`MH2_LADDERS_DIR` / `MH2_STEMS_CSV`. Precedence: for a stem with an upload,
+the upload is the source of truth; the repo copy is only a seed.
+
+**Needs John's ruling — conflicts with §8.** R-H1 says ladders are "fetched
+at rebuild time via Microsoft Graph. Never uploaded to the app, never written
+back." This feature is exactly an upload path, built because IT can't
+connect the app to SharePoint. The Word ladder is still the only source of
+truth for *tagging* (§6 is untouched: nothing here writes a tag), but the
+authoritative *copy* of a ladder now lives on the Fly volume rather than in
+SharePoint, and R-H5.6's SharePoint-based change preview is replaced by the
+upload's own validate-time diff. R-H1 has not been edited; it should be
+amended or superseded by John, not by a session.
+
+**Landed differently from the brief, and why:**
+- *Canonical name of a drafted slot* is the repo file's on-disk name when
+  one resolves, not the declared `ladder_file` string. Six of the sixteen
+  drafted stem_ids declare a spelling that only matches after normalization
+  (`..._Measurement_and_Data_Angles.docx` vs the real `... and Data_...`).
+  Ingest stores the filename verbatim in `nodes.source_file`, which
+  `tag_proposal.ladder_file` and the worklist group by; switching spellings
+  on upload would split a ladder's proposals into two groups.
+- *`_effective/` holds symlinks, not copies.* The sources never change
+  under them (versions are never overwritten; repo ladders are in the image)
+  and copying ~130 MB per rebuild onto the 1 GB volume is space it lacks.
+- *One extra table, `ladder_upload_rejection`* (last failed attempt per
+  stem), because the page's "Rejected/error" status had nowhere durable to
+  come from. Cleared by the next successful commit.
+- *The orphan confirmation is enforced server-side* (`confirm_orphans`, 409
+  without it), not only by the page's checkbox. The orphan count covers
+  `tag_review`, open/needs-attention `tag_proposal`, `candidate_ruling`, and
+  active sequencing `placement` rows — all keyed on `source_key`.
+
+**Regression check, by hand, 2026-10-12.** HEAD's `rebuild.py` and the new
+one (no uploads), each run against a full copy of real `data/` under its own
+`MH2_DATA_DIR`: all 30 tables identical row for row except run timestamps,
+`ingest_log.run_id` (a hash of the glob path) and `stem_map.ladder_path`
+(now under `_effective/`; its one reader, `mh2/reconcile.py`, uses only the
+filename). Then a real upload → rebuild cycle against that copy: a
+re-uploaded drafted ladder and a newly registered undrafted slot (`MD-LENGTH`)
+both ingested, 18 ladders.
+
+**Open questions from the brief, defaults taken, each with a trigger:**
+- **Review reconcile after upload rebuilds** — not run; the worker matches
+  `entrypoint.sh` (`--skip-review-reconcile`). Reconcile is what flags
+  rulings orphaned by reworded nodes, so this is the likeliest to need
+  changing. **Trigger:** the first commit made with `confirm_orphans` — i.e.
+  a writer knowingly detaching review decisions — or John's answer to
+  brief §11.1, whichever comes first.
+- **Any writer can upload to any stem.** **Trigger:** an upload lands on
+  the wrong slot or overwrites another writer's ladder, or the writer pool
+  grows past the pilot.
+- **Every version is kept forever.** **Trigger:** volume usage on the Fly
+  dashboard passes 70% (docs/HOSTING.md, "Volume size").
+
+**Deferred:**
+- **A live upload for a stem_id no longer in `stems.csv` is skipped with a
+  printed warning**, not failed and not shown on the page. Failing would
+  stop the app at startup; showing it needs a slot that no longer exists.
+  **Trigger:** any stem_id is renamed or removed in `stems.csv` while it has
+  uploads (a §10-style code migration).
+- **A revert records no actor of its own** — only the rebuild log's
+  `actor` column. **Trigger:** anyone needs to know who changed which
+  version was live.
+- **The 20 MB cap is close to real ladders**: Addition and Subtraction is
+  16.3 MB today. **Trigger:** a legitimate ladder is refused as `too_large`.

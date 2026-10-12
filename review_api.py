@@ -20,23 +20,37 @@ every local dev/test run today -- auth is a no-op and every route behaves
 exactly as before. Set it only in the deployed environment. This matches
 rev 9 R1's intended shape (per-writer creds in env vars) and DEFERRED.md
 §3.4's ruling not to hand-roll anything fancier than that.
+
+Ladder Files (docs/brief_ladder_uploads.md): /files and /api/ladders/* let
+writers upload and replace ladder .docx files. mh2/ladder_store.py owns the
+tables and the upload directory; RebuildWorker below runs rebuild.py and
+render_static.py after each commit or revert so the upload takes effect.
 """
 from __future__ import annotations
 
 import os
+import re
 import secrets
 import sqlite3
-from datetime import date
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+from collections import deque
+from contextlib import asynccontextmanager
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Literal
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
+from starlette.background import BackgroundTask
 
 import config
-from mh2 import ladder_edits, node_lookup, review_store
+from mh2 import ladder_edits, ladder_store, node_lookup, review_store
 from mh2.coverage import GREEN_MATCH, build_rows, build_tags_by_standard
 
 _security = HTTPBasic(auto_error=False)
@@ -77,7 +91,16 @@ def require_writer(
     return credentials.username
 
 
-app = FastAPI(title="MH2 Review API", dependencies=[Depends(require_writer)])
+@asynccontextmanager
+async def _lifespan(_app):
+    # Brief §5 step 4: validated-but-never-committed uploads are dropped
+    # after 24 h, checked once per start.
+    ladder_store.purge_pending()
+    yield
+
+
+app = FastAPI(title="MH2 Review API", dependencies=[Depends(require_writer)],
+              lifespan=_lifespan)
 
 
 def _mh2_con() -> sqlite3.Connection:
@@ -490,3 +513,288 @@ def withdraw_proposal(proposal_id: int, body: WithdrawIn = WithdrawIn()):
     finally:
         seq.close()
     return {"proposal_id": proposal_id, "withdrawn": True}
+
+
+# ---------------------------------------------------------------- ladder files
+
+class RebuildWorker:
+    """
+    One background thread that runs rebuild.py then render_static.py after
+    ladder uploads (brief §6.3).
+
+    request() sets a dirty flag and wakes the thread. A run clears the flag
+    when it STARTS, so an upload landing mid-run sets it again and the loop
+    runs once more afterwards: any number of quick uploads collapse into one
+    or two rebuilds, and the last one always sees every commit.
+
+    A failed rebuild leaves the previous mh2.db serving -- rebuild.py builds
+    beside it and only swaps on success -- so a failure here is reported,
+    never retried in a loop. If another process holds the rebuild lock
+    (someone running rebuild.py by hand), the run waits and retries instead
+    of failing.
+
+    The thread starts on the first request, not at import, so importing this
+    module (every test does) never spawns it.
+    """
+
+    LOCK_HELD_MARKER = "Another rebuild is already running"
+    TAIL_LINES = 50
+
+    def __init__(self, rebuild_cmd: list[str] | None = None,
+                 render_cmd: list[str] | None = None,
+                 lock_retry_seconds: float = 15.0):
+        self.rebuild_cmd = rebuild_cmd or [
+            sys.executable, str(config.ROOT / "scripts" / "rebuild.py"),
+            "--skip-review-reconcile"]
+        self.render_cmd = render_cmd or [
+            sys.executable, str(config.ROOT / "scripts" / "render_static.py")]
+        self.lock_retry_seconds = lock_retry_seconds
+        self._cond = threading.Condition()
+        self._thread: threading.Thread | None = None
+        self._dirty = False
+        self._actors: list[str] = []
+        self._status = {
+            "state": "idle", "actor": None, "started_at": None,
+            "waiting_for_lock": False,
+            "last_success_at": None, "last_success_actor": None,
+            "last_failure_at": None, "failed_step": None, "error_tail": [],
+        }
+
+    def request(self, actor: str) -> None:
+        with self._cond:
+            self._dirty = True
+            if actor not in self._actors:
+                self._actors.append(actor)
+            if self._thread is None or not self._thread.is_alive():
+                self._thread = threading.Thread(
+                    target=self._loop, name="ladder-rebuild", daemon=True)
+                self._thread.start()
+            self._cond.notify()
+
+    def status(self) -> dict:
+        with self._cond:
+            out = dict(self._status, pending=self._dirty)
+        if out["last_success_at"] is None:
+            out["last_success_at"], out["last_success_actor"] = _last_logged_success()
+        return out
+
+    def wait_idle(self, timeout: float = 60.0) -> bool:
+        """For tests: block until no run is in progress or queued."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            with self._cond:
+                if not self._dirty and self._status["state"] != "running":
+                    return True
+            time.sleep(0.05)
+        return False
+
+    def _loop(self) -> None:
+        while True:
+            with self._cond:
+                while not self._dirty:
+                    self._cond.wait()
+                self._dirty = False
+                actor = ", ".join(self._actors) or "unknown"
+                self._actors = []
+                self._status.update(state="running", actor=actor,
+                                    started_at=_utc_now(), waiting_for_lock=False)
+            outcome, step, tail = self._run_once(actor)
+            with self._cond:
+                if outcome == "locked":
+                    self._status["waiting_for_lock"] = True
+                    self._dirty = True
+                    for a in actor.split(", "):
+                        if a not in self._actors:
+                            self._actors.append(a)
+                elif outcome == "ok":
+                    self._status.update(
+                        state="idle", last_success_at=_utc_now(),
+                        last_success_actor=actor, failed_step=None, error_tail=[])
+                else:
+                    self._status.update(
+                        state="failed", last_failure_at=_utc_now(),
+                        failed_step=step, error_tail=tail)
+            if outcome == "locked":
+                time.sleep(self.lock_retry_seconds)
+
+    def _run_once(self, actor: str) -> tuple[str, str | None, list[str]]:
+        env = {**os.environ, "MH2_REBUILD_ACTOR": actor}
+        for name, cmd in (("rebuild", self.rebuild_cmd), ("render", self.render_cmd)):
+            proc = subprocess.run(cmd, cwd=config.ROOT, env=env, text=True,
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            if proc.returncode == 0:
+                continue
+            output = proc.stdout or ""
+            if name == "rebuild" and self.LOCK_HELD_MARKER in output:
+                return "locked", None, []
+            failed = re.findall(r"^FAILED: (.+)$", output, re.M)
+            step = (f"{name}: {failed[-1]}" if failed
+                    else f"{name} exited with status {proc.returncode}")
+            return "failed", step, output.splitlines()[-self.TAIL_LINES:]
+        return "ok", None, []
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _last_logged_success() -> tuple[str | None, str | None]:
+    """(timestamp, actor) of the newest 'ok' line in rebuild_log.tsv -- so the
+    status survives an app restart, when this process has run nothing yet."""
+    path = config.REPORTS / "rebuild_log.tsv"
+    if not path.exists():
+        return None, None
+    last = (None, None)
+    for line in path.read_text(encoding="utf-8").splitlines()[1:]:
+        cols = line.split("\t")
+        if len(cols) >= 3 and cols[2] == "ok":
+            last = (cols[0], cols[1])
+    return last
+
+
+rebuild_worker = RebuildWorker()
+
+LADDER_STATIC = Path(__file__).parent / "ladder_static"
+
+
+def _ladder_error(exc: ladder_store.LadderUploadError) -> HTTPException:
+    return HTTPException(exc.status, detail={"error": exc.code, "message": exc.message})
+
+
+@app.get("/files")
+def ladder_files_page():
+    path = LADDER_STATIC / "files.html"
+    if not path.exists():
+        raise HTTPException(404, "ladder_static/files.html not found")
+    return FileResponse(path, media_type="text/html")
+
+
+@app.get("/api/ladders")
+def list_ladders():
+    seq = _seq_con()
+    try:
+        return ladder_store.list_slots(seq)
+    finally:
+        seq.close()
+
+
+@app.get("/api/ladders/export.zip")
+def export_ladders():
+    """Every live ladder plus manifest.csv: the team's backup, and the
+    hand-off back to SharePoint. Built in a temp file, not memory (the
+    ladders are ~130 MB), and deliberately not on the data/build volume,
+    which is 1 GB and already holds mh2.db twice during a rebuild. Deleted
+    once sent."""
+    fd, tmp = tempfile.mkstemp(prefix=".ladders_export_", suffix=".zip")
+    os.close(fd)
+    seq = _seq_con()
+    try:
+        ladder_store.write_export_zip(seq, Path(tmp))
+    except BaseException:
+        os.unlink(tmp)
+        raise
+    finally:
+        seq.close()
+    return FileResponse(tmp, media_type="application/zip",
+                        filename=f"mh2_ladders_{date.today().isoformat()}.zip",
+                        background=BackgroundTask(os.unlink, tmp))
+
+
+@app.post("/api/ladders/{stem_id}/validate")
+def validate_ladder(stem_id: str, file: UploadFile = File(...),
+                    user: str = Depends(require_writer)):
+    seq = _seq_con()
+    try:
+        return ladder_store.validate_upload(
+            seq, stem_id, file.filename or "", file.file, user)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+
+
+class LadderCommitIn(BaseModel):
+    token: str
+    note: str | None = None
+    # Must be true when validation reported orphaned review decisions; the
+    # page's confirmation box sets it.
+    confirm_orphans: bool = False
+
+
+@app.post("/api/ladders/{stem_id}/commit")
+def commit_ladder(stem_id: str, body: LadderCommitIn,
+                  user: str = Depends(require_writer)):
+    seq = _seq_con()
+    try:
+        upload = ladder_store.commit_upload(
+            seq, stem_id, body.token, user, note=(body.note or "").strip() or None,
+            confirm_orphans=body.confirm_orphans)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+    rebuild_worker.request(user)
+    return {"upload": upload, "rebuild": rebuild_worker.status()}
+
+
+@app.get("/api/ladders/{stem_id}/file")
+def download_live_ladder(stem_id: str):
+    seq = _seq_con()
+    try:
+        found = ladder_store.live_file(seq, stem_id)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+    if found is None:
+        raise HTTPException(404, detail={"error": "no_ladder",
+                                         "message": f"{stem_id} has no ladder yet"})
+    path, name = found
+    return FileResponse(path, filename=name, media_type=_DOCX)
+
+
+@app.get("/api/ladders/{stem_id}/versions")
+def ladder_versions(stem_id: str):
+    seq = _seq_con()
+    try:
+        ladder_store.get_slot(stem_id)
+        return ladder_store.list_versions(seq, stem_id)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+
+
+@app.get("/api/ladders/{stem_id}/versions/{upload_id}/file")
+def download_ladder_version(stem_id: str, upload_id: int):
+    seq = _seq_con()
+    try:
+        row = ladder_store.get_version(seq, stem_id, upload_id)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+    stamp = row["uploaded_at"][:10]
+    return FileResponse(ladder_store.version_path(row), media_type=_DOCX,
+                        filename=f"{stem_id}_v{upload_id}_{stamp}_{row['original_name']}")
+
+
+@app.post("/api/ladders/{stem_id}/revert/{upload_id}")
+def revert_ladder(stem_id: str, upload_id: int, user: str = Depends(require_writer)):
+    seq = _seq_con()
+    try:
+        upload = ladder_store.revert(seq, stem_id, upload_id)
+    except ladder_store.LadderUploadError as exc:
+        raise _ladder_error(exc)
+    finally:
+        seq.close()
+    rebuild_worker.request(user)
+    return {"upload": upload, "rebuild": rebuild_worker.status()}
+
+
+@app.get("/api/rebuild/status")
+def rebuild_status():
+    return rebuild_worker.status()
+
+
+_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

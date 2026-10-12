@@ -14,6 +14,7 @@ const A = require("../../seq_static/app.js");
 const { esc, encodeState, decodeState, defaultState, computeGuardrail, assembleCompare, visibleSlice,
   DemoApi, HttpApi, ApiError } = A;
 
+const { inverseOf, runUndoSteps } = A;
 const FX = path.join(__dirname, "fixtures");
 const load = (n) => JSON.parse(fs.readFileSync(path.join(FX, n), "utf8"));
 const small = () => load("demo_small.json");
@@ -1160,6 +1161,591 @@ test("demo footer wording", () => {
   assert.ok(A.renderFooter(M).includes("Your edits are saved in this browser on this computer only. Another browser or computer starts fresh."));
   assert.ok(!A.renderFooter(M).includes("kept in this browser"));
   M.demo.persisted = false; assert.ok(A.renderFooter(M).includes("edits are not kept after reload"));
+});
+
+
+/* ------------------------------------------- positional moves and undo ---- */
+
+/** Sequence with 3 modules: M1 [w10 | w11+w12 "Pair" | w20], M2 [w21 "Solo"], M3 []. */
+async function layoutFixture() {
+  const api = new DemoApi(small(), memStorage());
+  let r = await api.createSequence("2", "G2");
+  const rev = () => r.sequence.sequence.rev;
+  const mk = async (t) => { r = await api.createModule(1, rev(), t); return r.result.module_id; };
+  const [m1, m2, m3] = [await mk("M1"), await mk("M2"), await mk("M3")];
+  const put = async (m, k, o) => { r = await api.place(1, rev(), m, k, Object.assign({ confirm_off_grade: true }, o)); return r.result; };
+  const a = await put(m1, K.w10), b = await put(m1, K.w11), c = await put(m1, K.w20);
+  const d = await put(m2, K.w21);
+  const e = await put(m1, K.w12, { slot_id: b.slot_id });
+  r = await api.updateSlot(b.slot_id, rev(), "Pair");
+  r = await api.updateSlot(d.slot_id, rev(), "Solo");
+  return { api, view: () => r.sequence, m1, m2, m3, a, b, c, d, e };
+}
+/** Order, membership and labels only, the shape undo must restore exactly. */
+const norm = (v) => v.modules.map((m) => [m.module_id, m.slots.map((sl) => [sl.label, sl.placements.map((p) => p.source_key)])]);
+
+test("DemoApi positional moves: module, slot, place, placement; no-op, range, stale rev", async () => {
+  const F = await layoutFixture(), api = F.api;
+  let v = F.view(), rev = v.sequence.rev;
+  let r = await api.moveModule(F.m3, rev, { to_index: 0 });
+  assert.deepStrictEqual(r.sequence.modules.map((m) => m.module_id), [F.m3, F.m1, F.m2]);
+  const noop = await api.moveModule(F.m3, r.sequence.sequence.rev, { to_index: 0 });
+  assert.strictEqual(noop.sequence.sequence.rev, r.sequence.sequence.rev);
+  await assert.rejects(api.moveModule(F.m3, noop.sequence.sequence.rev, { to_index: 3 }), apiErr(422, "invalid"));
+  await assert.rejects(api.moveModule(F.m3, noop.sequence.sequence.rev, { to_index: -1 }), apiErr(422, "invalid"));
+  await assert.rejects(api.moveModule(F.m3, noop.sequence.sequence.rev, { to_index: 1, direction: "up" }), apiErr(422, "invalid"));
+  await assert.rejects(api.moveModule(F.m3, 1, { to_index: 1 }), apiErr(409, "stale_revision"));
+  rev = noop.sequence.sequence.rev;
+  // slot across modules, to the start of M2 and into the empty M3
+  r = await api.moveSlot(F.c.slot_id, rev, { to_module_id: F.m2, to_index: 0 });
+  assert.deepStrictEqual(r.sequence.modules[2].slots.map((x) => x.slot_id), [F.c.slot_id, F.d.slot_id]);
+  r = await api.moveSlot(F.d.slot_id, r.sequence.sequence.rev, { to_module_id: F.m3, to_index: 0 });
+  assert.deepStrictEqual(r.sequence.modules[0].slots.map((x) => x.slot_id), [F.d.slot_id]);
+  // same-module: end, then middle; to_index counts without the moved slot
+  r = await api.moveSlot(F.a.slot_id, r.sequence.sequence.rev, { to_module_id: F.m1, to_index: 1 });
+  assert.deepStrictEqual(r.sequence.modules[1].slots.map((x) => x.slot_id), [F.b.slot_id, F.a.slot_id]);
+  const same = await api.moveSlot(F.a.slot_id, r.sequence.sequence.rev, { to_module_id: F.m1, to_index: 1 });
+  assert.strictEqual(same.sequence.sequence.rev, r.sequence.sequence.rev);
+  await assert.rejects(api.moveSlot(F.a.slot_id, same.sequence.sequence.rev, { to_module_id: F.m1, to_index: 2 }), apiErr(422, "invalid"));
+  await assert.rejects(api.moveSlot(F.a.slot_id, same.sequence.sequence.rev, { direction: "up", to_index: 0 }), apiErr(422, "invalid"));
+  // append-at-end without to_index is unchanged
+  r = await api.moveSlot(F.b.slot_id, same.sequence.sequence.rev, { to_module_id: F.m1 });
+  assert.deepStrictEqual(r.sequence.modules[1].slots.map((x) => x.slot_id), [F.a.slot_id, F.b.slot_id]);
+  // place at an index; to_index cannot mix with slot_id / after_slot_id
+  const rev2 = r.sequence.sequence.rev;
+  await assert.rejects(api.place(1, rev2, F.m1, K.t10, { confirm_off_grade: true, to_index: 0, after_slot_id: F.a.slot_id }), apiErr(422, "invalid"));
+  await assert.rejects(api.place(1, rev2, F.m1, K.t10, { confirm_off_grade: true, to_index: 3 }), apiErr(422, "invalid"));
+  r = await api.place(1, rev2, F.m1, K.t10, { confirm_off_grade: true, to_index: 0 });
+  assert.deepStrictEqual(r.sequence.modules[1].slots[0].placements.map((p) => p.source_key), [K.t10]);
+  assert.strictEqual(r.sequence.modules[1].slots.length, 3);
+  // W18: out of a shared slot into a new slot; the shared slot stays
+  r = await api.movePlacement(F.e.placement_id, r.sequence.sequence.rev, F.m2, 0);
+  assert.deepStrictEqual(r.sequence.modules[1].slots.find((x) => x.slot_id === F.b.slot_id).placements.map((p) => p.source_key), [K.w11]);
+  assert.deepStrictEqual(r.sequence.modules[2].slots[0].placements.map((p) => p.source_key), [K.w12]);
+  assert.strictEqual(r.sequence.modules[2].slots[0].slot_id, r.result.slot_id);
+  // W18 of an alone placement: source slot dropped, no-op at its own position
+  const alone = r.sequence.modules[2].slots[0].placements[0].placement_id, at = r.sequence.sequence.rev;
+  const n0 = await api.movePlacement(alone, at, F.m2, 0);
+  assert.strictEqual(n0.sequence.sequence.rev, at);
+  await assert.rejects(api.movePlacement(alone, at, F.m2, 2), apiErr(422, "invalid"));   // the index excludes its own slot
+  r = await api.movePlacement(alone, at, F.m2, 1);
+  assert.strictEqual(r.sequence.modules[2].slots.length, 2);
+  assert.strictEqual(r.sequence.modules[2].slots[1].placements[0].source_key, K.w12);
+  await assert.rejects(api.movePlacement(alone, r.sequence.sequence.rev, F.m2, 9), apiErr(422, "invalid"));
+  await assert.rejects(api.movePlacement(alone, 1, F.m2, 0), apiErr(409, "stale_revision"));
+  const ev = (await api.events(1, 50)).events;
+  const mv = ev.find((x) => x.action === "move");
+  assert.ok(mv && mv.after.to_index !== undefined && mv.before.slot_id !== undefined);
+  const mg = await (async () => { const G = await layoutFixture(); const q = await G.api.mergeSlot(G.b.slot_id, G.view().sequence.rev, G.a.slot_id); return (await G.api.events(1, 50)).events.find((x) => x.action === "slot_merge"); })();
+  assert.deepStrictEqual([mg.before.slot_label, mg.before.to_index], ["Pair", 1]);
+});
+
+/** Run `op` against the fixture, then its inverse; the normalised view must equal the original. */
+async function undoRoundTrip(opFn, opOf) {
+  const F = await layoutFixture(), api = F.api, before = F.view();
+  const res = await opFn(F, F.view().sequence.rev);
+  assert.notDeepStrictEqual(norm(res.sequence), norm(before), "the op must change the layout");
+  const steps = inverseOf(opOf(F, res), before);
+  assert.ok(steps && steps.length, "inverse exists");
+  const after = await runUndoSteps(steps, api, res.sequence);
+  assert.deepStrictEqual(norm(after), norm(before));
+  return { F, steps };
+}
+
+test("inverseOf: place (new slot and co-place) removes the placement", async () => {
+  const { steps } = await undoRoundTrip((F, rev) => F.api.place(1, rev, F.m3, K.t10, { confirm_off_grade: true, confirm_off_grade: true }), (F, r) => ({ type: "place", placement_id: r.result.placement_id }));
+  assert.strictEqual(steps[0].call, "removePlacement");
+  await undoRoundTrip((F, rev) => F.api.place(1, rev, F.m1, K.t10, { confirm_off_grade: true, confirm_off_grade: true, slot_id: F.a.slot_id }), (F, r) => ({ type: "place", placement_id: r.result.placement_id }));
+});
+
+test("inverseOf: slot move, including to index 0 and into an empty module", async () => {
+  await undoRoundTrip((F, rev) => F.api.moveSlot(F.c.slot_id, rev, { to_module_id: F.m1, to_index: 0 }), (F) => ({ type: "moveSlot", slot_id: F.c.slot_id }));
+  await undoRoundTrip((F, rev) => F.api.moveSlot(F.b.slot_id, rev, { to_module_id: F.m3, to_index: 0 }), (F) => ({ type: "moveSlot", slot_id: F.b.slot_id }));
+  await undoRoundTrip((F, rev) => F.api.moveSlot(F.a.slot_id, rev, { direction: "down" }), (F) => ({ type: "moveSlot", slot_id: F.a.slot_id }));
+});
+
+test("inverseOf: module move", async () => {
+  await undoRoundTrip((F, rev) => F.api.moveModule(F.m3, rev, { to_index: 0 }), (F) => ({ type: "moveModule", module_id: F.m3 }));
+  await undoRoundTrip((F, rev) => F.api.moveModule(F.m1, rev, "down"), (F) => ({ type: "moveModule", module_id: F.m1 }));
+});
+
+test("inverseOf: placement move (W18) out of a shared slot and out of a labelled lone slot", async () => {
+  const { steps } = await undoRoundTrip((F, rev) => F.api.movePlacement(F.e.placement_id, rev, F.m3, 0), (F) => ({ type: "movePlacement", placement_id: F.e.placement_id }));
+  assert.deepStrictEqual(steps.map((x) => x.call), ["coPlace"]);
+  const lone = await undoRoundTrip((F, rev) => F.api.movePlacement(F.d.placement_id, rev, F.m1, 0), (F) => ({ type: "movePlacement", placement_id: F.d.placement_id }));
+  assert.deepStrictEqual(lone.steps.map((x) => x.call), ["movePlacement", "updateSlot"]);   // label "Solo" restored
+});
+
+test("inverseOf: co-place that drops a labelled source slot, and one that does not", async () => {
+  const drop = await undoRoundTrip((F, rev) => F.api.coPlace(F.d.placement_id, rev, F.a.slot_id), (F) => ({ type: "coPlace", placement_id: F.d.placement_id }));
+  assert.deepStrictEqual(drop.steps.map((x) => x.call), ["movePlacement", "updateSlot"]);
+  await undoRoundTrip((F, rev) => F.api.coPlace(F.e.placement_id, rev, F.c.slot_id), (F) => ({ type: "coPlace", placement_id: F.e.placement_id }));
+});
+
+test("inverseOf: ungroup goes back into the original slot", async () => {
+  const { steps } = await undoRoundTrip((F, rev) => F.api.ungroup(F.e.placement_id, rev), (F) => ({ type: "ungroup", placement_id: F.e.placement_id }));
+  assert.deepStrictEqual(steps.map((x) => x.call), ["coPlace"]);
+});
+
+test("inverseOf: merge of a labelled 2-placement slot and of a 3-placement slot", async () => {
+  const two = await undoRoundTrip((F, rev) => F.api.mergeSlot(F.b.slot_id, rev, F.c.slot_id), (F) => ({ type: "merge", slot_id: F.b.slot_id }));
+  assert.deepStrictEqual(two.steps.map((x) => x.call), ["movePlacement", "coPlace", "updateSlot"]);
+  // 3 placements in the source: M1's "Pair" slot gains t10, then merges into the lone slot in M2
+  const F = await layoutFixture(), api = F.api;
+  let r = await api.place(1, F.view().sequence.rev, F.m1, K.t10, { confirm_off_grade: true, slot_id: F.b.slot_id });
+  const before = r.sequence;
+  r = await api.mergeSlot(F.b.slot_id, before.sequence.rev, F.d.slot_id);
+  const steps = inverseOf({ type: "merge", slot_id: F.b.slot_id }, before);
+  assert.deepStrictEqual(steps.map((x) => x.call), ["movePlacement", "coPlace", "coPlace", "updateSlot"]);
+  assert.deepStrictEqual(norm(await runUndoSteps(steps, api, r.sequence)), norm(before));
+});
+
+test("inverseOf: not-undoable ops and stale views give null", () => {
+  assert.strictEqual(inverseOf({ type: "remove", placement_id: 1 }, { modules: [] }), null);
+  assert.strictEqual(inverseOf({ type: "moveSlot", slot_id: 99 }, { modules: [] }), null);
+  assert.strictEqual(inverseOf({ type: "merge", slot_id: 99 }, { modules: [] }), null);
+});
+
+
+/* ------------------------------------------- board, divider, undo UI (phase 2) ---- */
+
+const tick = () => new Promise((r) => setTimeout(r, 0));
+const plOrder = (html) => [...html.matchAll(/class="plrow[^"]*" data-pl="(\d+)"/g)].map((m) => Number(m[1]));
+
+/** The layout fixture behind a stub-DOM app.  env extras: width, mainWidth, dndHit, setTimeout, storage. */
+async function layoutApp(env) {
+  const F = await layoutFixture();
+  const doc = makeDoc();
+  const app = A.createApp(Object.assign({ doc, api: F.api, hist: { replaceState() {} }, loc: { search: "" }, storage: memStorage(), setTimeout() { return 0; } }, env || {}));
+  await app.init();
+  return { F, app, M: app.M, R: doc.els, doc, api: F.api };
+}
+
+test("view state: bd=1 round-trips; saved filters do not carry the board", () => {
+  const st = Object.assign(defaultState(null), { board: true });
+  assert.strictEqual(encodeState(st, null), "bd=1");
+  assert.strictEqual(decodeState("bd=1", null).board, true);
+  assert.strictEqual(decodeState("", null).board, false);
+  assert.strictEqual(decodeState(encodeState(Object.assign(defaultState(null), { board: true, leaves: true }), null), null).board, true);
+  assert.ok(!("board" in A.lensOf(st)));
+  assert.strictEqual(A.lensIsDefault(st, null), true);
+  assert.strictEqual(A.applyLens(st, A.lensOf(defaultState(null)), small().slice).board, true);   // a lens never switches layout
+});
+
+test("divider: clamping (min 300, slice keeps 360), storage, keys, and storage that throws", async () => {
+  assert.strictEqual(A.clampRailWidth(200, 1440), 300);
+  assert.strictEqual(A.clampRailWidth(600, 1440), 600);
+  assert.strictEqual(A.clampRailWidth(5000, 1440), 1080);
+  assert.strictEqual(A.clampRailWidth(500, 500), 300);              // too narrow for both: the minimum wins
+  assert.strictEqual(A.clampRailWidth("x", 1440), null);
+  const store = memStorage();
+  const a = await layoutApp({ storage: store, mainWidth: () => 1440 });
+  assert.strictEqual(a.app.setRailWidth(600), 600);
+  assert.strictEqual(store.getItem("mh2seq-rail-width"), "600");
+  const b = await layoutApp({ storage: store, mainWidth: () => 1440 });   // "reload": the width is kept
+  assert.strictEqual(b.M.ui.railW, 600);
+  b.app.railKey("ArrowRight"); assert.strictEqual(b.M.ui.railW, 620);
+  b.app.railKey("ArrowLeft"); b.app.railKey("ArrowLeft"); assert.strictEqual(b.M.ui.railW, 580);
+  b.app.railKey("Home"); assert.strictEqual(b.M.ui.railW, 300);
+  b.app.railKey("End"); assert.strictEqual(b.M.ui.railW, 1080);
+  assert.strictEqual(b.app.railKey("x"), false);
+  b.app.setRailWidth(null); assert.strictEqual(store.getItem("mh2seq-rail-width"), null); assert.strictEqual(b.M.ui.railW, null);
+  const c = await layoutApp({ storage: throwingStorage(), mainWidth: () => 1440 });
+  assert.strictEqual(c.M.ui.railW, null);
+  assert.strictEqual(c.app.setRailWidth(700), 700);                  // works for the session
+});
+
+test("board: same rows as the list, URL bd=1, Back to list and Esc, hidden under 1024px, picker default by width", async () => {
+  const urls = [];
+  const { app, R, M } = await layoutApp({ width: () => 1280, hist: { replaceState(_a, _b, u) { urls.push(u); } } });
+  const listRows = plOrder(R.rail.innerHTML);
+  assert.strictEqual(listRows.length, 5);
+  assert.ok(R.rail.innerHTML.startsWith('<div class="board-cta">') && R.rail.innerHTML.includes("Open board"));   // first thing in the rail
+  await app.act("open-board");
+  assert.strictEqual(app.getState().board, true); assert.ok(urls[urls.length - 1].includes("bd=1"));
+  assert.strictEqual(R.rail.innerHTML, ""); assert.strictEqual(R.board.hidden, false);
+  assert.deepStrictEqual(plOrder(R.board.innerHTML), listRows);
+  assert.strictEqual((R.board.innerHTML.match(/class="module col/g) || []).length, 3);
+  assert.ok(R.board.innerHTML.includes("← Back to list") && R.board.innerHTML.includes("+ Module") && R.board.innerHTML.includes("Adding to"));
+  assert.ok(R.board.innerHTML.includes('class="slot compact multi"'));                 // co-placed slots render as one group
+  assert.ok(R.board.innerHTML.includes('aria-label="Move module left"'));
+  assert.strictEqual(M.ui.pickerOpen, false); assert.ok(R.board.innerHTML.includes("picker collapsed"));   // 1280: collapsed
+  await app.act("picker-toggle"); assert.ok(R.board.innerHTML.includes('class="picker-list"'));
+  assert.strictEqual(app.escapeKey(), true); assert.strictEqual(app.getState().board, false);
+  assert.deepStrictEqual(plOrder(R.rail.innerHTML), listRows);
+  await app.act("open-board"); await app.act("close-board"); assert.strictEqual(app.getState().board, false);
+  // reload with bd=1 reopens the board
+  const F2 = await layoutApp({ width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  assert.strictEqual(F2.R.board.hidden, false); assert.strictEqual(F2.M.ui.pickerOpen, true);
+  // under 1024px the board is not offered: the list (and its tabs) stay
+  const narrow = await layoutApp({ width: () => 900, loc: { search: "?grade=2&bd=1" } });
+  assert.strictEqual(narrow.R.board.innerHTML, ""); assert.strictEqual(narrow.R.board.hidden, true);
+  assert.deepStrictEqual(plOrder(narrow.R.rail.innerHTML), listRows);
+});
+
+test("board: column header writes (‹ › moves, Adding to, + Module) and the prompt shows in the target column", async () => {
+  const { app, R, M, F } = await layoutApp({ width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  await app.act("module-move", { id: F.m2, val: "up" });
+  assert.deepStrictEqual(M.seqView.modules.map((m) => m.module_id), [F.m2, F.m1, F.m3]);
+  await app.act("target-module", { id: F.m3 });
+  await app.act("place-chip", { id: K.w12 });                                     // already placed: notice
+  await app.act("add-module"); assert.strictEqual(M.seqView.modules.length, 4);
+  const m4 = M.seqView.modules[3].module_id;
+  await app.act("target-module", { id: m4 });
+  await app.act("place-chip", { id: K.t12 });                                     // no-grade bridge: prompt
+  assert.ok(M.ui.prompt);
+  const col = R.board.innerHTML.split('data-kind="module" data-id="' + m4 + '"')[1];
+  assert.ok(col.includes('class="prompt"'), "the prompt is in the target column");
+});
+
+test("picker: search by ID or text, one stem, unplaced only (default on)", async () => {
+  const { app, R, M } = await layoutApp({ width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  const vis = A.visibleSlice(M.slice, app.getState(), M.seqView), pi = M.seqView.placed_index;
+  const ids = (o) => A.pickerNodes(vis, pi, o).map((n) => n.node_id);
+  assert.deepStrictEqual(ids({ unplacedOnly: true }), ["TIM-0010", "TIM-0011", "TIM-0012"].filter((x) => ids({}).includes(x)));
+  assert.ok(ids({}).includes("WHO-0010"));
+  assert.deepStrictEqual(ids({ query: "who-001" }), ["WHO-0010", "WHO-0011", "WHO-0012"]);
+  assert.deepStrictEqual(ids({ query: "TELL AND" }), ["TIM-0010"]);
+  assert.ok(ids({ stemId: "WHO" }).every((x) => x.startsWith("WHO")));
+  assert.ok(R.board.innerHTML.includes('aria-pressed="true"') && R.board.innerHTML.includes("Unplaced only"));
+  await app.act("picker-unplaced"); assert.ok(R.board.innerHTML.includes('data-node="' + K.w10 + '"'));
+  await app.act("picker-q", { value: "tim-0011" });
+  assert.ok(R.board.innerHTML.includes("1 node") && R.board.innerHTML.includes('data-node="' + K.t11 + '"') && !R.board.innerHTML.includes('data-node="' + K.w10 + '"'));
+  await app.act("picker-q", { value: "" }); await app.act("picker-stem", { value: "TIM" });
+  assert.ok(!R.board.innerHTML.includes('data-node="' + K.w10 + '"'));
+});
+
+test("picker: chips grouped by stem; Collapse and Hide share the slice's stem state; a search shows matches in collapsed stems", async () => {
+  const { app, R } = await layoutApp({ width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  await app.act("picker-unplaced");                                               // every chip, so both stems show
+  const groupOf = (stem) => R.board.innerHTML.split('<li class="pstem').find((g) => g.includes('data-stem="' + stem + '"'));
+  assert.ok(R.board.innerHTML.includes('data-stem="TIM"') && R.board.innerHTML.includes('data-stem="WHO"'));
+  assert.ok(groupOf("WHO").includes('data-node="' + K.w10 + '"'));
+  // collapse in the picker = collapse in the slice
+  await app.act("stem-collapse", { id: "WHO" });
+  assert.deepStrictEqual(app.getState().collapsed_stems, ["WHO"]);
+  assert.ok(!R.board.innerHTML.includes('data-node="' + K.w10 + '"') && R.board.innerHTML.includes('class="pstem collapsed" data-stem="WHO"'));
+  assert.ok(R.board.innerHTML.includes('data-node="' + K.t11 + '"'));             // the other stem stays open
+  // a search (or a one-stem pick) shows matches even in a collapsed stem, and the toggle is off meanwhile
+  await app.act("picker-q", { value: "who-0010" });
+  assert.ok(R.board.innerHTML.includes('data-node="' + K.w10 + '"') && /class="pstem-t"[^>]*disabled/.test(R.board.innerHTML));
+  await app.act("picker-q", { value: "" });
+  await app.act("stems-expand-all"); assert.ok(R.board.innerHTML.includes('data-node="' + K.w10 + '"'));
+  // hide: gone from the picker (and the slice); "Show 1 hidden stem" brings it back without touching hidden concept/skills
+  await app.act("stem-hide", { id: "WHO" });
+  assert.deepStrictEqual(app.getState().hidden_stems, ["WHO"]);
+  assert.ok(!R.board.innerHTML.includes('data-stem="WHO"') && R.board.innerHTML.includes("Show 1 hidden stem"));
+  app.setState(Object.assign({}, app.getState(), { hidden_cs: ["x"] }));
+  await app.act("stems-show-all");
+  assert.deepStrictEqual(app.getState().hidden_stems, []); assert.deepStrictEqual(app.getState().hidden_cs, ["x"]);
+  assert.ok(R.board.innerHTML.includes('data-stem="WHO"') && !R.board.innerHTML.includes("hidden stem"));
+});
+
+test("picker divider: clamping (min 240, one column stays), storage, keys, reset", async () => {
+  assert.strictEqual(A.clampPickerWidth(100, 1920), 240);
+  assert.strictEqual(A.clampPickerWidth(500, 1920), 500);
+  assert.strictEqual(A.clampPickerWidth(5000, 1920), 1600);
+  assert.strictEqual(A.clampPickerWidth(500, 400), 240);             // too narrow for both: the minimum wins
+  assert.strictEqual(A.clampPickerWidth("x", 1920), null);
+  const store = memStorage();
+  const a = await layoutApp({ storage: store, boardWidth: () => 1920, width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  assert.ok(a.R.board.innerHTML.includes('class="picker-divider" role="separator"') && a.R.board.innerHTML.includes('aria-valuenow="300"'));
+  assert.strictEqual(a.app.setPickerWidth(480), 480);
+  assert.strictEqual(store.getItem("mh2seq-picker-width"), "480");
+  const b = await layoutApp({ storage: store, boardWidth: () => 1920, width: () => 1920, loc: { search: "?grade=2&bd=1" } });
+  assert.strictEqual(b.M.ui.pickerW, 480); assert.ok(b.R.board.innerHTML.includes('aria-valuenow="480"'));
+  b.app.pickerKey("ArrowRight"); assert.strictEqual(b.M.ui.pickerW, 500);
+  b.app.pickerKey("Home"); assert.strictEqual(b.M.ui.pickerW, 240);
+  b.app.pickerKey("End"); assert.strictEqual(b.M.ui.pickerW, 1600);
+  assert.strictEqual(b.app.pickerKey("x"), false);
+  b.app.setPickerWidth(null); assert.strictEqual(store.getItem("mh2seq-picker-width"), null); assert.strictEqual(b.M.ui.pickerW, null);
+  const c = await layoutApp({ storage: throwingStorage(), boardWidth: () => 1920 });
+  assert.strictEqual(c.app.setPickerWidth(400), 400);                 // works for the session
+});
+
+test("undo: buttons and Cmd/Ctrl+Z restore the layout; tooltip names it; not while typing; cap 30; attribute edits not undoable", async () => {
+  const { app, R, M, F } = await layoutApp();
+  const before = norm(M.seqView);
+  assert.ok(R.hdr.innerHTML.includes("↶ Undo") && /data-action="undo"[^>]*disabled/.test(R.hdr.innerHTML));
+  await app.act("slot-move", { id: F.a.slot_id, val: "down" });
+  assert.notDeepStrictEqual(norm(M.seqView), before);
+  assert.ok(R.hdr.innerHTML.includes("Undo: move slot 1 in M1 down"), R.hdr.innerHTML.match(/title="Undo[^"]*"/));
+  await app.act("undo");
+  assert.deepStrictEqual(norm(M.seqView), before);
+  assert.strictEqual(M.ui.undo.length, 0);
+  assert.ok(R.live.innerHTML.includes("Undid: move slot 1 in M1 down"));
+  // the other button/select actions
+  await app.act("slot-move-to", { id: F.c.slot_id, value: String(F.m3) });
+  await app.act("slot-merge", { id: F.b.slot_id });
+  await app.act("ungroup", { id: F.e.placement_id });
+  await app.act("coplace-to", { id: F.d.placement_id, value: String(F.a.slot_id) });
+  await app.act("module-move", { id: F.m3, val: "up" });
+  await app.act("place-chip", { id: K.t10 });
+  assert.strictEqual(M.ui.undo.length, 6);
+  // attribute edits are not undoable and leave the stack alone
+  await app.act("set-cal", { id: F.a.placement_id, val: "deep" });
+  assert.strictEqual(M.ui.undo.length, 6);
+  // Cmd+Z from the page, ignored in a text field
+  app.onEvent("keydown", { key: "z", metaKey: true, target: { tagName: "INPUT", closest: () => null }, preventDefault() {} });
+  await tick(); assert.strictEqual(M.ui.undo.length, 6);
+  for (let i = 0; i < 6; i++) {
+    app.onEvent("keydown", { key: i % 2 ? "Z" : "z", ctrlKey: !!(i % 2), metaKey: !(i % 2), target: { tagName: "BODY", closest: () => null }, preventDefault() {} });
+    await tick();
+  }
+  assert.strictEqual(M.ui.undo.length, 0);
+  assert.deepStrictEqual(norm(M.seqView), before);
+  // cap: 30 entries
+  for (let i = 0; i < 32; i++) await app.act("slot-move", { id: F.a.slot_id, val: i % 2 ? "up" : "down" });
+  assert.strictEqual(M.ui.undo.length, 30);
+  // grade switch (reload of the grade) clears it
+  await app.loadGrade("2"); assert.strictEqual(M.ui.undo.length, 0);
+});
+
+test("undo: a 409 clears the stack with a toast; a failing undo reloads and clears", async () => {
+  const { app, R, M, F, api } = await layoutApp();
+  await app.act("slot-move", { id: F.a.slot_id, val: "down" });
+  assert.strictEqual(M.ui.undo.length, 1);
+  api.st.sequence.rev += 3;                                    // someone else wrote
+  await app.act("slot-move", { id: F.c.slot_id, val: "up" });
+  assert.strictEqual(M.ui.undo.length, 0);
+  assert.ok(M.ui.toasts.some((t) => t.text === "The sequence changed elsewhere, so undo history was cleared."));
+  await app.act("ungroup", { id: F.e.placement_id });
+  assert.strictEqual(M.ui.undo.length, 1);
+  api.coPlace = async () => { throw new ApiError(422, "invalid", "nope"); };
+  await app.act("undo");
+  assert.strictEqual(M.ui.undo.length, 0);
+  assert.ok(M.ui.toasts.some((t) => t.text === "Couldn’t fully undo; the sequence has been reloaded."));
+  assert.strictEqual(M.seqView.sequence.rev, api.st.sequence.rev);
+  assert.ok(R.hdr.innerHTML.includes("Not saved: undo incomplete"));
+});
+
+test("remove: confirm says it can't be undone", async () => {
+  const { app, R, M, F } = await layoutApp();
+  await app.act("rows-expand-all");
+  await app.act("remove-placement", { id: F.a.placement_id });
+  assert.ok(R.rail.innerHTML.includes("This can’t be undone."));
+});
+
+/* --------------------------------------------------- drag-and-drop (phase 3) ---- */
+
+test("dropTarget zones and toIndex excluding the dragged item", () => {
+  const r = { top: 100, height: 40 };
+  assert.strictEqual(A.dropTarget(100, r), "before"); assert.strictEqual(A.dropTarget(109, r), "before");
+  assert.strictEqual(A.dropTarget(111, r), "onto"); assert.strictEqual(A.dropTarget(120, r), "onto"); assert.strictEqual(A.dropTarget(129, r), "onto");
+  assert.strictEqual(A.dropTarget(131, r), "after"); assert.strictEqual(A.dropTarget(140, r), "after");
+  const ids = [1, 2, 3, 4];
+  assert.strictEqual(A.toIndex(ids, 3, "before", null), 2);
+  assert.strictEqual(A.toIndex(ids, 3, "after", null), 3);
+  assert.strictEqual(A.toIndex(ids, 3, "before", 1), 1);       // 1 moves down: counted without it
+  assert.strictEqual(A.toIndex(ids, 1, "before", 4), 0);
+  assert.strictEqual(A.toIndex(ids, 4, "after", 1), 3);
+  assert.strictEqual(A.toIndex(ids, 2, "after", 2), 1);        // beside itself: its own index (a no-op)
+  assert.strictEqual(A.toIndex(ids, 9, "before", null), null);
+});
+
+test("planDrop: every row of the section 5.2 table, labels, no-ops and refusals", async () => {
+  const F = await layoutFixture(), v = F.view();
+  const P = (drag, target) => A.planDrop(drag, target, v);
+  const S = (id, zone) => ({ kind: "slot", slotId: id, zone }), END = (m) => ({ kind: "module-end", moduleId: m });
+  // unplaced node
+  let p = P({ kind: "node", key: K.t10 }, S(F.c.slot_id, "before"));
+  assert.deepStrictEqual([p.place, p.module_id, p.to_index, p.label], [true, F.m1, 2, "Insert as slot 3 in M1"]);
+  p = P({ kind: "node", key: K.t10 }, S(F.d.slot_id, "onto")); assert.deepStrictEqual([p.slot_id, p.label], [F.d.slot_id, "Co-place with slot 1 in M2"]);
+  p = P({ kind: "node", key: K.t10 }, END(F.m3)); assert.deepStrictEqual([p.to_index, p.label], [0, "Add at the end of M3"]);
+  // placed node: its placement
+  p = P({ kind: "node", key: K.w10 }, S(F.d.slot_id, "after")); assert.deepStrictEqual([p.call, p.id, p.to_module_id, p.to_index], ["movePlacement", F.a.placement_id, F.m2, 1]);
+  p = P({ kind: "node", key: K.w10 }, S(F.d.slot_id, "onto")); assert.deepStrictEqual([p.call, p.target_slot_id], ["coPlace", F.d.slot_id]);
+  p = P({ kind: "node", key: K.w10 }, END(F.m2)); assert.deepStrictEqual([p.call, p.to_index], ["movePlacement", 1]);
+  // slot
+  p = P({ kind: "slot", slotId: F.c.slot_id }, S(F.a.slot_id, "before")); assert.deepStrictEqual([p.call, p.to_module_id, p.to_index, p.noop, p.label], ["moveSlot", F.m1, 0, false, "Insert as slot 1 in M1"]);
+  p = P({ kind: "slot", slotId: F.a.slot_id }, S(F.c.slot_id, "after")); assert.deepStrictEqual([p.to_index, p.label], [2, "Insert as slot 3 in M1"]);
+  p = P({ kind: "slot", slotId: F.a.slot_id }, S(F.b.slot_id, "before")); assert.strictEqual(p.noop, true);
+  p = P({ kind: "slot", slotId: F.a.slot_id }, S(F.a.slot_id, "after")); assert.strictEqual(p.noop, true);
+  p = P({ kind: "slot", slotId: F.a.slot_id }, S(F.b.slot_id, "onto")); assert.deepStrictEqual([p.call, p.into_slot_id, p.label], ["mergeSlot", F.b.slot_id, "Merge into slot 2 in M1"]);
+  assert.strictEqual(P({ kind: "slot", slotId: F.a.slot_id }, S(F.a.slot_id, "onto")), null);
+  p = P({ kind: "slot", slotId: F.a.slot_id }, END(F.m2)); assert.deepStrictEqual([p.call, p.to_index, p.label], ["moveSlot", 1, "Move to the end of M2"]);
+  p = P({ kind: "slot", slotId: F.c.slot_id }, END(F.m1)); assert.strictEqual(p.noop, true);
+  // placement in a co-placed slot (its slot stays, so nothing is excluded)
+  p = P({ kind: "placement", placementId: F.e.placement_id }, S(F.b.slot_id, "after")); assert.deepStrictEqual([p.call, p.to_index, p.noop], ["movePlacement", 2, false]);
+  p = P({ kind: "placement", placementId: F.e.placement_id }, S(F.d.slot_id, "onto")); assert.strictEqual(p.call, "coPlace");
+  assert.strictEqual(P({ kind: "placement", placementId: F.e.placement_id }, S(F.b.slot_id, "onto")), null);
+  p = P({ kind: "placement", placementId: F.e.placement_id }, END(F.m1)); assert.deepStrictEqual([p.call, p.to_index], ["movePlacement", 3]);
+  // a lone placement excludes its own slot, so "beside itself" is a no-op
+  p = P({ kind: "placement", placementId: F.d.placement_id }, S(F.d.slot_id, "before")); assert.strictEqual(p.noop, true);
+  // module
+  p = P({ kind: "module", moduleId: F.m3 }, { kind: "module", moduleId: F.m1, zone: "before" });
+  assert.deepStrictEqual([p.call, p.to_index, p.label, p.noop], ["moveModule", 0, "Move module to position 1", false]);
+  assert.strictEqual(P({ kind: "module", moduleId: F.m1 }, { kind: "module", moduleId: F.m2, zone: "before" }).noop, true);
+  assert.strictEqual(P({ kind: "module", moduleId: F.m1 }, S(F.a.slot_id, "onto")), null);           // modules only drop between modules
+  assert.strictEqual(P({ kind: "slot", slotId: F.a.slot_id }, { kind: "module", moduleId: F.m2, zone: "before" }), null);
+  assert.strictEqual(P({ kind: "slot", slotId: 999 }, S(F.a.slot_id, "before")), null);
+});
+
+/** A pointer drag through app.dnd: down at (0,0), past the threshold, over `target`, up. */
+async function drag(app, setTarget, src, target, o) {
+  o = o || {};
+  app.dnd.down(src, 0, 0, o.pointer || "mouse");
+  setTarget(null); app.dnd.move(10, 10);
+  setTarget(target); app.dnd.move(20, 20);
+  return app.dnd.up(20, 20);
+}
+
+test("dnd e2e: each row of the 5.2 table through DemoApi, with undo after each", async () => {
+  let tgt = null; const setT = (t) => { tgt = t; };
+  const S = (id, zone) => ({ kind: "slot", slotId: id, zone }), END = (m) => ({ kind: "module-end", moduleId: m });
+  const run = async (src, target, check) => {
+    const { app, M, F, R } = await layoutApp({ dndHit: () => tgt });
+    const before = norm(M.seqView), rev0 = M.seqView.sequence.rev;
+    const res = await drag(app, setT, typeof src === "function" ? src(F) : src, target(F));
+    assert.ok(res, "the drop wrote");
+    assert.strictEqual(M.seqView.sequence.rev > rev0, true);
+    check(M.seqView, F, M, R);
+    assert.ok(R.live.innerHTML.length > 3, "announced");
+    if (M.ui.undo.length) { await app.act("undo"); assert.deepStrictEqual(norm(M.seqView), before, "undo restores"); }
+  };
+  const keysOf = (v, mi) => v.modules[mi].slots.map((s) => s.placements.map((p) => p.source_key));
+  // unplaced chip
+  await run({ kind: "node", key: K.t10 }, (F) => S(F.b.slot_id, "before"), (v) => assert.deepStrictEqual(keysOf(v, 0)[1], [K.t10]));
+  await run({ kind: "node", key: K.t10 }, (F) => S(F.b.slot_id, "onto"), (v) => assert.deepStrictEqual(keysOf(v, 0)[1], [K.w11, K.w12, K.t10]));
+  await run({ kind: "node", key: K.t10 }, (F) => END(F.m3), (v) => assert.deepStrictEqual(keysOf(v, 2), [[K.t10]]));
+  // placed chip
+  await run({ kind: "node", key: K.w20 }, (F) => S(F.a.slot_id, "before"), (v) => assert.deepStrictEqual(keysOf(v, 0), [[K.w20], [K.w10], [K.w11, K.w12]]));
+  await run({ kind: "node", key: K.w20 }, (F) => S(F.d.slot_id, "onto"), (v) => assert.deepStrictEqual(keysOf(v, 1), [[K.w21, K.w20]]));
+  await run({ kind: "node", key: K.w20 }, (F) => END(F.m3), (v) => assert.deepStrictEqual(keysOf(v, 2), [[K.w20]]));
+  // slot grip
+  await run((F) => ({ kind: "slot", slotId: F.c.slot_id }), (F) => S(F.d.slot_id, "before"), (v) => assert.deepStrictEqual(keysOf(v, 1), [[K.w20], [K.w21]]));
+  await run((F) => ({ kind: "slot", slotId: F.b.slot_id }), (F) => S(F.d.slot_id, "onto"), (v) => assert.deepStrictEqual(keysOf(v, 1), [[K.w21, K.w11, K.w12]]));
+  await run((F) => ({ kind: "slot", slotId: F.a.slot_id }), (F) => END(F.m1), (v) => assert.deepStrictEqual(keysOf(v, 0), [[K.w11, K.w12], [K.w20], [K.w10]]));
+  // placement inside a co-placed slot
+  await run((F) => ({ kind: "placement", placementId: F.e.placement_id }), (F) => S(F.a.slot_id, "before"), (v) => assert.deepStrictEqual(keysOf(v, 0), [[K.w12], [K.w10], [K.w11], [K.w20]]));
+  await run((F) => ({ kind: "placement", placementId: F.e.placement_id }), (F) => S(F.d.slot_id, "onto"), (v) => assert.deepStrictEqual(keysOf(v, 1), [[K.w21, K.w12]]));
+  await run((F) => ({ kind: "placement", placementId: F.e.placement_id }), (F) => END(F.m3), (v) => assert.deepStrictEqual(keysOf(v, 2), [[K.w12]]));
+  // module header
+  await run((F) => ({ kind: "module", moduleId: F.m3 }), (F) => ({ kind: "module", moduleId: F.m1, zone: "before" }), (v, F) => assert.deepStrictEqual(v.modules.map((m) => m.module_id), [F.m3, F.m1, F.m2]));
+});
+
+test("dnd: renders wait for the drop; click, Esc, no-op, refused drop; bridge chips go through the prompt", async () => {
+  let tgt = null; const setT = (t) => { tgt = t; };
+  const { app, M, F, R, api } = await layoutApp({ dndHit: () => tgt });
+  const rev0 = M.seqView.sequence.rev;
+  // a click (under 5px) is not a drag
+  app.dnd.down({ kind: "slot", slotId: F.a.slot_id }, 0, 0, "mouse"); app.dnd.move(3, 1);
+  assert.strictEqual(app.dnd.active(), false); assert.strictEqual(await app.dnd.up(3, 1), null);
+  // re-renders are deferred while dragging, and one runs on drop/cancel
+  app.dnd.down({ kind: "slot", slotId: F.a.slot_id }, 0, 0, "mouse"); app.dnd.move(30, 0);
+  assert.strictEqual(app.dnd.active(), true); assert.strictEqual(M.ui.dragging, true);
+  const railBefore = R.rail.innerHTML;
+  await app.act("rows-expand-all");
+  assert.strictEqual(R.rail.innerHTML, railBefore, "no DOM swap mid-drag");
+  assert.strictEqual(app.dnd.cancel(), true);                                 // Esc / pointercancel
+  assert.strictEqual(M.ui.dragging, false); assert.notStrictEqual(R.rail.innerHTML, railBefore, "the deferred render ran");
+  assert.strictEqual(M.seqView.sequence.rev, rev0);
+  await app.act("rows-collapse-all");
+  // no-op and refused drops write nothing
+  assert.strictEqual(await drag(app, setT, { kind: "slot", slotId: F.a.slot_id }, { kind: "slot", slotId: F.b.slot_id, zone: "before" }), null);
+  assert.strictEqual(await drag(app, setT, { kind: "slot", slotId: F.a.slot_id }, { kind: "slot", slotId: F.a.slot_id, zone: "onto" }), null);
+  assert.strictEqual(await drag(app, setT, { kind: "slot", slotId: F.a.slot_id }, null), null);
+  assert.strictEqual(M.seqView.sequence.rev, rev0); assert.strictEqual(M.ui.undo.length, 0);
+  // an off-grade/bridge chip: the existing confirm prompt, then it lands where it was dropped
+  await drag(app, setT, { kind: "node", key: K.t12 }, { kind: "slot", slotId: F.a.slot_id, zone: "after" });
+  assert.ok(M.ui.prompt && M.ui.prompt.toIndex === 1);
+  assert.ok(R.rail.innerHTML.split('data-kind="module" data-id="' + F.m2 + '"')[0].includes('class="prompt"'), "prompt sits with M1, where the chip was dropped, not the target module (M3)");
+  await app.act("prompt-go", { val: "nonote" });
+  assert.deepStrictEqual(M.seqView.modules[0].slots[1].placements.map((p) => p.source_key), [K.t12]);
+  assert.strictEqual(M.ui.undo.length, 1);
+  assert.ok(api);
+});
+
+test("dnd: touch needs a 300ms long-press (a quick move is a scroll); 409 during a drop reloads and clears undo", async () => {
+  let tgt = null; const setTgt = (t) => { tgt = t; };
+  const timers = [];
+  const { app, M, F, api } = await layoutApp({ dndHit: () => tgt, setTimeout(fn, ms) { timers.push({ fn, ms }); return timers.length; } });
+  app.dnd.down({ kind: "slot", slotId: F.c.slot_id }, 0, 0, "touch");
+  app.dnd.move(0, 20);                                                          // finger moved first: a scroll
+  assert.strictEqual(app.dnd.pending(), false); assert.strictEqual(app.dnd.active(), false);
+  app.dnd.down({ kind: "slot", slotId: F.c.slot_id }, 0, 0, "touch");
+  const lp = timers.filter((t) => t.ms === 300).pop(); assert.ok(lp);
+  lp.fn();                                                                      // held for 300ms
+  assert.strictEqual(app.dnd.active(), true);
+  setTgt({ kind: "slot", slotId: F.a.slot_id, zone: "before" }); app.dnd.move(0, 40);
+  await app.dnd.up(0, 40);
+  assert.deepStrictEqual(M.seqView.modules[0].slots.map((s) => s.slot_id), [F.c.slot_id, F.a.slot_id, F.b.slot_id]);
+  assert.strictEqual(M.ui.undo.length, 1);
+  // 409 mid-drop
+  api.st.sequence.rev += 2;
+  await drag(app, setTgt, { kind: "slot", slotId: F.a.slot_id }, { kind: "module-end", moduleId: F.m3 });
+  assert.strictEqual(M.seqView.sequence.rev, api.st.sequence.rev);
+  assert.strictEqual(M.ui.undo.length, 0);
+  assert.ok(M.ui.toasts.some((t) => t.text === "The sequence changed elsewhere, so undo history was cleared."));
+  assert.ok(M.ui.notice && M.ui.notice.kind === "warn");
+});
+
+test("dnd: list rows carry labelled grips; chips and module headers are drag sources", async () => {
+  const { R, F } = await layoutApp();
+  assert.ok(R.rail.innerHTML.includes('data-drag="slot" data-id="' + F.a.slot_id + '" role="img" aria-label="Drag handle: move slot 1"'));
+  assert.ok(R.rail.innerHTML.includes('data-drag="placement" data-id="' + F.e.placement_id + '"'));
+  assert.ok(R.rail.innerHTML.includes('<header class="mod-h" data-drag="module" data-id="' + F.m1 + '">'));
+  assert.ok(R.slice.innerHTML.includes('data-drag="node" data-key="' + K.t10 + '"'));
+  const el = { getAttribute: (n) => ({ "data-drag": "placement", "data-id": "7" })[n] };
+  assert.deepStrictEqual(A.dragSourceOf(el), { kind: "placement", placementId: 7 });
+});
+
+test("acceptance (brief section 8) on the G2 fixture: chips in, co-place, back out, slot and module moves, Undo x4", async () => {
+  const p = big(), api = new DemoApi(p, memStorage());
+  let r = await api.createSequence("2", "G2");
+  for (const t of ["M1", "M2", "M3"]) r = await api.createModule(1, r.sequence.sequence.rev, t);
+  const doc = makeDoc();
+  let tgt = null; const setTgt = (t) => { tgt = t; };
+  const app = A.createApp({ doc, api, hist: { replaceState() {} }, loc: { search: "?grade=2&bd=1" }, storage: memStorage(), setTimeout() { return 0; }, width: () => 1440, dndHit: () => tgt });
+  await app.init();
+  const M = app.M, [m1, m2, m3] = M.seqView.modules.map((m) => m.module_id);
+  assert.strictEqual(doc.els.board.hidden, false);
+  assert.strictEqual(M.ui.pickerOpen, false); await app.act("picker-toggle"); assert.strictEqual(M.ui.pickerOpen, true);   // 1. ◀ expands
+  const free = A.pickerNodes(A.visibleSlice(M.slice, app.getState(), M.seqView), {}, { unplacedOnly: true })
+    .filter((n) => !n.requires_confirm && !(n.placed_elsewhere && n.placed_elsewhere.length)).map((n) => n.source_key);
+  assert.ok(free.length >= 6);
+  const sid = (mi, si) => M.seqView.modules[mi].slots[si].slot_id;
+  // 2. five chips at specific positions
+  await drag(app, setTgt, { kind: "node", key: free[0] }, { kind: "module-end", moduleId: m1 });
+  await drag(app, setTgt, { kind: "node", key: free[1] }, { kind: "slot", slotId: sid(0, 0), zone: "before" });
+  await drag(app, setTgt, { kind: "node", key: free[2] }, { kind: "slot", slotId: sid(0, 0), zone: "after" });
+  await drag(app, setTgt, { kind: "node", key: free[3] }, { kind: "module-end", moduleId: m2 });
+  await drag(app, setTgt, { kind: "node", key: free[4] }, { kind: "slot", slotId: sid(1, 0), zone: "before" });
+  const keys = (v) => v.modules.map((m) => m.slots.map((s) => s.placements.map((q) => q.source_key)));
+  assert.deepStrictEqual(keys(M.seqView), [[[free[1]], [free[2]], [free[0]]], [[free[4]], [free[3]]], []]);
+  const afterStep2 = norm(M.seqView);
+  // 3. a chip onto a slot co-places
+  await drag(app, setTgt, { kind: "node", key: free[5] }, { kind: "slot", slotId: sid(0, 1), zone: "onto" });
+  assert.deepStrictEqual(keys(M.seqView)[0][1], [free[2], free[5]]);
+  // 4. drag that node back out to its own slot
+  const pid = M.seqView.placed_index[free[5]].placement_id;
+  await drag(app, setTgt, { kind: "placement", placementId: pid }, { kind: "slot", slotId: sid(0, 2), zone: "after" });
+  assert.deepStrictEqual(keys(M.seqView)[0], [[free[1]], [free[2]], [free[0]], [free[5]]]);
+  // 5. a slot from M1 to the top of M2; M3's header to first position
+  await drag(app, setTgt, { kind: "slot", slotId: sid(0, 0) }, { kind: "slot", slotId: sid(1, 0), zone: "before" });
+  await drag(app, setTgt, { kind: "module", moduleId: m3 }, { kind: "module", moduleId: m1, zone: "before" });
+  assert.deepStrictEqual(M.seqView.modules.map((m) => m.module_id), [m3, m1, m2]);
+  // 6. Undo 4 times: back to the state after step 2, exactly
+  for (let i = 0; i < 4; i++) await app.act("undo");
+  assert.deepStrictEqual(norm(M.seqView), afterStep2);
+  // 7. reload: the board reopens with that layout; the undo stack is empty
+  const app2 = A.createApp({ doc: makeDoc(), api, hist: { replaceState() {} }, loc: { search: "?grade=2&bd=1" }, storage: memStorage(), setTimeout() { return 0; }, width: () => 1440 });
+  await app2.init();
+  assert.deepStrictEqual(norm(app2.M.seqView), afterStep2); assert.strictEqual(app2.M.ui.undo.length, 0);
+  assert.strictEqual(app2.regions.board.hidden, false);
+  // 8 (list half): a chip from the slice into the rail places
+  await app2.act("close-board");
+  let t2 = null;
+  const app3 = A.createApp({ doc: makeDoc(), api, hist: { replaceState() {} }, loc: { search: "?grade=2" }, storage: memStorage(), setTimeout() { return 0; }, width: () => 1440, dndHit: () => t2 });
+  await app3.init();
+  await drag(app3, (t) => { t2 = t; }, { kind: "node", key: free[6] || free[5] }, { kind: "module-end", moduleId: m3 });
+  assert.ok(app3.M.seqView.placed_index[free[6] || free[5]]);
+  // 9. keyboard only: chevron reorder, then Cmd+Z
+  const before9 = norm(app3.M.seqView);
+  await app3.act("slot-move", { id: app3.M.seqView.modules[0].slots[1].slot_id, val: "up" });
+  app3.onEvent("keydown", { key: "z", metaKey: true, target: { tagName: "BODY", closest: () => null }, preventDefault() {} });
+  await tick();
+  assert.deepStrictEqual(norm(app3.M.seqView), before9);
 });
 
 /* --------------------------------------------------------------- runner ---- */

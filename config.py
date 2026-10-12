@@ -6,7 +6,12 @@ file that changes.
 
 Layout convention:
     data/source/   read-only originals. Scripts NEVER write here.
-    data/build/    generated. Safe to delete at any time and rebuild.
+    data/build/    mostly generated, but NOT disposable: it also holds durable
+                   state that cannot be rebuilt -- mh2_seq.db (writer review
+                   and sequencing decisions) and ladder_uploads/ (every
+                   ladder version writers have uploaded, docs/brief_ladder_
+                   uploads.md). `rm -rf data/build` is no longer safe; to force
+                   a clean rebuild delete only mh2.db* and run rebuild.py.
     data/reports/  output meant for humans to open.
 """
 
@@ -27,7 +32,13 @@ BUILD = DATA / "build"
 REPORTS = DATA / "reports"
 
 # --- source data (read-only) -------------------------------------------------
-LADDERS = SOURCE / "ladders"        # MH2_*.docx
+# MH2_LADDERS_DIR / MH2_STEMS_CSV point the pipeline at a different ladder
+# set. rebuild.py sets both on every step it runs, to the effective inputs it
+# assembles under data/build/_effective (repo ladders with writers' uploads
+# laid over them -- mh2/ladder_store.py). Overriding here rather than in
+# rebuild.py's argument lists is what reaches the readers that take no
+# argument, e.g. load_standards._build_stem_lookup.
+LADDERS = Path(os.environ.get("MH2_LADDERS_DIR") or SOURCE / "ladders")  # MH2_*.docx
 WORKBOOKS = SOURCE / "workbooks"    # the two Excel files
 STANDARDS = SOURCE / "standards"    # the big CSVs
 PREDICTIONS = SOURCE / "predictions"  # Path C, JSONL from the offline run
@@ -41,7 +52,7 @@ LESSON_METADATA_CSV = STANDARDS / "lesson_metadata.csv"
 
 # The recorded ladder <-> workbook stem mapping. Hand-maintained data, not
 # derivable from the names -- see mh2/load_stems.py.
-STEMS_CSV = WORKBOOKS / "stems.csv"
+STEMS_CSV = Path(os.environ.get("MH2_STEMS_CSV") or WORKBOOKS / "stems.csv")
 
 # These two arrived alongside the workbooks rather than in standards/, so they
 # are declared where they actually live.
@@ -69,9 +80,19 @@ SCHEMA_SEQ = ROOT / "mh2" / "schema_seq.sql"
 
 LADDER_GLOB = str(LADDERS / "*.docx")
 
+# Writer-uploaded ladders (docs/brief_ladder_uploads.md). DURABLE: on the
+# persistent volume with mh2_seq.db, which holds their metadata. For any stem
+# with an upload, the upload is the source of truth and the repo copy in
+# LADDERS is only the seed it replaced.
+LADDER_UPLOADS = BUILD / "ladder_uploads"
+
+# The inputs a rebuild actually reads, reassembled from scratch on every run.
+# Disposable.
+EFFECTIVE_INPUTS = BUILD / "_effective"
+
 # Reranker cache. Deliberately NOT under data/build: it is paid API output
-# (mh2/rerank.py, scripts/run_reranks.py), and `rm -rf data/build` is the
-# documented safe default for "anything looks wrong, delete it and rebuild" --
+# (mh2/rerank.py, scripts/run_reranks.py), and deleting build output is the
+# documented response to "anything looks wrong, delete it and rebuild" --
 # that must never delete money already spent. mh2/load_reranks.py reads this
 # file back into model_reranks on every rebuild at zero API cost.
 RERANK_CACHE = DATA / "reranks" / "cache.jsonl"

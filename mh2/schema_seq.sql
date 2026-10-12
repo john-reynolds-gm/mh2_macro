@@ -134,3 +134,48 @@ CREATE TABLE IF NOT EXISTS candidate_ruling (
 );
 CREATE INDEX IF NOT EXISTS ix_candidate_ruling_standard
     ON candidate_ruling(standard_id);
+
+-- ============================================================================
+-- Ladder uploads (docs/brief_ladder_uploads.md). Writers upload ladder .docx
+-- files through the hosted app; the files live on the volume under
+-- config.LADDER_UPLOADS and these rows describe them. mh2/ladder_store.py is
+-- the only module that queries these tables.
+-- ============================================================================
+
+-- Every version ever committed. Nothing is overwritten; a revert flips
+-- is_live to an older row.
+CREATE TABLE IF NOT EXISTS ladder_upload (
+  upload_id      INTEGER PRIMARY KEY,
+  stem_id        TEXT NOT NULL,
+  stored_path    TEXT NOT NULL,          -- relative to LADDER_UPLOADS
+  original_name  TEXT NOT NULL,          -- what the writer uploaded
+  sha256         TEXT NOT NULL,
+  size_bytes     INTEGER NOT NULL,
+  uploaded_by    TEXT NOT NULL,
+  uploaded_at    TEXT NOT NULL,          -- UTC ISO
+  node_count     INTEGER NOT NULL,       -- from validation parse
+  parse_issues   TEXT,                   -- JSON list, may be empty
+  is_live        INTEGER NOT NULL DEFAULT 0,
+  note           TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS one_live_per_stem
+  ON ladder_upload(stem_id) WHERE is_live = 1;
+
+-- Registers a ladder for a stem whose stems.csv row has a blank ladder_file.
+CREATE TABLE IF NOT EXISTS stem_registry_override (
+  stem_id       TEXT PRIMARY KEY,
+  ladder_file   TEXT NOT NULL,           -- canonical name, MH2_<band>_<stem_id>.docx
+  set_by        TEXT NOT NULL,
+  set_at        TEXT NOT NULL
+);
+
+-- The most recent FAILED upload attempt per stem, for the Ladder Files
+-- page's "Rejected" status. Not in the brief's schema: without it the status
+-- has nowhere durable to come from. Cleared by the next successful commit.
+CREATE TABLE IF NOT EXISTS ladder_upload_rejection (
+  stem_id        TEXT PRIMARY KEY,
+  original_name  TEXT,
+  reason         TEXT NOT NULL,
+  attempted_by   TEXT NOT NULL,
+  attempted_at   TEXT NOT NULL
+);

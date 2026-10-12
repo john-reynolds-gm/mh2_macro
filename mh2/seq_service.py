@@ -361,9 +361,10 @@ def update_module(ctx: Ctx, writer: str, module_id: int, expected_rev: int,
 
 
 def move_module(ctx: Ctx, writer: str, module_id: int, expected_rev: int,
-                direction: str) -> dict:
+                direction=None, to_index=None) -> dict:
     def op(seq, mh2, grade):
-        seq_store.move_module(seq, writer, module_id, expected_rev, direction)
+        seq_store.move_module(seq, writer, module_id, expected_rev, direction,
+                              to_index=to_index)
         return {}
     return _write(ctx, "module", module_id, op)
 
@@ -383,10 +384,10 @@ def update_slot(ctx: Ctx, writer: str, slot_id: int, expected_rev: int, label) -
 
 
 def move_slot(ctx: Ctx, writer: str, slot_id: int, expected_rev: int,
-              direction=None, to_module_id=None) -> dict:
+              direction=None, to_module_id=None, to_index=None) -> dict:
     def op(seq, mh2, grade):
         seq_store.move_slot(seq, writer, slot_id, expected_rev, direction=direction,
-                            to_module_id=to_module_id)
+                            to_module_id=to_module_id, to_index=to_index)
         return {}
     return _write(ctx, "slot", slot_id, op)
 
@@ -416,12 +417,12 @@ def create_slot_group(ctx: Ctx, writer: str, sequence_id: int, expected_rev: int
 
 def place(ctx: Ctx, writer: str, sequence_id: int, expected_rev: int, module_id: int,
           source_key: str, slot_id=None, after_slot_id=None, differentiation_note=None,
-          confirm_off_grade: bool = False) -> dict:
+          confirm_off_grade: bool = False, to_index=None) -> dict:
     def op(seq, mh2, grade):
         snap = _snap(mh2, grade, source_key)
         res = seq_store.place(
             seq, writer, sequence_id, expected_rev, snap, module_id=module_id,
-            slot_id=slot_id, after_slot_id=after_slot_id,
+            slot_id=slot_id, after_slot_id=after_slot_id, to_index=to_index,
             differentiation_note=differentiation_note,
             confirm_off_grade=confirm_off_grade)
         overlay = seq_store.placement_index(seq, exclude_grade=grade)
@@ -460,6 +461,14 @@ def co_place(ctx: Ctx, writer: str, placement_id: int, expected_rev: int,
     def op(seq, mh2, grade):
         seq_store.co_place(seq, writer, placement_id, expected_rev, target_slot_id)
         return {"slot_id": target_slot_id}
+    return _write(ctx, "placement", placement_id, op)
+
+
+def move_placement(ctx: Ctx, writer: str, placement_id: int, expected_rev: int,
+                   to_module_id: int, to_index: int) -> dict:
+    def op(seq, mh2, grade):
+        return {"slot_id": seq_store.move_placement(seq, writer, placement_id, expected_rev,
+                                                    to_module_id, to_index)}
     return _write(ctx, "placement", placement_id, op)
 
 
