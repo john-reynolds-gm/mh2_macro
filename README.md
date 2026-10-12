@@ -89,10 +89,13 @@ state to be afraid of.
 ## Adding a new ladder
 
 1. Drop the `.docx` into `data/source/ladders/`.
-2. If the ladder covers a stem the tools haven't seen, add one line to
-   `LADDER_TO_WORKBOOK_STEMS` in `mh2/reconcile.py`. A ladder can map to
-   several workbook stems — the Comparing and Ordering ladder covers the
-   workbook's separate `COM` and `ORD` stems.
+2. List it in `data/source/workbooks/stems.csv`: set `ladder_file` to the
+   filename and `ladder_drafted` to 1 on its stem's row, adding the row if the
+   stem is new. The `stem_id` there is the ladder's code and becomes every
+   node's ID prefix (`NS-FRAC-0012`). A file not listed in stems.csv is
+   refused, and no code is ever derived from a filename (DEFERRED.md §10). A
+   ladder can cover several workbook stems: the Comparing and Ordering ladder
+   is two stems.csv rows, `Comparing` and `Ordering`, both `NS-COMP-ORDER`.
 3. Preview, then apply:
 
 ```bash

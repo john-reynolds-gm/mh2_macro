@@ -109,7 +109,7 @@
           "placed_elsewhere": [],
           "period_hint": {
            "text": "Likely 1 instructional period",
-           "value": null,
+           "value": 1.0,
            "unit": "period",
            "qualifier": "exact",
            "low": 1.0,
@@ -1175,7 +1175,7 @@
    "links": [],
    "period_hint": {
     "text": "Likely 1 instructional period",
-    "value": null,
+    "value": 1.0,
     "unit": "period",
     "qualifier": "exact",
     "low": 1.0,

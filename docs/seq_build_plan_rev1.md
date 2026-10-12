@@ -274,7 +274,7 @@ The full brief is in Appendix A.
 - **Acceptance:**
   1. `guardrail` unit tests cover empty, all-unset, and mixed inputs.
   2. The output has no pass/fail key: `set(result) ∩ {'pass','fail','ok','status'} = ∅`.
-  3. `period_estimate` stays NULL until the builder saves it: `SELECT COUNT(*) FROM placement WHERE period_estimate IS NOT NULL AND NOT EXISTS (SELECT 1 FROM placement_event e WHERE e.placement_id=placement.placement_id AND e.action='set_period')` = 0.
+  3. *(Superseded 2026-10-08 by rulings O8/O9: placing now autofills the estimate with `estimate_source = 'ladder'`; see `docs/brief_seq_o8_o9_autofill.md`. Acceptance 5 is superseded too.)* `period_estimate` stays NULL until the builder saves it: `SELECT COUNT(*) FROM placement WHERE period_estimate IS NOT NULL AND NOT EXISTS (SELECT 1 FROM placement_event e WHERE e.placement_id=placement.placement_id AND e.action='set_period')` = 0.
   4. The period hint, run over real data, is reported per grade as the count of in-grade nodes with `hint_value` not null. Report the numbers and do not target them. For orientation, `seq/analysis`'s strict period coverage is an upper bound (G2: 23 of 33 non-leaf). `hint_value` is stricter (exact only), so expect less.
   5. No hint with `unit in ('day','lesson')` has `hint_value` set.
   6. `show_time_targets` is false for coverage < 0.5 and true at 0.5, in unit tests.

@@ -524,11 +524,201 @@ def test_saved_views_owner_scoped():
     assert all(x["view_id"] != v["view_id"] for x in S.list_views(con, "amy"))
 
 
+# ------------------------------------------------ period autofill (O8 / O9)
+
+def hint(value, text="Likely 2 instructional days"):
+    return {"text": text, "value": value, "unit": "day", "qualifier": "exact",
+            "low": value, "high": value, "basis": "single_grade_node", "n_estimates": 1}
+
+
+def events_for(con, pid):
+    return [(e["action"], e["before"], e["after"])
+            for e in reversed(S.list_events(con, S.get_placement(con, pid)["sequence_id"]))
+            if e["placement_id"] == pid]
+
+
+def test_autofill_on_place_and_place_group():
+    con = fresh()
+    sid, (m1, _m2) = setup_seq(con)
+    r = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k1"), period_hint=hint(2.0)), module_id=m1)
+    p = S.get_placement(con, r["placement_id"])
+    assert (p["period_estimate"], p["estimate_source"], p["period_hint_seen"]) == \
+        (2.0, "ladder", "Likely 2 instructional days")
+    (act, before, after), = events_for(con, r["placement_id"])
+    assert act == "place" and before is None
+    assert after["period_estimate"] == 2.0 and after["estimate_source"] == "ladder"
+    # no hint, or a hint with no value: blank, source NULL
+    r2 = S.place(con, "a", sid, seq_rev(con, sid), snap("k2"), module_id=m1)
+    r3 = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k3"), period_hint=hint(None)), module_id=m1)
+    for pid in (r2["placement_id"], r3["placement_id"]):
+        p = S.get_placement(con, pid)
+        assert (p["period_estimate"], p["estimate_source"], p["period_hint_seen"]) == (None, None, None)
+        assert events_for(con, pid)[0][2]["estimate_source"] is None
+    g = S.place_group(con, "a", sid, seq_rev(con, sid),
+                      [dict(snap("k4"), period_hint=hint(0.5, "part of 1 period")), snap("k5")],
+                      module_id=m1)
+    p4, p5 = (S.get_placement(con, pid) for pid in g["placement_ids"])
+    assert (p4["period_estimate"], p4["estimate_source"]) == (0.5, "ladder")
+    assert (p5["period_estimate"], p5["estimate_source"]) == (None, None)
+    after = events_for(con, p4["placement_id"])[0][2]
+    assert after["group"] is True and after["period_estimate"] == 0.5 and after["estimate_source"] == "ladder"
+
+
+def test_autofill_untouched_by_co_place_and_moves_and_re_place_autofills_again():
+    con = fresh()
+    sid, (m1, m2) = setup_seq(con)
+    a = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k1"), period_hint=hint(2.0)), module_id=m1)
+    b = S.place(con, "a", sid, seq_rev(con, sid), snap("k2"), module_id=m1)
+    S.co_place(con, "a", a["placement_id"], seq_rev(con, sid), b["slot_id"])
+    S.move_slot(con, "a", b["slot_id"], seq_rev(con, sid), to_module_id=m2)
+    p = S.get_placement(con, a["placement_id"])
+    assert (p["period_estimate"], p["estimate_source"]) == (2.0, "ladder")
+    S.set_attributes(con, "a", a["placement_id"], p["rev"], {"period_estimate": 4})
+    S.remove_placement(con, "a", a["placement_id"], seq_rev(con, sid))
+    c = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k1"), period_hint=hint(2.0)), module_id=m1)
+    assert c["placement_id"] != a["placement_id"]
+    p = S.get_placement(con, c["placement_id"])
+    assert (p["period_estimate"], p["estimate_source"]) == (2.0, "ladder")
+    assert S.get_placement(con, a["placement_id"])["estimate_source"] == "builder"   # history kept
+
+
+def test_edit_makes_builder_same_number_counts_and_clear_is_null():
+    con = fresh()
+    sid, (m1, _) = setup_seq(con)
+    pid = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k1"), period_hint=hint(2.0)),
+                  module_id=m1)["placement_id"]
+    # the same number as the ladder's is still an edit
+    S.set_attributes(con, "b", pid, 1, {"period_estimate": 2}, period_hint_seen="Likely 2 instructional days")
+    p = S.get_placement(con, pid)
+    assert (p["period_estimate"], p["estimate_source"], p["rev"]) == (2.0, "builder", 2)
+    act, before, after = events_for(con, pid)[-1]
+    assert act == "set_period"
+    assert before == {"period_estimate": 2.0, "period_hint_seen": "Likely 2 instructional days",
+                      "estimate_source": "ladder"}
+    assert after == {"period_estimate": 2.0, "period_hint_seen": "Likely 2 instructional days",
+                     "estimate_source": "builder"}
+    # same number again once it is the builder's: no change, no event
+    n = n_events(con)
+    S.set_attributes(con, "b", pid, 2, {"period_estimate": 2})
+    assert n_events(con) == n and S.get_placement(con, pid)["rev"] == 2
+    S.set_attributes(con, "b", pid, 2, {"period_estimate": 3})
+    assert S.get_placement(con, pid)["estimate_source"] == "builder"
+    # clearing: NULL source
+    S.set_attributes(con, "b", pid, 3, {"period_estimate": None})
+    p = S.get_placement(con, pid)
+    assert (p["period_estimate"], p["estimate_source"]) == (None, None)
+    assert events_for(con, pid)[-1][2]["estimate_source"] is None
+    # clearing a ladder estimate straight away
+    q = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k2"), period_hint=hint(1.0)),
+                module_id=m1)["placement_id"]
+    S.set_attributes(con, "b", q, 1, {"period_estimate": None})
+    p = S.get_placement(con, q)
+    assert (p["period_estimate"], p["estimate_source"]) == (None, None)
+    assert events_for(con, q)[-1][1]["estimate_source"] == "ladder"
+    # a calibration-only edit leaves the source alone
+    r = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k3"), period_hint=hint(1.0)),
+                module_id=m1)["placement_id"]
+    S.set_attributes(con, "b", r, 1, {"calibration": "deep"})
+    assert S.get_placement(con, r)["estimate_source"] == "ladder"
+
+
+def test_confirm_estimate():
+    con = fresh()
+    sid, (m1, _) = setup_seq(con)
+    pid = S.place(con, "a", sid, seq_rev(con, sid), dict(snap("k1"), period_hint=hint(0.5)),
+                  module_id=m1)["placement_id"]
+    srev = seq_rev(con, sid)
+    expect(S.StaleRevision, lambda: S.confirm_estimate(con, "b", pid, 7))
+    S.confirm_estimate(con, "b", pid, 1)
+    p = S.get_placement(con, pid)
+    assert (p["period_estimate"], p["estimate_source"], p["rev"], p["updated_by"]) == (0.5, "builder", 2, "b")
+    assert seq_rev(con, sid) == srev                       # a placement write, like set_attributes
+    assert events_for(con, pid)[-1] == ("confirm_period",
+                                        {"period_estimate": 0.5, "estimate_source": "ladder"},
+                                        {"period_estimate": 0.5, "estimate_source": "builder"})
+    # already the builder's, or no estimate at all: invalid, nothing written
+    n = n_events(con)
+    e = expect(S.Invalid, lambda: S.confirm_estimate(con, "b", pid, 2), "invalid")
+    assert e.status == 422
+    blank = S.place(con, "a", sid, seq_rev(con, sid), snap("k2"), module_id=m1)["placement_id"]
+    n = n_events(con)
+    expect(S.Invalid, lambda: S.confirm_estimate(con, "b", blank, 1), "invalid")
+    assert n_events(con) == n and S.get_placement(con, blank)["rev"] == 1
+    expect(S.NotFound, lambda: S.confirm_estimate(con, "b", 999, 1))
+    expect(S.Invalid, lambda: S.confirm_estimate(con, "b", pid, None))
+
+
+def test_migration_from_v1_schema():
+    """A database built from the frozen v1 DDL gains estimate_source ('builder'
+    where a person typed an estimate) and accepts confirm_period events; event
+    rows and ids survive the placement_event rebuild; a second run is a no-op."""
+    d = _mkdtemp(prefix="seqmig_")
+    path = Path(d) / "mh2_seq.db"
+    con = S.connect(path)
+    con.executescript((ROOT / "tests" / "fixtures" / "schema_placement_v1.sql").read_text())
+    con.execute("INSERT INTO grade_sequence (grade, title, created_by, created_at, owner)"
+                " VALUES ('2', 'G2', 'amy', 'x', 'amy')")
+    con.execute("INSERT INTO module (sequence_id, title, order_key, created_by, created_at)"
+                " VALUES (1, 'M1', 1024, 'amy', 'x')")
+    con.execute("INSERT INTO slot (sequence_id, module_id, order_key, created_by, created_at)"
+                " VALUES (1, 1, 1024, 'amy', 'x')")
+    for key, est in (("k1", 2.5), ("k2", None)):
+        con.execute("INSERT INTO placement (sequence_id, slot_id, source_key, node_text_seen,"
+                    " grade_kind_seen, period_estimate, placed_by, placed_at)"
+                    " VALUES (1, 1, ?, 't', 'core', ?, 'amy', 'x')", (key, est))
+    for i in range(3):
+        con.execute("INSERT INTO placement_event (sequence_id, placement_id, action, actor, at,"
+                    " after_json) VALUES (1, 1, 'set_period', 'amy', 'x', ?)", (json.dumps({"i": i}),))
+    con.execute("DELETE FROM placement_event WHERE event_id = 3")   # AUTOINCREMENT high-water 3
+    try:
+        con.execute("INSERT INTO placement_event (sequence_id, action, actor, at)"
+                    " VALUES (1, 'confirm_period', 'a', 'x')")
+        raise AssertionError("v1 schema should reject confirm_period")
+    except sqlite3.IntegrityError:
+        pass
+    before_events = [tuple(r) for r in con.execute("SELECT * FROM placement_event ORDER BY 1")]
+    con.close()
+
+    con = S.connect(path)
+    S.ensure_schema(con)
+    rows = {r["source_key"]: (r["period_estimate"], r["estimate_source"])
+            for r in con.execute("SELECT * FROM placement")}
+    assert rows == {"k1": (2.5, "builder"), "k2": (None, None)}
+    assert [tuple(r) for r in con.execute("SELECT * FROM placement_event ORDER BY 1")] == before_events
+    idx = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='index'"
+                                     " AND tbl_name='placement_event'")}
+    assert {"ix_event_seq", "ix_event_placement"} <= idx
+    assert con.execute("SELECT version FROM placement_schema_meta").fetchone()[0] == 2
+    assert not con.execute("SELECT name FROM sqlite_master WHERE name='placement_event_v1'").fetchone()
+    con.execute("INSERT INTO placement_event (sequence_id, action, actor, at)"
+                " VALUES (1, 'confirm_period', 'a', 'x')")
+    assert con.execute("SELECT MAX(event_id) FROM placement_event").fetchone()[0] == 4
+    try:
+        con.execute("UPDATE placement SET estimate_source='typed'")
+        raise AssertionError("estimate_source CHECK missing")
+    except sqlite3.IntegrityError:
+        pass
+    snapshot = dump(con)
+    S.ensure_schema(con)                                   # idempotent
+    assert dump(con) == snapshot and S._needs_v2(con) is None
+    # and the migrated database works end to end
+    S.set_attributes(con, "b", 2, 1, {"period_estimate": 1})
+    assert S.get_placement(con, 2)["estimate_source"] == "builder"
+    con.close()
+
+
+def test_fresh_schema_is_v2():
+    con = fresh()
+    assert S._needs_v2(con) is None
+    assert con.execute("SELECT version FROM placement_schema_meta").fetchone()[0] == 2
+
+
 # --------------------------------------------------- signature & source rules
 
 WRITERS = ("create_sequence", "update_sequence", "create_module", "update_module", "move_module",
            "remove_module", "update_slot", "move_slot", "merge_slot", "place", "place_group",
-           "set_attributes", "co_place", "ungroup", "remove_placement", "reattach", "acknowledge")
+           "set_attributes", "confirm_estimate", "co_place", "ungroup", "remove_placement",
+           "reattach", "acknowledge")
 OWNERS = ("list_views", "create_view", "update_view", "delete_view")
 
 
@@ -563,6 +753,165 @@ def test_no_fastapi_and_no_mh2db_access():
         elif isinstance(node, ast.ImportFrom):
             mods.add((node.module or "").split(".")[0])
     assert mods <= {"__future__", "json", "sqlite3", "contextlib", "datetime", "pathlib"}, mods
+
+
+# ------------------------------------------------- positional moves (to_index)
+
+def _order(con, kind, container):
+    return [p for p, _ in S._siblings(con, kind, container)]
+
+
+def _rev(con, sid):
+    return seq_rev(con, sid)
+
+
+def _fill(con, n_mods=2, per=3):
+    """n_mods modules, `per` single-node slots each; returns (sid, mids, {module: [slot ids]})."""
+    sid, mids = setup_seq(con, modules=n_mods)
+    slots = {m: [] for m in mids}
+    for mi, m in enumerate(mids):
+        for i in range(per):
+            r = S.place(con, "amy", sid, _rev(con, sid), snap(f"k{mi}{i}"), module_id=m)
+            slots[m].append(r["slot_id"])
+    return sid, mids, slots
+
+
+def test_move_module_to_index_start_middle_end_noop_range():
+    con = fresh()
+    sid, mids = setup_seq(con, modules=4)
+    a, b, c, d = mids
+    S.move_module(con, "amy", d, _rev(con, sid), to_index=0)
+    assert _order(con, "module", sid) == [d, a, b, c]
+    S.move_module(con, "amy", d, _rev(con, sid), to_index=2)
+    assert _order(con, "module", sid) == [a, b, d, c]
+    S.move_module(con, "amy", a, _rev(con, sid), to_index=3)
+    assert _order(con, "module", sid) == [b, d, c, a]
+    rev, ev = _rev(con, sid), n_events(con, sid)
+    S.move_module(con, "amy", d, rev, to_index=1)          # already there
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=4), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=-1), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, to_index=True), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev), "invalid")
+    expect(S.Invalid, lambda: S.move_module(con, "amy", d, rev, "up", to_index=0), "invalid")
+    expect(S.StaleRevision, lambda: S.move_module(con, "amy", d, rev - 1, to_index=0))
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)   # failures wrote nothing
+    row = con.execute("SELECT before_json, after_json FROM placement_event WHERE"
+                      " action='module_move' ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert json.loads(row[1])["to_index"] == 3 and json.loads(row[0])["to_index"] == 0
+
+
+def test_move_slot_to_index_same_module_across_modules_and_empty_module():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 3)
+    s1, s2, s3 = slots[m1]
+    S.move_slot(con, "amy", s3, _rev(con, sid), to_module_id=m1, to_index=0)
+    assert _order(con, "slot", m1) == [s3, s1, s2]
+    S.move_slot(con, "amy", s3, _rev(con, sid), to_module_id=m1, to_index=2)   # counted without s3
+    assert _order(con, "slot", m1) == [s1, s2, s3]
+    S.move_slot(con, "amy", s1, _rev(con, sid), to_module_id=m2, to_index=1)   # across
+    assert _order(con, "slot", m2) == [slots[m2][0], s1, slots[m2][1], slots[m2][2]]
+    assert _order(con, "slot", m1) == [s2, s3]
+    m3 = S.create_module(con, "amy", sid, _rev(con, sid), "M3")                # empty module
+    S.move_slot(con, "amy", s2, _rev(con, sid), to_module_id=m3, to_index=0)
+    assert _order(con, "slot", m3) == [s2]
+    rev, ev = _rev(con, sid), n_events(con, sid)
+    S.move_slot(con, "amy", s2, rev, to_module_id=m3, to_index=0)              # no-op
+    S.move_slot(con, "amy", s3, rev, to_module_id=m1, to_index=0)              # no-op
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, ev)
+    expect(S.Invalid, lambda: S.move_slot(con, "amy", s3, rev, to_module_id=m1, to_index=2), "invalid")
+    expect(S.Invalid, lambda: S.move_slot(con, "amy", s3, rev, direction="up", to_index=0), "invalid")
+    expect(S.StaleRevision, lambda: S.move_slot(con, "amy", s3, rev - 1, to_module_id=m1, to_index=0))
+    # no to_index: still appends at the end
+    S.move_slot(con, "amy", s2, _rev(con, sid), to_module_id=m1)
+    assert _order(con, "slot", m1)[-1] == s2
+
+
+def test_place_to_index_and_exclusions():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 2)
+    a, b = slots[m1]
+    r = S.place(con, "amy", sid, _rev(con, sid), snap("new0"), module_id=m1, to_index=0)
+    r2 = S.place(con, "amy", sid, _rev(con, sid), snap("new1"), module_id=m1, to_index=2)
+    r3 = S.place(con, "amy", sid, _rev(con, sid), snap("new2"), module_id=m2, to_index=0)
+    assert _order(con, "slot", m1) == [r["slot_id"], a, r2["slot_id"], b]
+    assert _order(con, "slot", m2)[0] == r3["slot_id"]
+    rev = _rev(con, sid)
+    for kw in ({"to_index": 1, "slot_id": a}, {"to_index": 1, "after_slot_id": a}):
+        expect(S.Invalid, lambda kw=kw: S.place(con, "amy", sid, rev, snap("x"), module_id=m1, **kw), "invalid")
+    expect(S.Invalid, lambda: S.place(con, "amy", sid, rev, snap("x"), module_id=m1, to_index=5), "invalid")
+    assert _rev(con, sid) == rev
+
+
+def test_move_placement_new_slot_drop_noop_and_event_keeps_label():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 2)
+    a, b = slots[m1]
+    S.update_slot(con, "amy", a, _rev(con, sid), "Alpha")
+    pa = con.execute("SELECT placement_id FROM placement WHERE slot_id=?", (a,)).fetchone()[0]
+    # alone in a labelled slot: the source is dropped, its label survives in the event
+    new = S.move_placement(con, "amy", pa, _rev(con, sid), m2, 1)
+    assert new != a and _order(con, "slot", m1) == [b]
+    assert _order(con, "slot", m2)[1] == new
+    assert con.execute("SELECT removed_at IS NOT NULL FROM slot WHERE slot_id=?", (a,)).fetchone()[0]
+    ev = con.execute("SELECT action, module_id, slot_id, placement_id, before_json, after_json"
+                     " FROM placement_event ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert (ev[0], ev[1], ev[2], ev[3]) == ("move", m2, new, pa)
+    assert json.loads(ev[4]) == {"slot_id": a, "module_id": m1, "slot_label": "Alpha", "to_index": 0}
+    assert json.loads(ev[5]) == {"slot_id": new, "module_id": m2, "to_index": 1,
+                                 "source_slot_removed": True}
+    # no-op: alone and already at that position (index excludes its own slot)
+    rev, n = _rev(con, sid), n_events(con, sid)
+    assert S.move_placement(con, "amy", pa, rev, m2, 1) == new
+    assert (_rev(con, sid), n_events(con, sid)) == (rev, n)
+    expect(S.Invalid, lambda: S.move_placement(con, "amy", pa, rev, m2, 3), "invalid")   # 2 others
+    expect(S.StaleRevision, lambda: S.move_placement(con, "amy", pa, rev - 1, m2, 0))
+    expect(S.NotFound, lambda: S.move_placement(con, "amy", pa, rev, 9999, 0))
+    # out of a shared slot: the source slot stays and keeps its label
+    S.update_slot(con, "amy", b, _rev(con, sid), "Beta")
+    S.co_place(con, "amy", pa, _rev(con, sid), b)
+    new2 = S.move_placement(con, "amy", pa, _rev(con, sid), m1, 0)
+    assert _order(con, "slot", m1) == [new2, b]
+    assert S._slot_row(con, b)["label"] == "Beta"
+    last = con.execute("SELECT before_json, after_json FROM placement_event WHERE action='move'"
+                       " ORDER BY event_id DESC LIMIT 1").fetchone()
+    assert "to_index" not in json.loads(last[0]) and json.loads(last[1])["source_slot_removed"] is False
+
+
+def test_co_place_and_merge_events_carry_label_and_index_when_slot_dropped():
+    con = fresh()
+    sid, (m1, m2), slots = _fill(con, 2, 3)
+    s1, s2, s3 = slots[m1]
+    S.update_slot(con, "amy", s2, _rev(con, sid), "Mid")
+    p2 = con.execute("SELECT placement_id FROM placement WHERE slot_id=?", (s2,)).fetchone()[0]
+    S.co_place(con, "amy", p2, _rev(con, sid), s1)
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='co_place'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s2, "module_id": m1, "slot_label": "Mid", "to_index": 1}
+    p1 = con.execute("SELECT placement_id FROM placement WHERE slot_id=? AND placement_id!=?",
+                     (s1, p2)).fetchone()[0]
+    S.co_place(con, "amy", p1, _rev(con, sid), s3)      # s1 still holds p2: nothing dropped
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='co_place'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s1}
+    S.update_slot(con, "amy", s3, _rev(con, sid), "Three")
+    S.merge_slot(con, "amy", s3, _rev(con, sid), s1)
+    b = json.loads(con.execute("SELECT before_json FROM placement_event WHERE action='slot_merge'"
+                               " ORDER BY event_id DESC LIMIT 1").fetchone()[0])
+    assert b == {"slot_id": s3, "module_id": m1, "slot_label": "Three", "to_index": 1}
+
+
+def test_to_index_survives_a_gap_exhaustion_renumber():
+    con = fresh()
+    sid, (m1,), slots = _fill(con, 1, 2)
+    a, b = slots[m1]
+    placed = []
+    for i in range(15):     # always at index 1: the gap after `a` halves until it must renumber
+        r = S.place(con, "amy", sid, _rev(con, sid), snap(f"gap{i}"), module_id=m1, to_index=1)
+        placed.append(r["slot_id"])
+    assert _order(con, "slot", m1) == [a] + placed[::-1] + [b]
+    n = con.execute("SELECT COUNT(*) FROM placement_event WHERE action='renumber'").fetchone()[0]
+    assert n >= 1, "this test must actually exercise the renumber path"
 
 
 def _main():

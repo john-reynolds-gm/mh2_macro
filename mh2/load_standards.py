@@ -14,7 +14,6 @@ Run: python -m mh2.load_standards --db mh2.db
 """
 
 import argparse
-import re
 import sqlite3
 import sys
 from collections import Counter
@@ -292,19 +291,27 @@ def build_standard_alias(cur) -> tuple[dict[str, int], dict[str, list[tuple[str,
 # separate columns per §6. One writer per table.
 
 
-def _build_g6_stem_lookup() -> dict[str, str]:
+def _build_stem_lookup(band: str) -> dict[str, tuple[str, str | None]]:
     """
-    Canonical 6-9 stem IDs already live in stems.csv, keyed by masterlist_name
-    and workbook_stem. The G6 workbook resolves against them; it never mints
-    its own IDs -- see the module docstring's "resolve, never derive" note.
+    normalized workbook stem name -> (stem_id, display name) for one band.
+
+    Stem IDs live in stems.csv, keyed by masterlist_name and workbook_stem.
+    Both workbooks resolve against them; neither mints its own IDs (DEFERRED.md
+    §10). The display name is None -- keep the workbook's own name -- unless
+    the stem_id covers several workbook stems, in which case it is the
+    masterlist name: NS-COMP-ORDER is 'Comparing and Ordering', not whichever
+    of 'Comparing' / 'Ordering' happened to be read first.
     """
-    lookup: dict[str, str] = {}
-    for r in read_stems_csv(config.STEMS_CSV):
-        if r["band"] != "6_9":
-            continue
+    rows = [r for r in read_stems_csv(config.STEMS_CSV) if r["band"] == band]
+    n_rows: dict[str, int] = {}
+    for r in rows:
+        n_rows[r["stem_id"]] = n_rows.get(r["stem_id"], 0) + 1
+    lookup: dict[str, tuple[str, str | None]] = {}
+    for r in rows:
+        shown = r["masterlist_name"] if n_rows[r["stem_id"]] > 1 else None
         for name in (r["masterlist_name"], r["workbook_stem"]):
             if name and name.strip():
-                lookup.setdefault(normalize_stem_text(name), r["stem_id"])
+                lookup.setdefault(normalize_stem_text(name), (r["stem_id"], shown))
     return lookup
 
 
@@ -316,16 +323,16 @@ def load_stem_inventory(cur, path: Path, sheets: list[str], band: str) -> tuple[
     Concept/Skill -> {CCSSM, Big Three, Other} standard codes, with inline
     provenance notes. It is the seed for node_standards.
 
-    band='PK5' derives a stem_id from the stem name (first three letters,
-    numeric suffix on collision). band='6_9' resolves against the canonical
-    IDs in stems.csv instead of minting a new namespace -- see the module
-    docstring.
+    Both bands resolve the stem_id against stems.csv (`band` selects which
+    rows). A stem name with no stems.csv row is skipped and reported, never
+    given an invented ID. PK5 rows keep band=NULL in `stems`, as they always
+    have; 6_9 rows are tagged '6_9'.
     """
     n_concepts = n_tags = 0
     unparsed_all: list[str] = []
     unresolved: list[tuple[str, str]] = []
-    stem_codes: dict[str, str] = {}
-    g6_lookup = _build_g6_stem_lookup() if band == "6_9" else None
+    lookup = _build_stem_lookup(band)
+    stems_band = "6_9" if band == "6_9" else None
 
     for sheet in sheets:
         try:
@@ -345,28 +352,15 @@ def load_stem_inventory(cur, path: Path, sheets: list[str], band: str) -> tuple[
                 continue
             stem_name = str(row.get("Stem") or "").strip() or "(unassigned)"
 
-            if band == "PK5":
-                code = stem_codes.get(stem_name)
-                if code is None:
-                    base = re.sub(r"[^A-Z]", "", stem_name.upper())[:3] or "GEN"
-                    code = base
-                    i = 1
-                    while code in stem_codes.values():
-                        i += 1
-                        code = f"{base}{i}"
-                    stem_codes[stem_name] = code
-                    cur.execute(
-                        "INSERT OR IGNORE INTO stems (stem_id, name, domain) VALUES (?,?,?)",
-                        (code, stem_name, sheet))
-            else:
-                code = g6_lookup.get(normalize_stem_text(stem_name))
-                if code is None:
-                    unresolved.append((sheet, stem_name))
-                    continue
-                cur.execute(
-                    "INSERT OR IGNORE INTO stems (stem_id, name, domain, band)"
-                    " VALUES (?,?,?,?)",
-                    (code, stem_name, sheet, "6_9"))
+            hit = lookup.get(normalize_stem_text(stem_name))
+            if hit is None:
+                unresolved.append((sheet, stem_name))
+                continue
+            code, shown = hit
+            cur.execute(
+                "INSERT OR IGNORE INTO stems (stem_id, name, domain, band)"
+                " VALUES (?,?,?,?)",
+                (code, shown or stem_name, sheet, stems_band))
 
             cur.execute(
                 "INSERT INTO concepts (stem_id, stem_name, text, details, grade_leaf,"
@@ -392,7 +386,7 @@ def load_stem_inventory(cur, path: Path, sheets: list[str], band: str) -> tuple[
 
     if unresolved:
         distinct = sorted(set(unresolved))
-        report = config.REPORTS / "stem_resolution_unmatched.txt"
+        report = config.REPORTS / f"stem_resolution_unmatched_{band}.txt"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.write_text(
             "\n".join(f"{sheet}\t{name}" for sheet, name in distinct),
@@ -477,10 +471,10 @@ def main():
         report.write_text("\n".join(sorted(set(unparsed))), encoding="utf-8")
         print(f"  -> wrote {report} for review")
 
-    # §3.4 cross-band guard: PK5 derivation (band left NULL) must never mint a
-    # stem_id that the 6_9 path resolves to. Two DISTINCT stems merging under
-    # one ID is not recoverable once concepts/concept_standards are written.
-    g6_ids = set(_build_g6_stem_lookup().values())
+    # §3.4 cross-band guard: a PK5 stem (band left NULL) must never share a
+    # stem_id with a 6_9 one. Two DISTINCT stems merging under one ID is not
+    # recoverable once concepts/concept_standards are written.
+    g6_ids = {sid for sid, _shown in _build_stem_lookup("6_9").values()}
     pk5_written = {r[0] for r in cur.execute("SELECT stem_id FROM stems WHERE band IS NULL")}
     collision = g6_ids & pk5_written
     if collision:

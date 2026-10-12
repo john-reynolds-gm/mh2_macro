@@ -14,8 +14,10 @@ Both emit the same list-of-dicts, so downstream code never branches on format.
 
 Node identity
 -------------
-node_id is assigned by the database and never derived from node text. Nodes
+node_id is '<stem_id>-<seq>' (e.g. NS-FRAC-0012), never derived from node
+text, where stem_id is the ladder's code in stems.csv (DEFERRED.md §10). Nodes
 are matched across re-ingests on source_key = stem_id + normalized node text.
+Both therefore change if a ladder's stem_id changes.
 Consequences, stated plainly so nobody is surprised later:
 
   * Re-running ingest on an edited ladder MATCHES unchanged nodes and keeps
@@ -36,8 +38,12 @@ import sqlite3
 import unicodedata
 from pathlib import Path
 
+from mh2.load_stems import (declared_ladders, normalize_ladder_filename,
+                            read_stems_csv)
 from mh2.normalize import (expand_ranges, extract_codes_inline,
                            parse_code_cell, parse_lesson_refs)
+
+import config  # noqa: E402  (importable once mh2.load_stems has run)
 
 _W_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 _M_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
@@ -444,12 +450,12 @@ _TRAILING_LABEL_RE = re.compile(r"_(?:LessonLadder|Ladder|Stem)(?:_new)?$",
 
 def derive_stem_name(filename: str) -> str:
     """
-    Filename -> a best-effort topic name, for stem resolution.
+    Filename -> a best-effort topic name, carried on each parsed node as
+    `stem_name`. It plays no part in choosing a stem_id -- stem_for_file()
+    does that from stems.csv.
 
-    Shared by ingest_ladders.main() and scripts/ingest_new.py so they can
-    never drift into computing two different stem names for the same file --
-    that drift is exactly what caused an already-correctly-ingested ladder to
-    look 'new' under one caller and not the other.
+    Shared by ingest_ladders.main() and scripts/ingest_new.py so the two
+    callers parse a file identically.
     """
     name = re.sub(r"\.(docx|md)$", "", filename, flags=re.IGNORECASE)
     name = _GRADE_BAND_PREFIX_RE.sub("", name)
@@ -458,69 +464,13 @@ def derive_stem_name(filename: str) -> str:
     return name.replace("_", " ").strip()
 
 
-def resolve_stem(cur, stem_name: str, *, allow_create: bool = True) -> str | None:
-    """
-    Match a ladder filename to a stem already loaded from the workbook.
-
-    Word-overlap match first. Below that, `allow_create` controls what
-    happens when NOTHING overlaps:
-
-      True (default; ingest_ladders.main()'s production path, unchanged)
-          derive a 3-letter code from the stem name and use it -- reusing it
-          silently if that code already names a real stem (which is how
-          'Comparing and Ordering' has always resolved to the pre-existing
-          'COM' stem: pure coincidence of the derived prefix, not a real word
-          match, and changing that here would break a file that already
-          ingests correctly). If the code does NOT already exist, insert it.
-
-      False (scripts/ingest_new.py's ad hoc path)
-          the insert-a-new-stem branch never fires. A derived code that
-          happens to already exist is still returned (preserves the
-          'Comparing and Ordering' case above); a code that does not exist
-          returns None instead of silently inventing one. Measured need for
-          this: 7 distinct new topic names collapse to just 3 derived codes
-          (NUM, ONE collide across genuinely different topics; EXP
-          coincidentally collides with the unrelated existing 'Expressions
-          and Equations' stem) -- there is no filename heuristic that makes
-          auto-creation safe for a brand-new stem, so it must be a human
-          decision, the same way stems.csv already treats this mapping as
-          hand-maintained data everywhere else in the project.
-    """
-    words = set(re.findall(r"[a-z]+", stem_name.lower())) - {
-        "mh2", "pk5", "lessonladder", "lesson", "ladder", "stem", "and",
-        "of", "the"}
-    best, best_score = None, 0
-    for sid, name in cur.execute("SELECT stem_id, name FROM stems").fetchall():
-        nw = set(re.findall(r"[a-z]+", name.lower()))
-        score = len(words & nw)
-        if score > best_score:
-            best, best_score = sid, score
-    if best:
-        return best
-    sid = re.sub(r"[^A-Z]", "", stem_name.upper())[:3] or "GEN"
-    exists = cur.execute("SELECT 1 FROM stems WHERE stem_id = ?", (sid,)).fetchone()
-    if not exists and not allow_create:
-        return None
-    cur.execute("INSERT OR IGNORE INTO stems (stem_id, name) VALUES (?,?)", (sid, stem_name))
-    return sid
-
-
 def bound_stem_of(cur, source_file: str) -> str | None:
     """
-    The stem_id this exact FILE was already bound to, if any node from it has
-    ever been persisted.
+    The stem_id this exact FILE is already bound to in the database, if any
+    node from it has been persisted.
 
-    This is the fix for a re-derive-every-time bug: resolve_stem() only ever
-    looks at filename TEXT, so a file whose real stem_id was a human decision
-    (scripts/ingest_new.py --stem-id) that doesn't happen to fall out of that
-    text (e.g. 'IRR' for 'IrrationalRealNumbers', which the fallback would
-    derive as 'NUM') becomes unresolvable again on the very next plain
-    preview -- and worse, a file that DOES coincidentally re-derive to some
-    unrelated pre-existing stem (e.g. 'ExpressionsGeneral' -> fallback 'EXP',
-    which collides with the real, unrelated 'Expressions and Equations'
-    stem) silently overrides the human's actual choice every time. Once any
-    node exists for this source_file, that decision is settled; it must never
-    be re-guessed.
+    Only a guard now (see stem_for_file): stems.csv decides a file's stem_id,
+    and this catches a live database built under an older stems.csv.
     """
     row = cur.execute(
         "SELECT DISTINCT stem_id FROM nodes WHERE source_file = ?",
@@ -528,97 +478,48 @@ def bound_stem_of(cur, source_file: str) -> str | None:
     return row[0][0] if len(row) == 1 else None
 
 
-def stem_map_stem_of(cur, source_file: str) -> str | None:
+def stem_for_file(cur, source_file: str,
+                  declared: dict[str, tuple[str, str]]) -> tuple[str, str] | None:
     """
-    The stem_id stems.csv's `ladder_file` column declares for this file, per
-    the stem_map table load_stems.py builds (ladder_path is the file resolved
-    on disk) -- band = '6_9' ONLY.
+    (stem_id, stem name) for a ladder file, from stems.csv's `ladder_file`
+    column via load_stems.declared_ladders(). None if stems.csv does not list
+    the file -- the caller refuses it; a code is never derived from the
+    filename (DEFERRED.md §10).
 
-    stems.csv is the project's hand-reviewed file<->stem mapping everywhere
-    else (see load_stems.py's module docstring); ingest_ladders() ignoring it
-    and falling straight to resolve_stem()'s fuzzy word-overlap match is what
-    let 'ExpressionsGeneral' and 'One-Variable Equations' both land on the
-    coincidentally-existing 'EXP' stem instead of their real, distinct
-    stem_ids -- a bulk `--glob` rebuild has no per-file --stem-id to catch it.
+    The filename heuristic this replaces took the first three letters of the
+    topic ('FRA', 'WHO', 'COM') or fuzzy-matched words against workbook stem
+    names, and both had produced wrong answers ('ExpressionsGeneral' landing on
+    the unrelated 'Expressions and Equations' stem).
 
-    Restricted to band = '6_9': the 10 PK5 ladders already have a
-    `ladder_file` row here too (unused until now), but their nodes have been
-    living under resolve_stem()'s short workbook codes (ANG, TIM, ...) all
-    along -- consulting stem_map for them would rename every PK5 node_id on
-    the next plain rebuild, silently invalidating the paid rerank cache
-    (keyed on node_id) and any node-keyed review data. That migration was
-    weighed and explicitly declined; if it's ever wanted, do it as its own
-    deliberate step, not a side effect of onboarding new 6-9 ladders.
+    Raises if the database already holds this file's nodes under a different
+    stem_id: that is a database built from an older stems.csv, and appending
+    to it would split one ladder across two codes. Rebuild instead.
     """
-    if not source_file:
+    hit = declared.get(normalize_ladder_filename(source_file))
+    if hit is None:
         return None
-    row = cur.execute(
-        "SELECT stem_id, masterlist_name FROM stem_map"
-        " WHERE ladder_path LIKE ? AND band = '6_9'",
-        (f"%/{source_file}",)).fetchone()
-    if not row:
-        return None
-    stem_id, masterlist_name = row
-    # stem_map's stem_id may not exist in `stems` yet (it's stems.csv's own
-    # catalog, not necessarily the workbook's) -- same as stem_id_override
-    # below, a resolvable stem must actually be joinable everywhere else.
-    cur.execute("INSERT OR IGNORE INTO stems (stem_id, name) VALUES (?,?)",
-                (stem_id, masterlist_name or stem_id))
-    return stem_id
+    bound = bound_stem_of(cur, source_file)
+    if bound and bound != hit[0]:
+        raise SystemExit(
+            f"{source_file}: stems.csv says {hit[0]}, but this database has its"
+            f" nodes under {bound}. Run scripts/rebuild.py instead.")
+    return hit
 
 
 def persist(cur, nodes: list[dict], run_id: str, *,
-           stem_id_override: str | None = None,
-           stem_name_override: str | None = None,
-           allow_create: bool = True) -> dict:
+            stem_id: str, stem_name: str) -> dict:
     """
-    Stem resolution, in order:
-
-      1. This file already has nodes -> use their stem_id. Settled, not
-         re-derived. See bound_stem_of()'s docstring for why this has to
-         come first.
-      2. `stem_id_override` -- the explicit, human-supplied answer for a
-         file with no existing nodes (scripts/ingest_new.py --stem-id/
-         --stem-name). Refuses loudly (raises) if that stem_id already names
-         a DIFFERENT stem than `stem_name_override` says -- silently keeping
-         the old name here is exactly the bug that let 'COOR_SYS' end up
-         permanently mislabeled 'Probability'.
-      3. stem_map (stems.csv's `ladder_file` column) -- the hand-reviewed
-         mapping, when a row declares this exact file. See
-         stem_map_stem_of()'s docstring: this is what makes a plain, no-flags
-         `rebuild.py` safe for a file whose real stem doesn't fall out of its
-         filename text, instead of silently re-deriving the wrong one every
-         time the database is wiped and rebuilt.
-      4. resolve_stem()'s fuzzy match, `allow_create` controlling whether an
-         unresolvable file is refused (see resolve_stem's docstring).
+    Write one ladder's nodes under `stem_id`, which the caller resolved with
+    stem_for_file(). A stem with a ladder but no workbook concepts has no
+    `stems` row yet, so one is added -- every stem_id must be joinable.
     """
     stats = {"new": 0, "matched": 0, "standards": 0, "links": 0, "refs": 0,
-             "refs_with_lesson": 0, "unresolved": 0}
+             "refs_with_lesson": 0}
 
-    source_file = nodes[0]["source_file"] if nodes else None
-    bound = bound_stem_of(cur, source_file) if source_file else None
-    mapped = stem_map_stem_of(cur, source_file) if source_file else None
-
-    if stem_id_override and not bound:
-        existing_name = cur.execute(
-            "SELECT name FROM stems WHERE stem_id = ?",
-            (stem_id_override,)).fetchone()
-        wanted_name = stem_name_override or stem_id_override
-        if existing_name and existing_name[0] != wanted_name:
-            raise SystemExit(
-                f"--stem-id {stem_id_override} already names"
-                f" {existing_name[0]!r}, not {wanted_name!r}. Pick a"
-                f" different --stem-id, or omit --stem-name if"
-                f" {existing_name[0]!r} is actually correct.")
-        cur.execute("INSERT OR IGNORE INTO stems (stem_id, name) VALUES (?,?)",
-                    (stem_id_override, wanted_name))
+    cur.execute("INSERT OR IGNORE INTO stems (stem_id, name) VALUES (?,?)",
+                (stem_id, stem_name))
 
     for n in nodes:
-        stem_id = bound or stem_id_override or mapped or resolve_stem(
-            cur, n["stem_name"], allow_create=allow_create)
-        if stem_id is None:
-            stats["unresolved"] += 1
-            continue
         key = source_key(stem_id, n["node_text"])
         row = cur.execute("SELECT node_id FROM nodes WHERE source_key=?", (key,)).fetchone()
         if row:
@@ -707,19 +608,28 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", default="mh2.db")
     ap.add_argument("--glob", required=True)
+    ap.add_argument("--csv", default=str(config.STEMS_CSV))
     ap.add_argument("--format", choices=["auto", "docx", "md"], default="auto")
     args = ap.parse_args()
+
+    declared = declared_ladders(read_stems_csv(Path(args.csv)))
+    paths = [Path(p) for p in sorted(globmod.glob(args.glob))
+             if not Path(p).name.startswith("~$")]   # Word lock files
+    undeclared = [p.name for p in paths
+                  if normalize_ladder_filename(p.name) not in declared]
+    if undeclared:
+        raise SystemExit(
+            "These ladder files are not listed in stems.csv. Add a row for each"
+            " (stem_id, ladder_file, ladder_drafted=1) and rebuild:\n  "
+            + "\n  ".join(undeclared))
 
     con = sqlite3.connect(args.db)
     cur = con.cursor()
     run_id = hashlib.sha1(str(Path(args.glob)).encode()).hexdigest()[:8]
     totals = {"new": 0, "matched": 0, "standards": 0, "links": 0, "refs": 0,
-              "refs_with_lesson": 0, "unresolved": 0}
+              "refs_with_lesson": 0}
 
-    for path in sorted(globmod.glob(args.glob)):
-        p = Path(path)
-        if p.name.startswith("~$"):
-            continue    # Word lock file for a document somebody has open
+    for p in paths:
         stem_name = derive_stem_name(p.name)
 
         fmt = args.format
@@ -732,10 +642,11 @@ def main():
             print(f"  FAIL {p.name}: {type(exc).__name__}: {exc}")
             continue
 
-        stats = persist(cur, nodes, run_id)
+        stem_id, name = stem_for_file(cur, p.name, declared)
+        stats = persist(cur, nodes, run_id, stem_id=stem_id, stem_name=name)
         for k in totals:
             totals[k] += stats[k]
-        print(f"  {len(nodes):3d} nodes ({fmt})  {p.name}")
+        print(f"  {len(nodes):3d} nodes ({fmt})  {stem_id:16s} {p.name}")
 
     con.commit()
     con.close()

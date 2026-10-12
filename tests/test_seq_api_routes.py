@@ -33,6 +33,7 @@ TABLE = {
     ("POST", "/api/seq/placements"): ("r_place", "place"),
     ("PATCH", "/api/seq/placements/{placement_id}"): ("r_update_placement", "update_placement"),
     ("POST", "/api/seq/placements/{placement_id}/co-place"): ("r_co_place", "co_place"),
+    ("POST", "/api/seq/placements/{placement_id}/move"): ("r_move_placement", "move_placement"),
     ("POST", "/api/seq/placements/{placement_id}/ungroup"): ("r_ungroup", "ungroup"),
     ("DELETE", "/api/seq/placements/{placement_id}"): ("r_remove_placement", "remove_placement"),
     ("POST", "/api/seq/placements/{placement_id}/reattach"): ("r_reattach", "reattach"),
@@ -74,7 +75,7 @@ def test_compiles():
 def test_route_set_matches_contract_table():
     got = set(_routes())
     assert got == set(TABLE), (sorted(got - set(TABLE)), sorted(set(TABLE) - got))
-    assert len(got) == 33
+    assert len(got) == 34
 
 
 def test_route_bodies_are_single_run_calls():
@@ -115,7 +116,7 @@ def test_write_and_view_routes_take_writer_dependency():
         elif method in ("POST", "PATCH", "PUT", "DELETE"):
             assert _default_is_depends_current_writer(node, "writer"), node.name
             n += 1
-    assert n == 4 + 17, n   # V1-V4 plus W1-W17
+    assert n == 4 + 18, n   # V1-V4 plus W1-W18
 
 
 def test_forbidden_strings_absent():

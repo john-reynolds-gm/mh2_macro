@@ -1,377 +1,377 @@
 node_id,stem_id,grade,low,high,qualifier,unit,usable,note,snippet
-ADD-0001,ADD,PK,4.0,5.0,range,period,1,header_style,Instructional Periods: | PK/GK: Likely 4-5 instructional periods
-ADD-0001,ADD,K,4.0,5.0,range,period,1,header_style,Instructional Periods: | PK/GK: Likely 4-5 instructional periods
-ADD-0002,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0003,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0004,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0005,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0006,ADD,1,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
-ADD-0006,ADD,2,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
-ADD-0007,ADD,1,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
-ADD-0007,ADD,2,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
-ADD-0008,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0009,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0010,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0011,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0012,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0013,ADD,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-ADD-0014,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0015,ADD,3,2.0,3.0,range,period,1,,"G3: Likely 2 or 3 instructional periods, depending on how estimating sums is addressed"
-ADD-0015,ADD,4,1.0,1.0,exact,period,1,,"G4: Likely 1 instructional period (consider a combo add & subtract lesson—new learning is more places, not new methods)"
-ADD-0016,ADD,,3.0,3.0,exact,period,1,,Likely 3 instructional periods
-ADD-0017,ADD,3,2.0,3.0,range,period,1,,"G3: Likely 2 or 3 instructional periods, depending on how estimating differences is addressed"
-ADD-0017,ADD,4,1.0,1.0,exact,period,1,,"G4: Likely 1 instructional period (consider a combo add & subtract lesson—new learning is more places, not new methods)"
-ADD-0018,ADD,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ADD-0019,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ADD-0020,ADD,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (fraction + fraction; fraction + mixed number; mixed + mixed)
-ADD-0021,ADD,4,1.0,1.0,exact,period,1,,G4: Likely 1 instructional period (tenths + hundredths)
-ADD-0021,ADD,5,3.0,3.0,exact,period,1,,G5: Likely 3 instructional periods (fractions number line—do addition and subtraction together; fractions numerically; mixed numbers)
-ADD-0022,ADD,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (fraction – fraction; whole – fraction; fraction - mixed)
-ADD-0023,ADD,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (fractions numerically; mixed numbers)
-ADD-0024,ADD,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ADD-0025,ADD,5,1.0,1.0,exact,period,1,,Likely 1 instructional period in G5
-ADD-0025,ADD,6,,1.0,part_of,period,1,,Likely part of an instructional period in G6 (shared with subtraction)
-ADD-0026,ADD,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ADD-0027,ADD,5,1.0,1.0,exact,period,1,,Likely 1 instructional period in G5
-ADD-0027,ADD,6,,1.0,part_of,period,1,,Likely part of an instructional period in G6 (shared with subtraction)
-ANG-0001,ANG,,1.0,2.0,range,period,1,header_style,"Instructional Period | 1-2 with ongoing practice in everyday contexts, while navigating school spaces, and through play"
-ANG-0002,ANG,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2
-ANG-0003,ANG,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
-ANG-0004,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0005,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0006,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0007,ANG,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, will also be reinforced in instruction for measuring turns by iterating degrees Concept/Skill lessons"
-ANG-0008,ANG,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-ANG-0009,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0010,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0010,ANG,,,,embedded,period,0,,Embedded in other instructional periods
-ANG-0011,ANG,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-ANG-0012,ANG,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-COM-0001,COM,,,1.0,part_of,period,1,,"Part of 1 instructional period, woven into other activities"
-COM-0002,COM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-COM-0003,COM,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-COM-0004,COM,,1.0,1.0,exact,period,1,,Possibly 1 instructional period
-COM-0005,COM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-COM-0006,COM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-COM-0007,COM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-COM-0008,COM,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-COM-0009,COM,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-COM-0010,COM,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade level
-COM-0011,COM,,1.0,1.0,exact,period,1,header_style,Instructional Period: | Likely 1 instructional period
-COM-0012,COM,,1.0,1.0,exact,period,1,header_style,Instructional Period: | Likely 1 instructional period
-COM-0013,COM,,1.0,1.0,exact,period,1,per_grade,Likely 1 instructional period per grade level
-COM-0014,COM,,1.0,1.0,exact,period,1,per_grade,Likely 1 instructional period per grade level
-COU-0001,COU,PK,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
-COU-0001,COU,K,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
-COU-0002,COU,PK,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 5 Objects | PK: 3 | GK: 3
-COU-0002,COU,K,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 5 Objects | PK: 3 | GK: 3
-COU-0002,COU,PK,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 10 Objects | PK: 3 | GK: 3
-COU-0002,COU,K,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 10 Objects | PK: 3 | GK: 3
-COU-0003,COU,PK,,,embedded,period,0,header_style,Instructional Periods | PK: Likely part of other instructional periods (one-to-one correspondence) | GK: Likely part of other instructional periods (one-to-one correspondence)
-COU-0003,COU,K,,,embedded,period,0,header_style,Instructional Periods | PK: Likely part of other instructional periods (one-to-one correspondence) | GK: Likely part of other instructional periods (one-to-one correspondence)
-COU-0004,COU,PK,2.0,2.0,exact,period,1,header_style,Instructional Period-Up to 5 | PK: 2 | GK: 2
-COU-0004,COU,K,2.0,2.0,exact,period,1,header_style,Instructional Period-Up to 5 | PK: 2 | GK: 2
-COU-0004,COU,K,2.0,3.0,range,period,1,header_style,Instructional Period-Up to 10 | GK: 2-3
-COU-0005,COU,PK,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
-COU-0005,COU,K,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
-COU-0006,COU,PK,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 5 objects | PK: 1 | GK: 1
-COU-0006,COU,K,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 5 objects | PK: 1 | GK: 1
-COU-0006,COU,PK,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 10 objects | PK: 1 | GK: 1
-COU-0006,COU,K,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 10 objects | PK: 1 | GK: 1
-COU-0007,COU,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3
-COU-0008,COU,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
-COU-0009,COU,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
-COU-0010,COU,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1 or this might also live in Practice/Fluency
-COU-0011,COU,,,,embedded,period,0,header_style,Instructional Period | Likely part of other instructional period (previous node)
-COU-0012,COU,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1 or this might also live in Practice/Fluency
-COU-0013,COU,K,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1-2
-COU-0013,COU,1,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1-2
-COU-0014,COU,K,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1 or this might be a part of other instructional periods (comparing and ordering)
-COU-0014,COU,1,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1 or this might be a part of other instructional periods (comparing and ordering)
-COU-0015,COU,K,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
-COU-0015,COU,1,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
-COU-0015,COU,2,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
-COU-0016,COU,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2 with lots of Fluency/Practice added in
-COU-0017,COU,K,1.0,1.0,exact,period,1,header_style,Instructional period: | GK- Likely 1 period | G1- Likely 1 period
-COU-0017,COU,1,1.0,1.0,exact,period,1,header_style,Instructional period: | GK- Likely 1 period | G1- Likely 1 period
-COU-0018,COU,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods with lots of Fluency activities added in
-COU-0019,COU,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods with lots of Fluency activities added in
-COU-0020,COU,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods
-COU-0021,COU,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods
-COU-0022,COU,1,1.0,2.0,range,period,1,header_style,Instructional Period | G1: 1-2 with plenty of Fluency/Practice added in | G2: 3 with plenty of Fluency/Practice added in
-COU-0022,COU,2,3.0,3.0,exact,period,1,header_style,Instructional Period | G1: 1-2 with plenty of Fluency/Practice added in | G2: 3 with plenty of Fluency/Practice added in
-COU-0023,COU,,2.0,2.0,exact,period,1,header_style,"Instructional Period | 2 (1 for arrangement, 1 for order)"
-COU-0024,COU,1,2.0,2.0,exact,period,1,,G1: Likely 2 instructional periods
-COU-0024,COU,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
-EE_GENERAL_EXPRESSIONS-0001,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods (potentially combined with other nodes) across grades
-EE_GENERAL_EXPRESSIONS-0002,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods (potentially combined with other nodes) across grades
-EE_GENERAL_EXPRESSIONS-0003,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
-EE_GENERAL_EXPRESSIONS-0004,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
-EE_GENERAL_EXPRESSIONS-0005,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
-EE_GENERAL_EXPRESSIONS-0008,EE_GENERAL_EXPRESSIONS,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-EE_GENERAL_EXPRESSIONS-0009,EE_GENERAL_EXPRESSIONS,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-EE_GENERAL_EXPRESSIONS-0010,EE_GENERAL_EXPRESSIONS,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-EE_GENERAL_EXPRESSIONS-0011,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods
-EE_GENERAL_EXPRESSIONS-0012,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods
-EE_GENERAL_EXPRESSIONS-0013,EE_GENERAL_EXPRESSIONS,,,,unparsed,,0,,See consideration about this being weaved in throughout. Some terms may be defined in the same instructional period while others will be defined/revisited throughout 6+
-EE_GENERAL_EXPRESSIONS-0014,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods possibly combined with following nodes
-EE_GENERAL_EXPRESSIONS-0015,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods possibly combined with previous node
-EE_GENERAL_EXPRESSIONS-0016,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods when introducing (possibly combined with previous nodes) but continues throughout 6+
-EE_GENERAL_EXPRESSIONS-0017,EE_GENERAL_EXPRESSIONS,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods possibly combined with other nodes
-EE_GENERAL_EXPRESSIONS-0018,EE_GENERAL_EXPRESSIONS,,2.0,,range,period,1,open_ended,Likely 2 or more instructional periods when combined with the next node but continues throughout 6+
-EE_GENERAL_EXPRESSIONS-0019,EE_GENERAL_EXPRESSIONS,6,2.0,,range,period,1,open_ended,Likely 2 or more instructional periods combined with justify node introducing in G6
-EE_GENERAL_EXPRESSIONS-0020,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
-EE_GENERAL_EXPRESSIONS-0021,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
-EE_GENERAL_EXPRESSIONS-0022,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
-EE_GENERAL_EXPRESSIONS-0023,EE_GENERAL_EXPRESSIONS,,,,unparsed,,0,,Could possibly be combined with previous node in latter portion of a second instructional period per grade
-EE_GENERAL_EXPRESSIONS-0025,EE_GENERAL_EXPRESSIONS,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods and continues throughout
-EE_GENERAL_EXPRESSIONS-0026,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods throughout 6+
-EE_GENERAL_EXPRESSIONS-0027,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods throughout 6+
-EE_GENERAL_EXPRESSIONS-0028,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods throughout 6+
-EE_GENERAL_EXPRESSIONS-0029,EE_GENERAL_EXPRESSIONS,,,,multiple,period,0,,Multiple instructional periods throughout 6+
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0002,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0003,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0004,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0005,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (combine with other content)
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0006,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0007,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (combine with previous and/or following node)
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0008,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (could combine with another node)
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0009,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (could combine with another node)
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0010,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,2.0,2.0,exact,day,1,,2 days total for first time – 1 day is needed for later grades
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0011,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day or Include within the same lesson as the previous node about using the properties.
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0012,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0013,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,2.0,2.0,exact,day,1,,2 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0014,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0015,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0016,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0017,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0018,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,2.0,2.0,exact,day,1,,2 days
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0019,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0020,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0021,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0022,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,2.0,2.0,exact,day,1,,2 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0023,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (could do with next node)
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0024,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_EQUATIONS_DEG_1-0026,EE_ONE_VARIABLE_EQUATIONS_DEG_1,,1.0,1.0,exact,day,1,,1 day (could do with previous node)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0001,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0002,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0004,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0005,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0006,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0010,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,per_grade,Likely 1 day in each grade (incorporated with other nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0011,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,per_grade,Likely 1 day in each grade (incorporated with other nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0014,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,Likely 1-2 days (for all 4 nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0018,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_INEQUALITIES_DE-0019,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_INEQUALITIES_DE-0020,EE_ONE_VARIABLE_INEQUALITIES_DE,,,,part_of,day,0,group_total,Likely 2-3 days when combined with next 3 nodes
-EE_ONE_VARIABLE_INEQUALITIES_DE-0025,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,2.0,range,day,1,,Likely 1-2 days
-EE_ONE_VARIABLE_INEQUALITIES_DE-0026,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,2.0,range,day,1,,Likely 1-2 days
-EE_ONE_VARIABLE_INEQUALITIES_DE-0027,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,2.0,range,day,1,,Likely 1-2 days (combined with other nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0028,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_INEQUALITIES_DE-0029,EE_ONE_VARIABLE_INEQUALITIES_DE,,3.0,3.0,exact,day,1,,"Likely 3 days: 1 day for conjunction including empty set, 1 day for disjunction, 1 day for mixed practice with conjunction/disjunction and special cases, e.g., all real solutions, empty set"
-EE_ONE_VARIABLE_INEQUALITIES_DE-0032,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day
-EE_ONE_VARIABLE_INEQUALITIES_DE-0033,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,3.0,range,day,1,,Likely 1-3 days (combined with other nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0041,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day (possibly combined with previous nodes)
-EE_ONE_VARIABLE_INEQUALITIES_DE-0042,EE_ONE_VARIABLE_INEQUALITIES_DE,,1.0,1.0,exact,day,1,,1 day (possibly combined with previous nodes)
-EST-0001,EST,,1.0,1.0,exact,period,1,header_style,Instructional period: | Likely 1 Instructional period
-EST-0002,EST,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
-EST-0003,EST,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
-EST-0004,EST,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3?
-EST-0005,EST,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3?
-EST-0006,EST,,1.0,1.0,exact,period,1,header_style,Instructional periods: | Likely 1 instructional period
-EST-0007,EST,,1.0,2.0,range,period,1,header_style,Instructional periods: | Likely 1-2 instructional periods
-EST-0008,EST,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2
-EST-0009,EST,,1.0,2.0,range,day,1,header_style,Instructional days: | Likely 1-2 days instructional days
-FRA-0001,FRA,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
-FRA-0002,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0003,FRA,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-FRA-0003,FRA,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-FRA-0004,FRA,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-FRA-0004,FRA,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-FRA-0005,FRA,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (0 to 1; >1)
-FRA-0006,FRA,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (related denominators; any denominators; mixed numbers)
-FRA-0007,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0008,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0009,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0010,FRA,,3.0,3.0,exact,day,1,,Likely 3 instructional days (like units; related units; unrelated units)
-FRA-0011,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0012,FRA,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (compare; order)
-FRA-0013,FRA,,2.0,2.0,exact,day,1,,"Likely 2 instructional days (1 for number line, 1 for equivalence)"
-FRA-0014,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0015,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0016,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-FRA-0017,FRA,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (either split unit fractions and non-unit fractions with concrete objects and strip/tape diagrams in the same lesson OR split concrete objects and strip/tape diagrams with unit and non-unit fractions in the same lesson)
-FRA-0018,FRA,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (either split unit fractions and non-unit fractions with concrete objects and strip/tape diagrams in the same lesson OR split concrete objects and strip/tape diagrams with unit and non-unit fractions in the same lesson)
-FRA-0019,FRA,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-MUL-0001,MUL,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods
-MUL-0002,MUL,,2.0,2.0,exact,period,1,,"Likely 2 instructional periods, and reinforced in other lessons"
-MUL-0003,MUL,,1.0,2.0,range,period,1,,"Likely 1-2 instructional periods, and reinforced in other lessons"
-MUL-0004,MUL,,0.0,1.0,range,period,1,,Likely 0 or 1 instructional periods
-MUL-0005,MUL,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, and reinforced in other lessons"
-MUL-0006,MUL,,1.0,2.0,range,period,1,,"Likely 1-2 instructional periods, and reinforced in other lessons"
-MUL-0007,MUL,,1.0,,range,period,1,open_ended,Likely at least 1 instructional period to introduce the commutative property; additional parts of instructional periods with different factors
-MUL-0007,MUL,,1.0,,range,period,1,open_ended,"Likely at least 1 instructional period to introduce the associative property; additional parts of instructional periods (e.g., might be a strategy shared in an instructional routine)"
-MUL-0007,MUL,,1.0,,range,period,1,open_ended,Likely at least 1 instructional period to introduce the distributive property; additional parts of instructional periods with different factors
-MUL-0008,MUL,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-MUL-0009,MUL,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-MUL-0010,MUL,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-MUL-0011,MUL,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-MUL-0012,MUL,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-MUL-0013,MUL,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
-MUL-0014,MUL,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods
-MUL-0015,MUL,,,1.0,part_of,period,1,,Likely part of an instructional period
-MUL-0016,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-MUL-0017,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-MUL-0018,MUL,,2.0,3.0,range,period,1,,Likely 2–3 instructional periods
-MUL-0019,MUL,,,,embedded,period,0,,"Likely part of other instructional periods, could be 1–2 instructional periods (especially due to context-specific comparison language and/or distinguishing between additive and multiplicative contexts)"
-MUL-0020,MUL,,4.0,4.0,exact,period,1,,"Likely 4 instructional periods (2-digit area model, 2-digit distributive property only, 3-digit and 4-digit area model, 3-digit and 4-digit distributive property only)"
-MUL-0021,MUL,,3.0,3.0,exact,period,1,,"Likely 3 instructional periods, including 1 for partial products all on one line"
-MUL-0022,MUL,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (at least one factor is multiple of 10, any two-digit factors)"
-MUL-0022,MUL,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (at least one factor is multiple of 10, any three-digit x two-digit factors)"
-MUL-0023,MUL,4,1.0,2.0,range,period,1,,G4: Likely 1–2 instructional periods
-MUL-0023,MUL,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
-MUL-0024,MUL,,2.0,2.0,exact,period,1,,"Likely 2 instructional periods (multi-digit x 2-digits, multi-digit x 3-digits)"
-MUL-0025,MUL,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-MUL-0026,MUL,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-MUL-0027,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-MUL-0028,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-MUL-0029,MUL,4,,,embedded,period,0,,G4: Likely part of other instructional periods
-MUL-0029,MUL,5,,,embedded,period,0,,G5: Likely part of other instructional periods
-MUL-0030,MUL,,1.0,2.0,range,period,1,,Likely 1–2 instructional periods
-MUL-0031,MUL,5,2.0,3.0,range,period,1,,G5: Likely 2–3 instructional periods
-MUL-0032,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period or part of another instructional period
-MUL-0033,MUL,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-NS_INTEGERS_AND_RATIONALS-0001,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day total for integers and rational numbers
-NS_INTEGERS_AND_RATIONALS-0002,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day
-NS_INTEGERS_AND_RATIONALS-0003,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day
-NS_INTEGERS_AND_RATIONALS-0005,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day total for finding and plotting
-NS_INTEGERS_AND_RATIONALS-0006,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day
-NS_INTEGERS_AND_RATIONALS-0007,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day (could address both integers and rational numbers in one day)*
-NS_INTEGERS_AND_RATIONALS-0008,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day*
-NS_INTEGERS_AND_RATIONALS-0011,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 instructional day
-NS_INTEGERS_AND_RATIONALS-0012,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 instructional days
-NS_INTEGERS_AND_RATIONALS-0013,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 instructional days
-NS_INTEGERS_AND_RATIONALS-0014,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day
-NS_INTEGERS_AND_RATIONALS-0016,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 days:
-NS_INTEGERS_AND_RATIONALS-0017,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 days:
-NS_INTEGERS_AND_RATIONALS-0018,NS_INTEGERS_AND_RATIONALS,,1.0,1.0,exact,day,1,,1 day
-NS_INTEGERS_AND_RATIONALS-0020,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 days- 1 day for representing on number lines and rewriting subtraction expressions as addition expressions; 1 day for evaluating differences by rewriting as sums.
-NS_INTEGERS_AND_RATIONALS-0021,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 days
-NS_INTEGERS_AND_RATIONALS-0023,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,"2 days (one positive, one negative factor; two negative factors)"
-NS_INTEGERS_AND_RATIONALS-0024,NS_INTEGERS_AND_RATIONALS,,2.0,2.0,exact,day,1,,2 days (one day for more than two factors and word problems)
-NS_INTEGERS_AND_RATIONALS-0027,NS_INTEGERS_AND_RATIONALS,,2.0,3.0,range,day,1,,2-3 days
-NS_INTEGERS_AND_RATIONALS-0029,NS_INTEGERS_AND_RATIONALS,,2.0,3.0,range,day,1,,2-3 days
-NS_IRRATIONAL_REAL_NUMBERS-0001,NS_IRRATIONAL_REAL_NUMBERS,,,,not_fixed,day,0,,Number of days depends on how irrational numbers are introduced
-NS_IRRATIONAL_REAL_NUMBERS-0002,NS_IRRATIONAL_REAL_NUMBERS,,1.0,1.0,exact,day,1,,1 day
-NS_IRRATIONAL_REAL_NUMBERS-0004,NS_IRRATIONAL_REAL_NUMBERS,,1.0,1.0,exact,day,1,,1 day
-NS_IRRATIONAL_REAL_NUMBERS-0005,NS_IRRATIONAL_REAL_NUMBERS,,1.0,1.0,exact,day,1,,1 day combined with next node to right
-PS_PROBABILITY-0001,PS_PROBABILITY,,1.0,1.0,exact,day,1,,1 instructional day
-PS_PROBABILITY-0002,PS_PROBABILITY,,1.0,1.0,exact,day,1,,1 day
-PS_PROBABILITY-0003,PS_PROBABILITY,,1.0,2.0,range,day,1,,1-2 days
-PS_PROBABILITY-0004,PS_PROBABILITY,,2.0,2.0,exact,day,1,,2 days
-PS_PROBABILITY-0005,PS_PROBABILITY,,2.0,2.0,exact,day,1,,2 days:
-PS_PROBABILITY-0006,PS_PROBABILITY,,3.0,3.0,exact,day,1,,3 days:
-PS_PROBABILITY-0008,PS_PROBABILITY,,3.0,3.0,exact,day,1,,3 days total:
-RP_COORDINATE_SYSTEM-0001,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0002,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
-RP_COORDINATE_SYSTEM-0003,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
-RP_COORDINATE_SYSTEM-0004,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson - combine with next node
-RP_COORDINATE_SYSTEM-0005,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson - combine with previous node
-RP_COORDINATE_SYSTEM-0006,RP_COORDINATE_SYSTEM,,1.0,2.0,range,lesson,1,,1-2 lessons
-RP_COORDINATE_SYSTEM-0007,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0008,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
-RP_COORDINATE_SYSTEM-0009,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
-RP_COORDINATE_SYSTEM-0010,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
-RP_COORDINATE_SYSTEM-0011,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
-RP_COORDINATE_SYSTEM-0012,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
-RP_COORDINATE_SYSTEM-0013,RP_COORDINATE_SYSTEM,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
-RP_COORDINATE_SYSTEM-0014,RP_COORDINATE_SYSTEM,,1.0,2.0,range,lesson,1,,1-2 lessons
-RP_COORDINATE_SYSTEM-0015,RP_COORDINATE_SYSTEM,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson:
-RP_COORDINATE_SYSTEM-0016,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson (see previous node Additional Notes)
-RP_COORDINATE_SYSTEM-0017,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson (see previous node Additional Notes)
-RP_COORDINATE_SYSTEM-0018,RP_COORDINATE_SYSTEM,,1.0,2.0,range,lesson,1,,1-2 lessons
-RP_COORDINATE_SYSTEM-0019,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0020,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0021,RP_COORDINATE_SYSTEM,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson – could be combined with “Fun with symmetries.”
-RP_COORDINATE_SYSTEM-0022,RP_COORDINATE_SYSTEM,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson – could be combined with “Reflection of points about the x- or y-axis.”
-RP_COORDINATE_SYSTEM-0023,RP_COORDINATE_SYSTEM,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson (could be possibly combined with next node)
-RP_COORDINATE_SYSTEM-0024,RP_COORDINATE_SYSTEM,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson (could be possibly combined with previous node)
-RP_COORDINATE_SYSTEM-0025,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0026,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-RP_COORDINATE_SYSTEM-0027,RP_COORDINATE_SYSTEM,,1.0,1.0,exact,lesson,1,,1 lesson
-SUB-0001,SUB,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
-SUB-0002,SUB,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
-TIM-0001,TIM,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, but can/should be embedded across grade levels"
-TIM-0002,TIM,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, but can/should be embedded across grade levels"
-TIM-0003,TIM,,3.0,4.0,range,period,1,,Likely 3-4 instructional periods
-TIM-0004,TIM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-TIM-0005,TIM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-TIM-0006,TIM,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-TIM-0007,TIM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-TIM-0008,TIM,,,1.0,part_of,period,1,,Likely part of an instructional period
-TIM-0009,TIM,,,1.0,part_of,period,1,,Likely part of an instructional period
-TIM-0010,TIM,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-TIM-0011,TIM,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
-TIM-0012,TIM,,,,embedded,period,0,,Likely parts of multiple instructional periods
-TIM-0013,TIM,,,,embedded,period,0,,Likely parts of multiple instructional periods
-TIM-0014,TIM,,,1.0,part_of,period,1,,Likely part of an instructional period
-WHO-0001,WHO,K,,1.0,part_of,period,1,,GK: Part of an instructional period
-WHO-0001,WHO,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
-WHO-0001,WHO,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
-WHO-0001,WHO,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
-WHO-0001,WHO,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
-WHO-0001,WHO,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
-WHO-0002,WHO,K,5.0,5.0,exact,period,1,,"GK: Likely 5 instructional periods, with additional practice time needed"
-WHO-0002,WHO,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
-WHO-0002,WHO,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
-WHO-0002,WHO,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
-WHO-0002,WHO,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
-WHO-0002,WHO,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
-WHO-0003,WHO,K,,,unparsed,,0,,"GK: Identify numerals: Likely 1 instructional period (new), Writing numerals 1 instructional period (new) -Heavy emphasis on practice and developmental abilities for writing"
-WHO-0003,WHO,1,1.0,1.0,exact,period,1,,"G1: Likely 1 instructional period, combined with prior columns"
-WHO-0003,WHO,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
-WHO-0003,WHO,3,,1.0,part_of,period,1,,G3: Likely part of an instructional period
-WHO-0003,WHO,4,,,embedded,period,0,,"G4: Likely part of other instructional periods (whole numbers, decimals)"
-WHO-0003,WHO,5,,,embedded,period,0,,"G5: Likely part of other instructional periods (whole numbers, decimals)"
-WHO-0004,WHO,1,1.0,1.0,exact,period,1,state:for FL and AR,G1 (for FL and AR): Likely 1 instructional period
-WHO-0004,WHO,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
-WHO-0004,WHO,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-WHO-0004,WHO,4,,2.0,part_of,period,1,,G4: Likely part of 2 instructional periods (1 for whole numbers and one for decimals)
-WHO-0004,WHO,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
-WHO-0005,WHO,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
-WHO-0005,WHO,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-WHO-0005,WHO,4,,2.0,part_of,period,1,,G4: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
-WHO-0005,WHO,5,,2.0,part_of,period,1,,G5: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
-WHO-0006,WHO,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-WHO-0006,WHO,5,,2.0,part_of,period,1,,G5: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
-WHO-0007,WHO,5,,1.0,part_of,period,1,,G5: Likely part of an instructional period
-WHO-0008,WHO,K,3.0,3.0,exact,period,1,,GK: Likely 3 instructional periods
-WHO-0008,WHO,1,2.0,2.0,exact,period,1,,G1: Likely 2 instructional periods
-WHO-0008,WHO,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
-WHO-0008,WHO,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
-WHO-0008,WHO,4,1.0,1.0,exact,period,1,,G4: Likely 1 instructional period
-WHO-0009,WHO,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (might be partial, one for tenths and one for hundredths)"
-WHO-0009,WHO,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
-WHO-0010,WHO,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
-WHO-0010,WHO,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods (heavy fluency practice)
-WHO-0010,WHO,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-WHO-0010,WHO,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-WHO-0011,WHO,1,1.0,1.0,exact,period,1,,G1: 1 instructional period
-WHO-0011,WHO,2,1.0,1.0,exact,period,1,,G2: 1 instructional period
-WHO-0011,WHO,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
-WHO-0011,WHO,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-WHO-0012,WHO,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-WHO-0012,WHO,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
-WHO-0013,WHO,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
-WHO-0013,WHO,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
-WHO-0014,WHO,3,2.0,2.0,exact,period,1,,"G3: Likely 2 instructional periods (to nearest 10, to nearest 100)"
-WHO-0014,WHO,4,3.0,3.0,exact,period,1,,"G4: Likely 3 instructional periods (to leading place value, to a place value other than the leading place value, what place makes sense for context)"
-WHO-0014,WHO,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
-WHO-0015,WHO,4,1.0,1.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
-WHO-0015,WHO,5,2.0,2.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
-WHO-0016,WHO,4,1.0,1.0,exact,period,1,,"Likely 1 instructional period in G4 and 2 instructional periods in G5, some might be able to be part of a lesson for other nodes"
-WHO-0016,WHO,5,2.0,2.0,exact,period,1,,"Likely 1 instructional period in G4 and 2 instructional periods in G5, some might be able to be part of a lesson for other nodes"
-WHO-0017,WHO,,1.0,1.0,exact,period,1,,Likely 1 instructional period
-WHO-0018,WHO,,,1.0,part_of,period,1,,Likely 1 or part of 1 instructional period
-WHO-0019,WHO,4,1.0,1.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
-WHO-0019,WHO,5,2.0,2.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
+EE-EQ-1V-0002,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0003,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0004,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0005,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (combine with other content)
+EE-EQ-1V-0006,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0007,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (combine with previous and/or following node)
+EE-EQ-1V-0008,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (could combine with another node)
+EE-EQ-1V-0009,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (could combine with another node)
+EE-EQ-1V-0010,EE-EQ-1V,,2.0,2.0,exact,day,1,,2 days total for first time – 1 day is needed for later grades
+EE-EQ-1V-0011,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day or Include within the same lesson as the previous node about using the properties.
+EE-EQ-1V-0012,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0013,EE-EQ-1V,,2.0,2.0,exact,day,1,,2 day
+EE-EQ-1V-0014,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0015,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0016,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0017,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0018,EE-EQ-1V,,2.0,2.0,exact,day,1,,2 days
+EE-EQ-1V-0019,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0020,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0021,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0022,EE-EQ-1V,,2.0,2.0,exact,day,1,,2 day
+EE-EQ-1V-0023,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (could do with next node)
+EE-EQ-1V-0024,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-EQ-1V-0026,EE-EQ-1V,,1.0,1.0,exact,day,1,,1 day (could do with previous node)
+EE-EXPR-GEN-0001,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods (potentially combined with other nodes) across grades
+EE-EXPR-GEN-0002,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods (potentially combined with other nodes) across grades
+EE-EXPR-GEN-0003,EE-EXPR-GEN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
+EE-EXPR-GEN-0004,EE-EXPR-GEN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
+EE-EXPR-GEN-0005,EE-EXPR-GEN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods (potentially combined with other nodes)
+EE-EXPR-GEN-0008,EE-EXPR-GEN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+EE-EXPR-GEN-0009,EE-EXPR-GEN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+EE-EXPR-GEN-0010,EE-EXPR-GEN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+EE-EXPR-GEN-0011,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods
+EE-EXPR-GEN-0012,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods
+EE-EXPR-GEN-0013,EE-EXPR-GEN,,,,unparsed,,0,,See consideration about this being weaved in throughout. Some terms may be defined in the same instructional period while others will be defined/revisited throughout 6+
+EE-EXPR-GEN-0014,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods possibly combined with following nodes
+EE-EXPR-GEN-0015,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods possibly combined with previous node
+EE-EXPR-GEN-0016,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1+ instructional periods when introducing (possibly combined with previous nodes) but continues throughout 6+
+EE-EXPR-GEN-0017,EE-EXPR-GEN,,1.0,,range,period,1,open_ended,Likely 1 or more instructional periods possibly combined with other nodes
+EE-EXPR-GEN-0018,EE-EXPR-GEN,,2.0,,range,period,1,open_ended,Likely 2 or more instructional periods when combined with the next node but continues throughout 6+
+EE-EXPR-GEN-0019,EE-EXPR-GEN,6,2.0,,range,period,1,open_ended,Likely 2 or more instructional periods combined with justify node introducing in G6
+EE-EXPR-GEN-0020,EE-EXPR-GEN,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
+EE-EXPR-GEN-0021,EE-EXPR-GEN,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
+EE-EXPR-GEN-0022,EE-EXPR-GEN,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade
+EE-EXPR-GEN-0023,EE-EXPR-GEN,,,,unparsed,,0,,Could possibly be combined with previous node in latter portion of a second instructional period per grade
+EE-EXPR-GEN-0025,EE-EXPR-GEN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods and continues throughout
+EE-EXPR-GEN-0026,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods throughout 6+
+EE-EXPR-GEN-0027,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods throughout 6+
+EE-EXPR-GEN-0028,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods throughout 6+
+EE-EXPR-GEN-0029,EE-EXPR-GEN,,,,multiple,period,0,,Multiple instructional periods throughout 6+
+EE-INEQ-1V-0001,EE-INEQ-1V,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
+EE-INEQ-1V-0002,EE-INEQ-1V,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
+EE-INEQ-1V-0004,EE-INEQ-1V,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
+EE-INEQ-1V-0005,EE-INEQ-1V,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
+EE-INEQ-1V-0006,EE-INEQ-1V,,,,part_of,day,0,group_total,"Likely 2+ days for the first 6 nodes altogether (possibly split with 1 day for <, > and 1 day for ≤, ≥)"
+EE-INEQ-1V-0010,EE-INEQ-1V,,1.0,1.0,exact,day,1,per_grade,Likely 1 day in each grade (incorporated with other nodes)
+EE-INEQ-1V-0011,EE-INEQ-1V,,1.0,1.0,exact,day,1,per_grade,Likely 1 day in each grade (incorporated with other nodes)
+EE-INEQ-1V-0014,EE-INEQ-1V,,,,part_of,day,0,group_total,Likely 1-2 days (for all 4 nodes)
+EE-INEQ-1V-0018,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-INEQ-1V-0019,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-INEQ-1V-0020,EE-INEQ-1V,,,,part_of,day,0,group_total,Likely 2-3 days when combined with next 3 nodes
+EE-INEQ-1V-0025,EE-INEQ-1V,,1.0,2.0,range,day,1,,Likely 1-2 days
+EE-INEQ-1V-0026,EE-INEQ-1V,,1.0,2.0,range,day,1,,Likely 1-2 days
+EE-INEQ-1V-0027,EE-INEQ-1V,,1.0,2.0,range,day,1,,Likely 1-2 days (combined with other nodes)
+EE-INEQ-1V-0028,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-INEQ-1V-0029,EE-INEQ-1V,,3.0,3.0,exact,day,1,,"Likely 3 days: 1 day for conjunction including empty set, 1 day for disjunction, 1 day for mixed practice with conjunction/disjunction and special cases, e.g., all real solutions, empty set"
+EE-INEQ-1V-0032,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day
+EE-INEQ-1V-0033,EE-INEQ-1V,,1.0,3.0,range,day,1,,Likely 1-3 days (combined with other nodes)
+EE-INEQ-1V-0041,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day (possibly combined with previous nodes)
+EE-INEQ-1V-0042,EE-INEQ-1V,,1.0,1.0,exact,day,1,,1 day (possibly combined with previous nodes)
+MD-ANGLES-0001,MD-ANGLES,,1.0,2.0,range,period,1,header_style,"Instructional Period | 1-2 with ongoing practice in everyday contexts, while navigating school spaces, and through play"
+MD-ANGLES-0002,MD-ANGLES,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2
+MD-ANGLES-0003,MD-ANGLES,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
+MD-ANGLES-0004,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0005,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0006,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0007,MD-ANGLES,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, will also be reinforced in instruction for measuring turns by iterating degrees Concept/Skill lessons"
+MD-ANGLES-0008,MD-ANGLES,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+MD-ANGLES-0009,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0010,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0010,MD-ANGLES,,,,embedded,period,0,,Embedded in other instructional periods
+MD-ANGLES-0011,MD-ANGLES,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-ANGLES-0012,MD-ANGLES,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+MD-TIME-0001,MD-TIME,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, but can/should be embedded across grade levels"
+MD-TIME-0002,MD-TIME,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, but can/should be embedded across grade levels"
+MD-TIME-0003,MD-TIME,,3.0,4.0,range,period,1,,Likely 3-4 instructional periods
+MD-TIME-0004,MD-TIME,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-TIME-0005,MD-TIME,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-TIME-0006,MD-TIME,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+MD-TIME-0007,MD-TIME,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-TIME-0008,MD-TIME,,,1.0,part_of,period,1,,Likely part of an instructional period
+MD-TIME-0009,MD-TIME,,,1.0,part_of,period,1,,Likely part of an instructional period
+MD-TIME-0010,MD-TIME,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+MD-TIME-0011,MD-TIME,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+MD-TIME-0012,MD-TIME,,,,embedded,period,0,,Likely parts of multiple instructional periods
+MD-TIME-0013,MD-TIME,,,,embedded,period,0,,Likely parts of multiple instructional periods
+MD-TIME-0014,MD-TIME,,,1.0,part_of,period,1,,Likely part of an instructional period
+NS-BASE10-0001,NS-BASE10,K,,1.0,part_of,period,1,,GK: Part of an instructional period
+NS-BASE10-0001,NS-BASE10,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
+NS-BASE10-0001,NS-BASE10,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
+NS-BASE10-0001,NS-BASE10,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
+NS-BASE10-0001,NS-BASE10,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
+NS-BASE10-0001,NS-BASE10,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
+NS-BASE10-0002,NS-BASE10,K,5.0,5.0,exact,period,1,,"GK: Likely 5 instructional periods, with additional practice time needed"
+NS-BASE10-0002,NS-BASE10,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
+NS-BASE10-0002,NS-BASE10,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
+NS-BASE10-0002,NS-BASE10,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
+NS-BASE10-0002,NS-BASE10,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
+NS-BASE10-0002,NS-BASE10,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (1 whole numbers, 1 decimals)"
+NS-BASE10-0003,NS-BASE10,K,,,unparsed,,0,,"GK: Identify numerals: Likely 1 instructional period (new), Writing numerals 1 instructional period (new) -Heavy emphasis on practice and developmental abilities for writing"
+NS-BASE10-0003,NS-BASE10,1,1.0,1.0,exact,period,1,,"G1: Likely 1 instructional period, combined with prior columns"
+NS-BASE10-0003,NS-BASE10,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
+NS-BASE10-0003,NS-BASE10,3,,1.0,part_of,period,1,,G3: Likely part of an instructional period
+NS-BASE10-0003,NS-BASE10,4,,,embedded,period,0,,"G4: Likely part of other instructional periods (whole numbers, decimals)"
+NS-BASE10-0003,NS-BASE10,5,,,embedded,period,0,,"G5: Likely part of other instructional periods (whole numbers, decimals)"
+NS-BASE10-0004,NS-BASE10,1,1.0,1.0,exact,period,1,state:for FL and AR,G1 (for FL and AR): Likely 1 instructional period
+NS-BASE10-0004,NS-BASE10,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
+NS-BASE10-0004,NS-BASE10,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-BASE10-0004,NS-BASE10,4,,2.0,part_of,period,1,,G4: Likely part of 2 instructional periods (1 for whole numbers and one for decimals)
+NS-BASE10-0004,NS-BASE10,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
+NS-BASE10-0005,NS-BASE10,2,1.0,1.0,exact,period,1,,G2: Likely 1 instructional period
+NS-BASE10-0005,NS-BASE10,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-BASE10-0005,NS-BASE10,4,,2.0,part_of,period,1,,G4: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
+NS-BASE10-0005,NS-BASE10,5,,2.0,part_of,period,1,,G5: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
+NS-BASE10-0006,NS-BASE10,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-BASE10-0006,NS-BASE10,5,,2.0,part_of,period,1,,G5: Likely part of 2 instructional periods (one for whole numbers and one for decimals)
+NS-BASE10-0007,NS-BASE10,5,,1.0,part_of,period,1,,G5: Likely part of an instructional period
+NS-BASE10-0008,NS-BASE10,K,3.0,3.0,exact,period,1,,GK: Likely 3 instructional periods
+NS-BASE10-0008,NS-BASE10,1,2.0,2.0,exact,period,1,,G1: Likely 2 instructional periods
+NS-BASE10-0008,NS-BASE10,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
+NS-BASE10-0008,NS-BASE10,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
+NS-BASE10-0008,NS-BASE10,4,1.0,1.0,exact,period,1,,G4: Likely 1 instructional period
+NS-BASE10-0009,NS-BASE10,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (might be partial, one for tenths and one for hundredths)"
+NS-BASE10-0009,NS-BASE10,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
+NS-BASE10-0010,NS-BASE10,1,3.0,3.0,exact,period,1,,G1: Likely 3 instructional periods
+NS-BASE10-0010,NS-BASE10,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods (heavy fluency practice)
+NS-BASE10-0010,NS-BASE10,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-BASE10-0010,NS-BASE10,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-BASE10-0011,NS-BASE10,1,1.0,1.0,exact,period,1,,G1: 1 instructional period
+NS-BASE10-0011,NS-BASE10,2,1.0,1.0,exact,period,1,,G2: 1 instructional period
+NS-BASE10-0011,NS-BASE10,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-BASE10-0011,NS-BASE10,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-BASE10-0012,NS-BASE10,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-BASE10-0012,NS-BASE10,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
+NS-BASE10-0013,NS-BASE10,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-BASE10-0013,NS-BASE10,5,,1.0,part_of,period,1,,G5: Likely part of 1 instructional period
+NS-BASE10-0014,NS-BASE10,3,2.0,2.0,exact,period,1,,"G3: Likely 2 instructional periods (to nearest 10, to nearest 100)"
+NS-BASE10-0014,NS-BASE10,4,3.0,3.0,exact,period,1,,"G4: Likely 3 instructional periods (to leading place value, to a place value other than the leading place value, what place makes sense for context)"
+NS-BASE10-0014,NS-BASE10,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
+NS-BASE10-0015,NS-BASE10,4,1.0,1.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
+NS-BASE10-0015,NS-BASE10,5,2.0,2.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
+NS-BASE10-0016,NS-BASE10,4,1.0,1.0,exact,period,1,,"Likely 1 instructional period in G4 and 2 instructional periods in G5, some might be able to be part of a lesson for other nodes"
+NS-BASE10-0016,NS-BASE10,5,2.0,2.0,exact,period,1,,"Likely 1 instructional period in G4 and 2 instructional periods in G5, some might be able to be part of a lesson for other nodes"
+NS-BASE10-0017,NS-BASE10,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-BASE10-0018,NS-BASE10,,,1.0,part_of,period,1,,Likely 1 or part of 1 instructional period
+NS-BASE10-0019,NS-BASE10,4,1.0,1.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
+NS-BASE10-0019,NS-BASE10,5,2.0,2.0,exact,period,1,,Likely 1 instructional period in G4 and 2 instructional periods in G5
+NS-COMP-ORDER-0001,NS-COMP-ORDER,,,1.0,part_of,period,1,,"Part of 1 instructional period, woven into other activities"
+NS-COMP-ORDER-0002,NS-COMP-ORDER,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-COMP-ORDER-0003,NS-COMP-ORDER,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+NS-COMP-ORDER-0004,NS-COMP-ORDER,,1.0,1.0,exact,period,1,,Possibly 1 instructional period
+NS-COMP-ORDER-0005,NS-COMP-ORDER,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-COMP-ORDER-0006,NS-COMP-ORDER,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-COMP-ORDER-0007,NS-COMP-ORDER,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-COMP-ORDER-0008,NS-COMP-ORDER,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+NS-COMP-ORDER-0009,NS-COMP-ORDER,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+NS-COMP-ORDER-0010,NS-COMP-ORDER,,1.0,2.0,range,period,1,per_grade,Likely 1-2 instructional periods per grade level
+NS-COMP-ORDER-0011,NS-COMP-ORDER,,1.0,1.0,exact,period,1,header_style,Instructional Period: | Likely 1 instructional period
+NS-COMP-ORDER-0012,NS-COMP-ORDER,,1.0,1.0,exact,period,1,header_style,Instructional Period: | Likely 1 instructional period
+NS-COMP-ORDER-0013,NS-COMP-ORDER,,1.0,1.0,exact,period,1,per_grade,Likely 1 instructional period per grade level
+NS-COMP-ORDER-0014,NS-COMP-ORDER,,1.0,1.0,exact,period,1,per_grade,Likely 1 instructional period per grade level
+NS-COUNT-0001,NS-COUNT,PK,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
+NS-COUNT-0001,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
+NS-COUNT-0002,NS-COUNT,PK,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 5 Objects | PK: 3 | GK: 3
+NS-COUNT-0002,NS-COUNT,K,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 5 Objects | PK: 3 | GK: 3
+NS-COUNT-0002,NS-COUNT,PK,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 10 Objects | PK: 3 | GK: 3
+NS-COUNT-0002,NS-COUNT,K,3.0,3.0,exact,period,1,header_style,Instructional Period-Up to 10 Objects | PK: 3 | GK: 3
+NS-COUNT-0003,NS-COUNT,PK,,,embedded,period,0,header_style,Instructional Periods | PK: Likely part of other instructional periods (one-to-one correspondence) | GK: Likely part of other instructional periods (one-to-one correspondence)
+NS-COUNT-0003,NS-COUNT,K,,,embedded,period,0,header_style,Instructional Periods | PK: Likely part of other instructional periods (one-to-one correspondence) | GK: Likely part of other instructional periods (one-to-one correspondence)
+NS-COUNT-0004,NS-COUNT,PK,2.0,2.0,exact,period,1,header_style,Instructional Period-Up to 5 | PK: 2 | GK: 2
+NS-COUNT-0004,NS-COUNT,K,2.0,2.0,exact,period,1,header_style,Instructional Period-Up to 5 | PK: 2 | GK: 2
+NS-COUNT-0004,NS-COUNT,K,2.0,3.0,range,period,1,header_style,Instructional Period-Up to 10 | GK: 2-3
+NS-COUNT-0005,NS-COUNT,PK,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
+NS-COUNT-0005,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional Period | PK: 1 | GK: 1
+NS-COUNT-0006,NS-COUNT,PK,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 5 objects | PK: 1 | GK: 1
+NS-COUNT-0006,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 5 objects | PK: 1 | GK: 1
+NS-COUNT-0006,NS-COUNT,PK,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 10 objects | PK: 1 | GK: 1
+NS-COUNT-0006,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional Period-Up to 10 objects | PK: 1 | GK: 1
+NS-COUNT-0007,NS-COUNT,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3
+NS-COUNT-0008,NS-COUNT,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
+NS-COUNT-0009,NS-COUNT,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
+NS-COUNT-0010,NS-COUNT,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1 or this might also live in Practice/Fluency
+NS-COUNT-0011,NS-COUNT,,,,embedded,period,0,header_style,Instructional Period | Likely part of other instructional period (previous node)
+NS-COUNT-0012,NS-COUNT,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1 or this might also live in Practice/Fluency
+NS-COUNT-0013,NS-COUNT,K,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1-2
+NS-COUNT-0013,NS-COUNT,1,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1-2
+NS-COUNT-0014,NS-COUNT,K,1.0,2.0,range,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1 or this might be a part of other instructional periods (comparing and ordering)
+NS-COUNT-0014,NS-COUNT,1,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1-2 | G1: 1 or this might be a part of other instructional periods (comparing and ordering)
+NS-COUNT-0015,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
+NS-COUNT-0015,NS-COUNT,1,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
+NS-COUNT-0015,NS-COUNT,2,1.0,1.0,exact,period,1,header_style,Instructional Period | GK: 1 | G1: 1 | G2: 1
+NS-COUNT-0016,NS-COUNT,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2 with lots of Fluency/Practice added in
+NS-COUNT-0017,NS-COUNT,K,1.0,1.0,exact,period,1,header_style,Instructional period: | GK- Likely 1 period | G1- Likely 1 period
+NS-COUNT-0017,NS-COUNT,1,1.0,1.0,exact,period,1,header_style,Instructional period: | GK- Likely 1 period | G1- Likely 1 period
+NS-COUNT-0018,NS-COUNT,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods with lots of Fluency activities added in
+NS-COUNT-0019,NS-COUNT,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods with lots of Fluency activities added in
+NS-COUNT-0020,NS-COUNT,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods
+NS-COUNT-0021,NS-COUNT,,2.0,2.0,exact,period,1,header_style,Instructional periods: | Likely 2 periods
+NS-COUNT-0022,NS-COUNT,1,1.0,2.0,range,period,1,header_style,Instructional Period | G1: 1-2 with plenty of Fluency/Practice added in | G2: 3 with plenty of Fluency/Practice added in
+NS-COUNT-0022,NS-COUNT,2,3.0,3.0,exact,period,1,header_style,Instructional Period | G1: 1-2 with plenty of Fluency/Practice added in | G2: 3 with plenty of Fluency/Practice added in
+NS-COUNT-0023,NS-COUNT,,2.0,2.0,exact,period,1,header_style,"Instructional Period | 2 (1 for arrangement, 1 for order)"
+NS-COUNT-0024,NS-COUNT,1,2.0,2.0,exact,period,1,,G1: Likely 2 instructional periods
+NS-COUNT-0024,NS-COUNT,2,2.0,2.0,exact,period,1,,G2: Likely 2 instructional periods
+NS-ESTIMATE-0001,NS-ESTIMATE,,1.0,1.0,exact,period,1,header_style,Instructional period: | Likely 1 Instructional period
+NS-ESTIMATE-0002,NS-ESTIMATE,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
+NS-ESTIMATE-0003,NS-ESTIMATE,,2.0,2.0,exact,period,1,header_style,Instructional Period | 2
+NS-ESTIMATE-0004,NS-ESTIMATE,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3?
+NS-ESTIMATE-0005,NS-ESTIMATE,,2.0,3.0,range,period,1,header_style,Instructional Period | 2-3?
+NS-ESTIMATE-0006,NS-ESTIMATE,,1.0,1.0,exact,period,1,header_style,Instructional periods: | Likely 1 instructional period
+NS-ESTIMATE-0007,NS-ESTIMATE,,1.0,2.0,range,period,1,header_style,Instructional periods: | Likely 1-2 instructional periods
+NS-ESTIMATE-0008,NS-ESTIMATE,,1.0,2.0,range,period,1,header_style,Instructional Period | 1-2
+NS-ESTIMATE-0009,NS-ESTIMATE,,1.0,2.0,range,day,1,header_style,Instructional days: | Likely 1-2 days instructional days
+NS-FRAC-0001,NS-FRAC,3,1.0,1.0,exact,period,1,,G3: Likely 1 instructional period
+NS-FRAC-0002,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0003,NS-FRAC,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-FRAC-0003,NS-FRAC,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-FRAC-0004,NS-FRAC,3,,1.0,part_of,period,1,,G3: Likely part of 1 instructional period
+NS-FRAC-0004,NS-FRAC,4,,1.0,part_of,period,1,,G4: Likely part of 1 instructional period
+NS-FRAC-0005,NS-FRAC,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (0 to 1; >1)
+NS-FRAC-0006,NS-FRAC,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (related denominators; any denominators; mixed numbers)
+NS-FRAC-0007,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0008,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0009,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0010,NS-FRAC,,3.0,3.0,exact,day,1,,Likely 3 instructional days (like units; related units; unrelated units)
+NS-FRAC-0011,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0012,NS-FRAC,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (compare; order)
+NS-FRAC-0013,NS-FRAC,,2.0,2.0,exact,day,1,,"Likely 2 instructional days (1 for number line, 1 for equivalence)"
+NS-FRAC-0014,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0015,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0016,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-FRAC-0017,NS-FRAC,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (either split unit fractions and non-unit fractions with concrete objects and strip/tape diagrams in the same lesson OR split concrete objects and strip/tape diagrams with unit and non-unit fractions in the same lesson)
+NS-FRAC-0018,NS-FRAC,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (either split unit fractions and non-unit fractions with concrete objects and strip/tape diagrams in the same lesson OR split concrete objects and strip/tape diagrams with unit and non-unit fractions in the same lesson)
+NS-FRAC-0019,NS-FRAC,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+NS-INT-RAT-0001,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day total for integers and rational numbers
+NS-INT-RAT-0002,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day
+NS-INT-RAT-0003,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day
+NS-INT-RAT-0005,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day total for finding and plotting
+NS-INT-RAT-0006,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day
+NS-INT-RAT-0007,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day (could address both integers and rational numbers in one day)*
+NS-INT-RAT-0008,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day*
+NS-INT-RAT-0011,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 instructional day
+NS-INT-RAT-0012,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 instructional days
+NS-INT-RAT-0013,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 instructional days
+NS-INT-RAT-0014,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day
+NS-INT-RAT-0016,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 days:
+NS-INT-RAT-0017,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 days:
+NS-INT-RAT-0018,NS-INT-RAT,,1.0,1.0,exact,day,1,,1 day
+NS-INT-RAT-0020,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 days- 1 day for representing on number lines and rewriting subtraction expressions as addition expressions; 1 day for evaluating differences by rewriting as sums.
+NS-INT-RAT-0021,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 days
+NS-INT-RAT-0023,NS-INT-RAT,,2.0,2.0,exact,day,1,,"2 days (one positive, one negative factor; two negative factors)"
+NS-INT-RAT-0024,NS-INT-RAT,,2.0,2.0,exact,day,1,,2 days (one day for more than two factors and word problems)
+NS-INT-RAT-0027,NS-INT-RAT,,2.0,3.0,range,day,1,,2-3 days
+NS-INT-RAT-0029,NS-INT-RAT,,2.0,3.0,range,day,1,,2-3 days
+NS-IRR-REAL-0001,NS-IRR-REAL,,,,not_fixed,day,0,,Number of days depends on how irrational numbers are introduced
+NS-IRR-REAL-0002,NS-IRR-REAL,,1.0,1.0,exact,day,1,,1 day
+NS-IRR-REAL-0004,NS-IRR-REAL,,1.0,1.0,exact,day,1,,1 day
+NS-IRR-REAL-0005,NS-IRR-REAL,,1.0,1.0,exact,day,1,,1 day combined with next node to right
+NS-SUBITIZE-0001,NS-SUBITIZE,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
+NS-SUBITIZE-0002,NS-SUBITIZE,,1.0,1.0,exact,period,1,header_style,Instructional Period | 1
+OE-ADD-SUB-0001,OE-ADD-SUB,PK,4.0,5.0,range,period,1,header_style,Instructional Periods: | PK/GK: Likely 4-5 instructional periods
+OE-ADD-SUB-0001,OE-ADD-SUB,K,4.0,5.0,range,period,1,header_style,Instructional Periods: | PK/GK: Likely 4-5 instructional periods
+OE-ADD-SUB-0002,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0003,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0004,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0005,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0006,OE-ADD-SUB,1,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
+OE-ADD-SUB-0006,OE-ADD-SUB,2,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
+OE-ADD-SUB-0007,OE-ADD-SUB,1,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
+OE-ADD-SUB-0007,OE-ADD-SUB,2,10.0,10.0,exact,period,1,header_style,Instructional Periods | G1 – likely 10 instructional periods | G2 – likely 10 instructional periods
+OE-ADD-SUB-0008,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0009,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0010,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0011,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0012,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0013,OE-ADD-SUB,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-ADD-SUB-0014,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0015,OE-ADD-SUB,3,2.0,3.0,range,period,1,,"G3: Likely 2 or 3 instructional periods, depending on how estimating sums is addressed"
+OE-ADD-SUB-0015,OE-ADD-SUB,4,1.0,1.0,exact,period,1,,"G4: Likely 1 instructional period (consider a combo add & subtract lesson—new learning is more places, not new methods)"
+OE-ADD-SUB-0016,OE-ADD-SUB,,3.0,3.0,exact,period,1,,Likely 3 instructional periods
+OE-ADD-SUB-0017,OE-ADD-SUB,3,2.0,3.0,range,period,1,,"G3: Likely 2 or 3 instructional periods, depending on how estimating differences is addressed"
+OE-ADD-SUB-0017,OE-ADD-SUB,4,1.0,1.0,exact,period,1,,"G4: Likely 1 instructional period (consider a combo add & subtract lesson—new learning is more places, not new methods)"
+OE-ADD-SUB-0018,OE-ADD-SUB,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-ADD-SUB-0019,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-ADD-SUB-0020,OE-ADD-SUB,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (fraction + fraction; fraction + mixed number; mixed + mixed)
+OE-ADD-SUB-0021,OE-ADD-SUB,4,1.0,1.0,exact,period,1,,G4: Likely 1 instructional period (tenths + hundredths)
+OE-ADD-SUB-0021,OE-ADD-SUB,5,3.0,3.0,exact,period,1,,G5: Likely 3 instructional periods (fractions number line—do addition and subtraction together; fractions numerically; mixed numbers)
+OE-ADD-SUB-0022,OE-ADD-SUB,,3.0,3.0,exact,period,1,,Likely 3 instructional periods (fraction – fraction; whole – fraction; fraction - mixed)
+OE-ADD-SUB-0023,OE-ADD-SUB,,2.0,2.0,exact,period,1,,Likely 2 instructional periods (fractions numerically; mixed numbers)
+OE-ADD-SUB-0024,OE-ADD-SUB,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-ADD-SUB-0025,OE-ADD-SUB,5,1.0,1.0,exact,period,1,,Likely 1 instructional period in G5
+OE-ADD-SUB-0025,OE-ADD-SUB,6,,1.0,part_of,period,1,,Likely part of an instructional period in G6 (shared with subtraction)
+OE-ADD-SUB-0026,OE-ADD-SUB,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-ADD-SUB-0027,OE-ADD-SUB,5,1.0,1.0,exact,period,1,,Likely 1 instructional period in G5
+OE-ADD-SUB-0027,OE-ADD-SUB,6,,1.0,part_of,period,1,,Likely part of an instructional period in G6 (shared with subtraction)
+OE-MUL-DIV-WN-0001,OE-MUL-DIV-WN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods
+OE-MUL-DIV-WN-0002,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,"Likely 2 instructional periods, and reinforced in other lessons"
+OE-MUL-DIV-WN-0003,OE-MUL-DIV-WN,,1.0,2.0,range,period,1,,"Likely 1-2 instructional periods, and reinforced in other lessons"
+OE-MUL-DIV-WN-0004,OE-MUL-DIV-WN,,0.0,1.0,range,period,1,,Likely 0 or 1 instructional periods
+OE-MUL-DIV-WN-0005,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,"Likely 1 instructional period, and reinforced in other lessons"
+OE-MUL-DIV-WN-0006,OE-MUL-DIV-WN,,1.0,2.0,range,period,1,,"Likely 1-2 instructional periods, and reinforced in other lessons"
+OE-MUL-DIV-WN-0007,OE-MUL-DIV-WN,,1.0,,range,period,1,open_ended,Likely at least 1 instructional period to introduce the commutative property; additional parts of instructional periods with different factors
+OE-MUL-DIV-WN-0007,OE-MUL-DIV-WN,,1.0,,range,period,1,open_ended,"Likely at least 1 instructional period to introduce the associative property; additional parts of instructional periods (e.g., might be a strategy shared in an instructional routine)"
+OE-MUL-DIV-WN-0007,OE-MUL-DIV-WN,,1.0,,range,period,1,open_ended,Likely at least 1 instructional period to introduce the distributive property; additional parts of instructional periods with different factors
+OE-MUL-DIV-WN-0008,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-MUL-DIV-WN-0009,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-MUL-DIV-WN-0010,OE-MUL-DIV-WN,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-MUL-DIV-WN-0011,OE-MUL-DIV-WN,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-MUL-DIV-WN-0012,OE-MUL-DIV-WN,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-MUL-DIV-WN-0013,OE-MUL-DIV-WN,,,,not_fixed,period,0,,Fluency is not taught in a fixed number of instructional periods; it should be practiced and maintained throughout the school year.
+OE-MUL-DIV-WN-0014,OE-MUL-DIV-WN,,1.0,2.0,range,period,1,,Likely 1-2 instructional periods
+OE-MUL-DIV-WN-0015,OE-MUL-DIV-WN,,,1.0,part_of,period,1,,Likely part of an instructional period
+OE-MUL-DIV-WN-0016,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-MUL-DIV-WN-0017,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-MUL-DIV-WN-0018,OE-MUL-DIV-WN,,2.0,3.0,range,period,1,,Likely 2–3 instructional periods
+OE-MUL-DIV-WN-0019,OE-MUL-DIV-WN,,,,embedded,period,0,,"Likely part of other instructional periods, could be 1–2 instructional periods (especially due to context-specific comparison language and/or distinguishing between additive and multiplicative contexts)"
+OE-MUL-DIV-WN-0020,OE-MUL-DIV-WN,,4.0,4.0,exact,period,1,,"Likely 4 instructional periods (2-digit area model, 2-digit distributive property only, 3-digit and 4-digit area model, 3-digit and 4-digit distributive property only)"
+OE-MUL-DIV-WN-0021,OE-MUL-DIV-WN,,3.0,3.0,exact,period,1,,"Likely 3 instructional periods, including 1 for partial products all on one line"
+OE-MUL-DIV-WN-0022,OE-MUL-DIV-WN,4,2.0,2.0,exact,period,1,,"G4: Likely 2 instructional periods (at least one factor is multiple of 10, any two-digit factors)"
+OE-MUL-DIV-WN-0022,OE-MUL-DIV-WN,5,2.0,2.0,exact,period,1,,"G5: Likely 2 instructional periods (at least one factor is multiple of 10, any three-digit x two-digit factors)"
+OE-MUL-DIV-WN-0023,OE-MUL-DIV-WN,4,1.0,2.0,range,period,1,,G4: Likely 1–2 instructional periods
+OE-MUL-DIV-WN-0023,OE-MUL-DIV-WN,5,1.0,1.0,exact,period,1,,G5: Likely 1 instructional period
+OE-MUL-DIV-WN-0024,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,"Likely 2 instructional periods (multi-digit x 2-digits, multi-digit x 3-digits)"
+OE-MUL-DIV-WN-0025,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-MUL-DIV-WN-0026,OE-MUL-DIV-WN,,2.0,2.0,exact,period,1,,Likely 2 instructional periods
+OE-MUL-DIV-WN-0027,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-MUL-DIV-WN-0028,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+OE-MUL-DIV-WN-0029,OE-MUL-DIV-WN,4,,,embedded,period,0,,G4: Likely part of other instructional periods
+OE-MUL-DIV-WN-0029,OE-MUL-DIV-WN,5,,,embedded,period,0,,G5: Likely part of other instructional periods
+OE-MUL-DIV-WN-0030,OE-MUL-DIV-WN,,1.0,2.0,range,period,1,,Likely 1–2 instructional periods
+OE-MUL-DIV-WN-0031,OE-MUL-DIV-WN,5,2.0,3.0,range,period,1,,G5: Likely 2–3 instructional periods
+OE-MUL-DIV-WN-0032,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period or part of another instructional period
+OE-MUL-DIV-WN-0033,OE-MUL-DIV-WN,,1.0,1.0,exact,period,1,,Likely 1 instructional period
+PS-PROB-0001,PS-PROB,,1.0,1.0,exact,day,1,,1 instructional day
+PS-PROB-0002,PS-PROB,,1.0,1.0,exact,day,1,,1 day
+PS-PROB-0003,PS-PROB,,1.0,2.0,range,day,1,,1-2 days
+PS-PROB-0004,PS-PROB,,2.0,2.0,exact,day,1,,2 days
+PS-PROB-0005,PS-PROB,,2.0,2.0,exact,day,1,,2 days:
+PS-PROB-0006,PS-PROB,,3.0,3.0,exact,day,1,,3 days:
+PS-PROB-0008,PS-PROB,,3.0,3.0,exact,day,1,,3 days total:
+RP-COORD-0001,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0002,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
+RP-COORD-0003,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
+RP-COORD-0004,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson - combine with next node
+RP-COORD-0005,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson - combine with previous node
+RP-COORD-0006,RP-COORD,,1.0,2.0,range,lesson,1,,1-2 lessons
+RP-COORD-0007,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0008,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
+RP-COORD-0009,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
+RP-COORD-0010,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
+RP-COORD-0011,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
+RP-COORD-0012,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with next node
+RP-COORD-0013,RP-COORD,,0.5,0.5,exact,lesson,1,,1/2 lesson – combine with previous node
+RP-COORD-0014,RP-COORD,,1.0,2.0,range,lesson,1,,1-2 lessons
+RP-COORD-0015,RP-COORD,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson:
+RP-COORD-0016,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson (see previous node Additional Notes)
+RP-COORD-0017,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson (see previous node Additional Notes)
+RP-COORD-0018,RP-COORD,,1.0,2.0,range,lesson,1,,1-2 lessons
+RP-COORD-0019,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0020,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0021,RP-COORD,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson – could be combined with “Fun with symmetries.”
+RP-COORD-0022,RP-COORD,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson – could be combined with “Reflection of points about the x- or y-axis.”
+RP-COORD-0023,RP-COORD,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson (could be possibly combined with next node)
+RP-COORD-0024,RP-COORD,,0.5,1.0,range,lesson,1,,1/2 to 1 lesson (could be possibly combined with previous node)
+RP-COORD-0025,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0026,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson
+RP-COORD-0027,RP-COORD,,1.0,1.0,exact,lesson,1,,1 lesson

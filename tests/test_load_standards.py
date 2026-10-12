@@ -167,7 +167,7 @@ def test_load_stem_inventory_g6_unresolved_name_is_skipped_not_derived():
         cur = con.cursor()
         nc, nt, _unparsed = load_stem_inventory(
             cur, sheet_path, ["Expressions and Equations"], "6_9")
-        report = config.REPORTS / "stem_resolution_unmatched.txt"
+        report = config.REPORTS / "stem_resolution_unmatched_6_9.txt"
         assert report.exists()
         assert "Brand New Stem Nobody Curated" in report.read_text()
     finally:
@@ -180,25 +180,70 @@ def test_load_stem_inventory_g6_unresolved_name_is_skipped_not_derived():
     assert cur.execute("SELECT COUNT(*) FROM concepts").fetchone()[0] == 0
 
 
-def test_load_stem_inventory_pk5_still_derives():
-    """PK-5 path is unchanged: mints a code from the stem name, never resolves."""
-    sheet_path = _write_g6_sheet("Measurement and Data", [{
-        "Stem": "Angles", "Concept/Skill": "Identify angle types",
-        "Details": None, "CCSSM Standard": "4.MD.C.5",
-        "Big Three Standard": None, "Other Standard": None,
-        "Grade/Leaf": None, "Notes": None,
-    }])
+def _pk5_row(stem_id, masterlist_name, workbook_stem, ladder_file=""):
+    return {"stem_id": stem_id, "band": "PK5", "stem_group": "",
+            "masterlist_name": masterlist_name, "workbook_sheet": "",
+            "workbook_stem": workbook_stem, "ladder_file": ladder_file,
+            "ladder_drafted": "0"}
 
-    con = _fresh_db()
-    cur = con.cursor()
-    nc, nt, _unparsed = load_stem_inventory(
-        cur, sheet_path, ["Measurement and Data"], "PK5")
 
-    assert nc == 1
-    assert nt == 1
-    stem_id, band = cur.execute("SELECT stem_id, band FROM stems").fetchone()
-    assert stem_id == "ANG"
-    assert band is None
+def _concept(stem, concept, code):
+    return {"Stem": stem, "Concept/Skill": concept, "Details": None,
+            "CCSSM Standard": code, "Big Three Standard": None,
+            "Other Standard": None, "Grade/Leaf": None, "Notes": None}
+
+
+def _load_pk5(stems_rows, sheet_rows):
+    stems_csv = _write_stems_csv(stems_rows)
+    sheet_path = _write_g6_sheet("Measurement and Data", sheet_rows)
+    orig = config.STEMS_CSV, config.REPORTS
+    config.STEMS_CSV, config.REPORTS = stems_csv, Path(tempfile.mkdtemp())
+    try:
+        con = _fresh_db()
+        cur = con.cursor()
+        load_stem_inventory(cur, sheet_path, ["Measurement and Data"], "PK5")
+    finally:
+        config.STEMS_CSV, config.REPORTS = orig
+    return cur
+
+
+def test_load_stem_inventory_pk5_resolves_against_stems_csv():
+    """
+    DEFERRED.md §10: PK-5 resolves its stem_id from stems.csv exactly as 6-9
+    does. It used to mint the first three letters of the name ('ANG'); the
+    code is now the registry's, and band stays NULL for PK-5 as before.
+    """
+    cur = _load_pk5([_pk5_row("MD-ANGLES", "Angles", "Angles")],
+                    [_concept("Angles", "Identify angle types", "4.MD.C.5")])
+    assert cur.execute("SELECT stem_id, name, band FROM stems").fetchall() == [
+        ("MD-ANGLES", "Angles", None)]
+    assert cur.execute("SELECT stem_id FROM concepts").fetchone()[0] == "MD-ANGLES"
+
+
+def test_load_stem_inventory_pk5_unlisted_stem_is_skipped_not_derived():
+    cur = _load_pk5([_pk5_row("MD-ANGLES", "Angles", "Angles")],
+                    [_concept("Brand New Stem", "Some skill", "K.CC.A.1")])
+    assert cur.execute("SELECT COUNT(*) FROM stems").fetchone()[0] == 0
+    assert cur.execute("SELECT COUNT(*) FROM concepts").fetchone()[0] == 0
+
+
+def test_one_ladder_over_two_workbook_stems_is_one_stem():
+    """
+    'Comparing' and 'Ordering' are separate workbook stems covered by one
+    ladder. Both rows in stems.csv carry NS-COMP-ORDER, so every concept from
+    either lands on that one stem, named by the masterlist name rather than
+    whichever workbook stem was read first.
+    """
+    ladder = "MH2_PK5_NumberSystemsandStructures_ComparingandOrdering_LessonLadder.docx"
+    cur = _load_pk5(
+        [_pk5_row("NS-COMP-ORDER", "Comparing and Ordering", "Comparing", ladder),
+         _pk5_row("NS-COMP-ORDER", "Comparing and Ordering", "Ordering", ladder)],
+        [_concept("Comparing", "Compare sets", "K.CC.C.6"),
+         _concept("Ordering", "Order numbers", "K.CC.A.2")])
+    assert cur.execute("SELECT stem_id, name FROM stems").fetchall() == [
+        ("NS-COMP-ORDER", "Comparing and Ordering")]
+    assert {r[0] for r in cur.execute("SELECT stem_id FROM concepts")} == {"NS-COMP-ORDER"}
+    assert cur.execute("SELECT COUNT(*) FROM concepts").fetchone()[0] == 2
 
 
 if __name__ == "__main__":

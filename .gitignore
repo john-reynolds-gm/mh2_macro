@@ -8,11 +8,14 @@ __pycache__/
 .venv/
 venv/
 
-# Build artifacts. `rm -rf data/build && rebuild.py` regenerates everything
-# here EXCEPT mh2_seq.db, which is authored review state (rev 9 R2) and
-# cannot be regenerated -- so it is tracked, and the glob is `data/build/*`
-# rather than `data/build/` because git cannot re-include a file whose
-# parent directory is excluded.
+# Build artifacts. rebuild.py regenerates everything here EXCEPT
+# mh2_seq.db, which is authored review state (rev 9 R2) and cannot be
+# regenerated -- so it is tracked, and the glob is `data/build/*` rather than
+# `data/build/` because git cannot re-include a file whose parent directory
+# is excluded. ladder_uploads/ is durable too but deliberately NOT tracked:
+# its home is the deployed volume, and its backup is the Ladder Files zip
+# export (docs/HOSTING.md). So `rm -rf data/build` is not safe -- delete
+# only mh2.db*.
 data/build/*
 !data/build/mh2_seq.db
 
@@ -49,3 +52,6 @@ data/source/standards/all_states_debug.csv
 notebooks/
 
 ~$*
+
+# Packaged copies for sharing (large; never commit)
+dist/

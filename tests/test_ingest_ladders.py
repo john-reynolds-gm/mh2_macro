@@ -20,7 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
 
-from mh2.ingest_ladders import parse_concept_heading, persist, read_docx  # noqa: E402
+import pytest  # noqa: E402
+
+from mh2.ingest_ladders import (  # noqa: E402
+    parse_concept_heading, persist, read_docx, stem_for_file)
+from mh2.load_stems import declared_ladders  # noqa: E402
 
 LADDERS = Path(__file__).resolve().parent.parent / "data" / "source" / "ladders"
 
@@ -142,7 +146,7 @@ def test_persist_expands_range_shorthand_instead_of_tagging_the_range():
     con = fresh_db()
     cur = con.cursor()
     persist(cur, [_ladder_node("MD.4.NOS.C.7.a-d")], "run1",
-            stem_id_override="TST", stem_name_override="Test Stem")
+            stem_id="TST", stem_name="Test Stem")
     got = {r[0] for r in cur.execute("SELECT standard_id FROM node_standards")}
     assert got == {"MD.4.NOS.C.7.a", "MD.4.NOS.C.7.b",
                    "MD.4.NOS.C.7.c", "MD.4.NOS.C.7.d"}
@@ -154,9 +158,49 @@ def test_persist_leaves_grade_span_references_alone():
     con = fresh_db()
     cur = con.cursor()
     persist(cur, [_ladder_node("CA.7-12.A")], "run1",
-            stem_id_override="TST", stem_name_override="Test Stem")
+            stem_id="TST", stem_name="Test Stem")
     got = {r[0] for r in cur.execute("SELECT standard_id FROM node_standards")}
     assert got == {"CA.7-12.A"}
+
+
+# ------------------------------------------------- stem_for_file(): §10
+
+def _declared(stem_id, ladder_file):
+    return declared_ladders([{"stem_id": stem_id, "masterlist_name": "Fractions",
+                              "ladder_file": ladder_file}])
+
+
+def test_stem_for_file_reads_stems_csv_not_the_filename():
+    """stems.csv writes underscores where the file on disk has spaces; the
+    lookup folds both, and the code is the registry's, never 'FRA'."""
+    declared = _declared(
+        "NS-FRAC", "MH2_PK5_NumberSystemsandStructures_Fractions__5_.docx")
+    cur = fresh_db().cursor()
+    assert stem_for_file(
+        cur, "MH2_PK5_NumberSystemsandStructures_Fractions.docx", declared
+    ) == ("NS-FRAC", "Fractions")
+
+
+def test_stem_for_file_unlisted_file_is_none():
+    cur = fresh_db().cursor()
+    assert stem_for_file(cur, "MH2_PK5_Brand_New.docx",
+                         _declared("NS-FRAC", "Fractions.docx")) is None
+
+
+def test_stem_for_file_refuses_a_database_built_under_another_code():
+    """A live database whose nodes for this file sit under an older code must
+    be rebuilt, not appended to -- that would split one ladder over two."""
+    cur = fresh_db().cursor()
+    persist(cur, [_ladder_node("")], "run1", stem_id="FRA", stem_name="Fractions")
+    with pytest.raises(SystemExit, match="Run scripts/rebuild.py"):
+        stem_for_file(cur, "f.docx", _declared("NS-FRAC", "f.docx"))
+
+
+def test_persist_node_id_is_stem_id_and_seq():
+    cur = fresh_db().cursor()
+    persist(cur, [_ladder_node("")], "run1", stem_id="NS-FRAC", stem_name="Fractions")
+    assert cur.execute("SELECT node_id, source_key FROM nodes").fetchone()[0] == "NS-FRAC-0001"
+    assert cur.execute("SELECT name FROM stems WHERE stem_id = 'NS-FRAC'").fetchone()[0] == "Fractions"
 
 
 # --------------------------------------------------------------- doc-level

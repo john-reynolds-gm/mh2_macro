@@ -77,8 +77,8 @@ Zero of the 324 tagged nodes are absent from `node_grade_ruling`, so this is
 fully characterized.
 **Trigger:** same as 1.3 — it is the same fix seen from the schema side.
 
-### 1.5 `ADD-0001`-style grade rulings
-**What:** `TX.1.3C` is Yellow because `ADD-0001` canonicalizes to `PK, K` while
+### 1.5 `OE-ADD-SUB-0001`-style grade rulings
+**What:** `TX.1.3C` is Yellow because `OE-ADD-SUB-0001` (was `ADD-0001`) canonicalizes to `PK, K` while
 its raw cell reads `G1+ – Application`. Some of the 52 Yellows will resolve by
 amending the grade normalization worksheet.
 **Trigger:** Yellow becomes visible in the UI and a writer disputes one.
@@ -251,13 +251,17 @@ re-read before any large re-ingestion.
   rather than carrying approved alignments forward. *Currently harmless because
   v1 is read-only and nothing is pinned to a node ID. This protection
   disappears the moment 3.3 lands.*
-- **`stems.stem_id` is a function of the stem name string** (PK–5 derivation
-  path only). Renaming a stem in the workbook changes its ID. The 6–9 path
-  resolves rather than derives, so it is immune.
+- ~~**`stems.stem_id` is a function of the stem name string**~~ *Resolved
+  2026-10-08 (§10).* Both bands now resolve stem_id from stems.csv; renaming a
+  stem in the workbook no longer changes its ID. A renamed workbook stem now
+  fails to resolve and is reported in `stem_resolution_unmatched_<band>.txt`
+  until stems.csv's `workbook_stem` is updated to match.
 - **`stem_map.ladder_drafted` is stale** in 2 of 22 PK–5 rows, in both
   directions (`OE_ADDSUB` reads 0 while `ADD` has 27 nodes; `NSS_ORD` reads 1
   while `ORD` has zero). **Never read it.** Derive drafted status from node
-  counts.
+  counts. *2026-10-08 (§10): both cases are now accurate — `OE-ADD-SUB` reads
+  1, and Ordering is part of `NS-COMP-ORDER`, which has nodes. The rule
+  stands; the flag is still hand-kept.
 - **New ladders will surface new parser edge cases** — cf. the
   `_should_skip_right_cell()` regex anchoring bug, which discarded rows carrying
   genuine lesson references alongside supplemental-material notes. Found by
@@ -605,6 +609,12 @@ new 6–9 ladders do not renumber PK–5 nodes, and review records key on
 `(standard_id, source_key)` rather than `node_id`, which is what makes the
 content-hash decay risk in §4 survivable here.
 
+*Corrected 2026-10-08:* that holds only while a ladder's stem_id stays put.
+`source_key` is `stem_id:` + a hash of the node text, so changing a stem_id
+changes every `source_key` and `node_id` under it, and orphans any review
+record keyed on them. §10 changed every stem_id while `mh2_seq.db` held only
+test rows, which were deleted. stem_ids are now meant to be permanent.
+
 **Still unverified, and do not promise it to the team lead until it is:**
 that review records survive a real rebuild that adds 6–9 ladders. §7
 round-tripped one `standard_review` through `rebuild.py` +
@@ -744,3 +754,134 @@ Carried forward:
   reports re-doing or losing track of edits across downloads. Then add a
   keeper-set `applied` state, cleared by reconcile, that the export shows
   and does not count.
+
+## 10. Shared ladder codes (2026-10-08)
+
+**Ruling (John, 2026-10-08):** stem_ids are the ladder codes agreed with
+Laurence for KG Builder (`ladder-code-proposal.html`, draft 2, 2026-10-05):
+`GROUP-TOPIC`, uppercase, a two-letter group prefix, hyphens. Laurence's
+proposal assigned 19 codes; John assigned the other 35 stems.csv rows
+(review 2026-10-08). `data/source/workbooks/stems.csv` is the registry, and it
+is the only place a stem_id comes from:
+
+- `load_standards` resolves both workbooks' stem names against it. PK–5 no
+  longer mints first-three-letters codes (`FRA`, `COM2`, `MUL2`).
+- `ingest_ladders` and `scripts/ingest_new.py` take a ladder's stem_id from
+  its `ladder_file` row. A ladder file not listed there stops the build
+  before anything is written. `resolve_stem()`'s filename heuristic and
+  `ingest_new.py --stem-id` are gone.
+- `load_stems.read_stems_csv` refuses a stem_id repeated with a different
+  band or ladder_file, a duplicated (stem_id, workbook_stem), or one ladder
+  file claimed by two stem_ids.
+
+This reverses the earlier "rename the PK–5 node_ids" decision recorded in
+`stem_map_stem_of()`'s docstring. That decision protected node-keyed review
+data and the paid rerank cache. There was no real review data yet, and the
+cache was relabelled (below).
+
+**Comparing and Ordering is one stem, `NS-COMP-ORDER`.** The ladder covers the
+workbook's separate Comparing and Ordering stems, and both stems.csv rows carry
+the one stem_id. Concepts from both workbook stems land on it, and the `stems`
+row is named by the masterlist ('Comparing and Ordering'). `stem_map` is
+therefore keyed `(stem_id, workbook_stem)`, not stem_id alone. The former
+`ORD` stem (4 concepts, 0 nodes) no longer exists separately.
+
+**Migration, 2026-10-08.** Backups: `data/build/*.bak-pre-ladder-codes-20261008113557`
+and `data/reranks/cache.jsonl.bak-pre-ladder-codes-20261008113557`.
+- Rebuilt from source: 353 nodes in 17 ladders. Every old node matched a new
+  one on (source_file, source_key text hash), and every node kept its seq
+  number (`FRA-0012` → `NS-FRAC-0012`).
+- `data/reranks/cache.jsonl`: all 514 keys relabelled through that match.
+  Only the key changed on each line.
+- `mh2_seq.db`: John's test rows deleted at his instruction (2 `tag_review`,
+  2 `standard_review`, 4 `tag_proposal`, 1 `standard_color_override`,
+  2 `standard_status`).
+
+**Deferred:**
+- **The paused Streamlit app's `app/db.py`** joins `stem_map` to `stems` on
+  stem_id (lines ~75 and ~447). With `NS-COMP-ORDER` on two stem_map rows,
+  that join yields two rows for that stem. Before §10 the join matched only
+  6–9 stems, because PK–5 used two namespaces.
+  **Trigger:** the Streamlit app is resumed, or anything else joins stem_map
+  to stems on stem_id alone.
+- **Old codes are not kept as aliases in the database.** The proposal
+  suggested aliases. Nothing durable referenced the old codes, and this
+  section's crosswalk is in git (`git log -p data/source/workbooks/stems.csv`).
+  **Trigger:** an external artifact keyed on an old code (an export, a
+  KG Builder import) needs to be matched back.
+
+---
+
+## 11. Ladder Files — writer uploads (2026-10-12)
+
+Brief: `docs/brief_ladder_uploads.md`. Writers upload and replace ladder
+`.docx` files through `/files` on the hosted app; uploads live on the volume
+(`data/build/ladder_uploads/`), metadata in `mh2_seq.db`
+(`ladder_upload`, `stem_registry_override`), all logic in
+`mh2/ladder_store.py`. `rebuild.py` lays live uploads over the repo ladders
+in `data/build/_effective/` and points every step there through
+`MH2_LADDERS_DIR` / `MH2_STEMS_CSV`. Precedence: for a stem with an upload,
+the upload is the source of truth; the repo copy is only a seed.
+
+**Needs John's ruling — conflicts with §8.** R-H1 says ladders are "fetched
+at rebuild time via Microsoft Graph. Never uploaded to the app, never written
+back." This feature is exactly an upload path, built because IT can't
+connect the app to SharePoint. The Word ladder is still the only source of
+truth for *tagging* (§6 is untouched: nothing here writes a tag), but the
+authoritative *copy* of a ladder now lives on the Fly volume rather than in
+SharePoint, and R-H5.6's SharePoint-based change preview is replaced by the
+upload's own validate-time diff. R-H1 has not been edited; it should be
+amended or superseded by John, not by a session.
+
+**Landed differently from the brief, and why:**
+- *Canonical name of a drafted slot* is the repo file's on-disk name when
+  one resolves, not the declared `ladder_file` string. Six of the sixteen
+  drafted stem_ids declare a spelling that only matches after normalization
+  (`..._Measurement_and_Data_Angles.docx` vs the real `... and Data_...`).
+  Ingest stores the filename verbatim in `nodes.source_file`, which
+  `tag_proposal.ladder_file` and the worklist group by; switching spellings
+  on upload would split a ladder's proposals into two groups.
+- *`_effective/` holds symlinks, not copies.* The sources never change
+  under them (versions are never overwritten; repo ladders are in the image)
+  and copying ~130 MB per rebuild onto the 1 GB volume is space it lacks.
+- *One extra table, `ladder_upload_rejection`* (last failed attempt per
+  stem), because the page's "Rejected/error" status had nowhere durable to
+  come from. Cleared by the next successful commit.
+- *The orphan confirmation is enforced server-side* (`confirm_orphans`, 409
+  without it), not only by the page's checkbox. The orphan count covers
+  `tag_review`, open/needs-attention `tag_proposal`, `candidate_ruling`, and
+  active sequencing `placement` rows — all keyed on `source_key`.
+
+**Regression check, by hand, 2026-10-12.** HEAD's `rebuild.py` and the new
+one (no uploads), each run against a full copy of real `data/` under its own
+`MH2_DATA_DIR`: all 30 tables identical row for row except run timestamps,
+`ingest_log.run_id` (a hash of the glob path) and `stem_map.ladder_path`
+(now under `_effective/`; its one reader, `mh2/reconcile.py`, uses only the
+filename). Then a real upload → rebuild cycle against that copy: a
+re-uploaded drafted ladder and a newly registered undrafted slot (`MD-LENGTH`)
+both ingested, 18 ladders.
+
+**Open questions from the brief, defaults taken, each with a trigger:**
+- **Review reconcile after upload rebuilds** — not run; the worker matches
+  `entrypoint.sh` (`--skip-review-reconcile`). Reconcile is what flags
+  rulings orphaned by reworded nodes, so this is the likeliest to need
+  changing. **Trigger:** the first commit made with `confirm_orphans` — i.e.
+  a writer knowingly detaching review decisions — or John's answer to
+  brief §11.1, whichever comes first.
+- **Any writer can upload to any stem.** **Trigger:** an upload lands on
+  the wrong slot or overwrites another writer's ladder, or the writer pool
+  grows past the pilot.
+- **Every version is kept forever.** **Trigger:** volume usage on the Fly
+  dashboard passes 70% (docs/HOSTING.md, "Volume size").
+
+**Deferred:**
+- **A live upload for a stem_id no longer in `stems.csv` is skipped with a
+  printed warning**, not failed and not shown on the page. Failing would
+  stop the app at startup; showing it needs a slot that no longer exists.
+  **Trigger:** any stem_id is renamed or removed in `stems.csv` while it has
+  uploads (a §10-style code migration).
+- **A revert records no actor of its own** — only the rebuild log's
+  `actor` column. **Trigger:** anyone needs to know who changed which
+  version was live.
+- **The 20 MB cap is close to real ladders**: Addition and Subtraction is
+  16.3 MB today. **Trigger:** a legitimate ladder is refused as `too_large`.

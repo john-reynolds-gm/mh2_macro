@@ -38,23 +38,23 @@ Predicate per row: in-grade nodes of that `stem_id` (denominator above) with `ha
 
 | Stem | Band | In-grade nodes | Usable, any unit | Usable, periods |
 |---|---|---:|---:|---:|
-| Addition and Subtraction (`ADD`) | PK-5 | 27 | 21 (78%) | 21 (78%) |
-| Angles (`ANG`) | PK-5 | 12 | 12 (100%) | 12 (100%) |
-| Comparing (`COM`) | PK-5 | 14 | 14 (100%) | 14 (100%) |
-| Counting (`COU`) | PK-5 | 23 | 21 (91%) | 21 (91%) |
-| Estimating (`EST`) | PK-5 | 9 | 9 (100%) | 8 (89%) |
-| Fractions (`FRA`) | PK-5 | 12 | 12 (100%) | 11 (92%) |
-| Multiplication and Division (Whole Numbers) (`MUL`) | PK-5 | 29 | 25 (86%) | 25 (86%) |
-| Subitization (`SUB`) | PK-5 | 2 | 2 (100%) | 2 (100%) |
-| Time (`TIM`) | PK-5 | 11 | 9 (82%) | 9 (82%) |
-| Whole Numbers and Base Ten Structure (`WHO`) | PK-5 | 19 | 19 (100%) | 19 (100%) |
-| Expressions (General) (`EE_GENERAL_EXPRESSIONS`) | 6_9 | 28 | 17 (61%) | 17 (61%) |
-| One-Variable Equations (deg = 1) (`EE_ONE_VARIABLE_EQUATIONS_DEG_1`) | 6_9 | 21 | 19 (90%) | 0 (0%) |
-| One-Variable Inequalities (deg = 1) (`EE_ONE_VARIABLE_INEQUALITIES_DE`) | 6_9 | 37 | 10 (27%) | 0 (0%) |
-| Integers & Rational Numbers (`NS_INTEGERS_AND_RATIONALS`) | 6_9 | 22 | 20 (91%) | 0 (0%) |
-| Irrational & Real Numbers (`NS_IRRATIONAL_REAL_NUMBERS`) | 6_9 | 8 | 3 (38%) | 0 (0%) |
-| Probability (`PS_PROBABILITY`) | 6_9 | 7 | 7 (100%) | 0 (0%) |
-| Coordinate System (`RP_COORDINATE_SYSTEM`) | 6_9 | 25 | 25 (100%) | 0 (0%) |
+| Angles (`MD-ANGLES`) | PK-5 | 12 | 12 (100%) | 12 (100%) |
+| Time (`MD-TIME`) | PK-5 | 11 | 9 (82%) | 9 (82%) |
+| Whole Numbers and Base Ten Structure (`NS-BASE10`) | PK-5 | 19 | 19 (100%) | 19 (100%) |
+| Comparing and Ordering (`NS-COMP-ORDER`) | PK-5 | 14 | 14 (100%) | 14 (100%) |
+| Counting (`NS-COUNT`) | PK-5 | 23 | 21 (91%) | 21 (91%) |
+| Estimating (`NS-ESTIMATE`) | PK-5 | 9 | 9 (100%) | 8 (89%) |
+| Fractions (`NS-FRAC`) | PK-5 | 12 | 12 (100%) | 11 (92%) |
+| Subitization (`NS-SUBITIZE`) | PK-5 | 2 | 2 (100%) | 2 (100%) |
+| Addition and Subtraction (`OE-ADD-SUB`) | PK-5 | 27 | 21 (78%) | 21 (78%) |
+| Multiplication and Division (Whole Numbers) (`OE-MUL-DIV-WN`) | PK-5 | 29 | 25 (86%) | 25 (86%) |
+| One-Variable Equations (deg = 1) (`EE-EQ-1V`) | 6_9 | 21 | 19 (90%) | 0 (0%) |
+| Expressions (General) (`EE-EXPR-GEN`) | 6_9 | 28 | 17 (61%) | 17 (61%) |
+| One-Variable Inequalities (deg = 1) (`EE-INEQ-1V`) | 6_9 | 37 | 10 (27%) | 0 (0%) |
+| Integers & Rational Numbers (`NS-INT-RAT`) | 6_9 | 22 | 20 (91%) | 0 (0%) |
+| Irrational & Real Numbers (`NS-IRR-REAL`) | 6_9 | 8 | 3 (38%) | 0 (0%) |
+| Probability (`PS-PROB`) | 6_9 | 7 | 7 (100%) | 0 (0%) |
+| Coordinate System (`RP-COORD`) | 6_9 | 25 | 25 (100%) | 0 (0%) |
 
 (`stems.band` is NULL for PK-5 stems, hence the default label.)
 
@@ -86,7 +86,7 @@ Rule used (this script's choice, not a ruling): per grade, strict coverage in pe
 - With caveat: 1 (22/36, 61%), 2 (23/33, 70%), 3 (20/36, 56%), 4 (37/61, 61%), 5 (31/52, 60%)
 - Not usable: PK (7/24, 29%), K (21/44, 48%), 6 (9/79, 11%), 7 (0/75, 0%), 8 (0/35, 0%), A1 (1/47, 2%)
 
-Why the numbers understate what a grade builder will experience:
+Caveats on reading these numbers:
 
 - **The estimate is per node, not per placement.** A node that spans two grades usually carries one un-graded figure; only the strict column attributes it, and only when the node sits in one grade.
 - **Bounds, not points.** 93 of the usable rows are ranges, open-ended ("1 or more") or part_of (an upper bound only); a readout must carry low and high, or pick one and say so.

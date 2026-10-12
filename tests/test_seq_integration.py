@@ -107,7 +107,8 @@ def test_guardrail_parity_200_random_lists():
     for _ in range(200):
         n = rng.randint(0, 12)
         lists.append([{"calibration": rng.choice(cals),
-                       "period_estimate": rng.choice([None] + [q / 4 for q in range(0, 21)])}
+                       "period_estimate": rng.choice([None] + [q / 4 for q in range(0, 21)]),
+                       "estimate_source": rng.choice([None, "ladder", "builder"])}
                       for _ in range(n)])
     js = _node("IN.map(A.computeGuardrail)", lists)
     py = [seq_guardrail.compute(pl) for pl in lists]
@@ -184,7 +185,7 @@ def test_harness_serves_exactly_seq_api_routes():
     import seq_http_harness as H
     app = H.App(H.load_seq_api())
     assert set(app.route_table()) == _decorated_routes()
-    assert len(app.route_table()) == 33
+    assert len(app.route_table()) == 34
     # the stand-ins were only installed for the import
     assert getattr(sys.modules.get("fastapi"), "FastAPI", None) is not H.FastAPI
     assert getattr(sys.modules.get("pydantic"), "BaseModel", None) is not H.BaseModel

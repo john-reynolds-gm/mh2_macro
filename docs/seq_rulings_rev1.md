@@ -10,6 +10,8 @@ done, the contract entries change from "Provisional" to "Ruled (John, date)".
 
 Node IDs overflowed chips on long stem IDs (for example `EE_ONE_VARIABLE_EQUATIONS_DEG_1-0003`). The stem prefix repeated the stem heading above the strip, so chips now show only the number (`0003`). The full ID is in the tooltip and screen-reader label. Fixed 2026-10-01 in `seq_static/app.js` (`chipId`) and `app.css`; demos rebuilt.
 
+**Reversed 2026-10-08:** now that the team has normed on the new node IDs (for example `NS-COMP-ORDER-0012`), chips and compact rail rows show the full ID again. The 2026-10-01 CSS (`overflow-wrap: anywhere` on `.c-id` and `.pl-id`) stays, so a long ID wraps instead of overflowing; `chipId` is removed.
+
 ---
 
 ## The four hard ones
@@ -102,7 +104,7 @@ you know the stem writers meant "per grade" when they left off the prefix.
   - The drawer and builder show a "from ladder" marker until `estimate_source = 'builder'`.
   - The guardrail counts ladder-sourced estimates. Optionally, it can show
     "N from ladder, M confirmed" next to "N of M counted".
-  - Re-placing a removed node autofills again only if it has no builder-sourced value.
+  - A removed and re-placed node is a new placement row, so it autofills again. History stays in `placement_event`.
 
 ### O10 Flagged filter vs Pairings toggle: **Ruled: accept (option A)** (2026-10-01)
 

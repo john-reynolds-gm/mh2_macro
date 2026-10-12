@@ -176,40 +176,40 @@ def test_real_mh2_copy_reword_delete_grade_change():
     ctx = V.Ctx(mh2, d / "mh2_seq.db")
     con = sqlite3.connect(mh2)
     keys = {nid: k for nid, k in con.execute(
-        "SELECT node_id, source_key FROM nodes WHERE node_id IN ('WHO-0010','WHO-0011','COM-0012','TIM-0010')")}
+        "SELECT node_id, source_key FROM nodes WHERE node_id IN ('NS-BASE10-0010','NS-BASE10-0011','NS-COMP-ORDER-0012','MD-TIME-0010')")}
     con.close()
     assert len(keys) == 4, keys
     r = V.create_sequence(ctx, "amy", "2", "Grade 2 sequence", None)
     sid = r["result"]["sequence_id"]
     r = V.create_module(ctx, "amy", sid, T.rev(r), "M1", None)
     m = r["result"]["module_id"]
-    for nid in ("WHO-0011", "WHO-0010", "COM-0012", "TIM-0010"):
+    for nid in ("NS-BASE10-0011", "NS-BASE10-0010", "NS-COMP-ORDER-0012", "MD-TIME-0010"):
         r = V.place(ctx, "amy", sid, T.rev(r), m, keys[nid])
     v = r["sequence"]
     assert v["attention"] == [] and len(v["placed_index"]) == 4
-    # reword WHO-0011 (new text + new key), delete COM-0012 outright, TIM-0010 loses G2
+    # reword NS-BASE10-0011 (new text + new key), delete NS-COMP-ORDER-0012 outright, MD-TIME-0010 loses G2
     con = sqlite3.connect(mh2)
     con.execute("PRAGMA foreign_keys=OFF")
-    con.execute("UPDATE nodes SET node_text=node_text || ' today', source_key='WHO:0123456789abcdef'"
-                " WHERE node_id='WHO-0011'")
-    con.execute("DELETE FROM nodes WHERE node_id='COM-0012'")
-    con.execute("DELETE FROM node_grade WHERE node_id='TIM-0010' AND grade='2'")
+    con.execute("UPDATE nodes SET node_text=node_text || ' today', source_key='NS-BASE10:0123456789abcdef'"
+                " WHERE node_id='NS-BASE10-0011'")
+    con.execute("DELETE FROM nodes WHERE node_id='NS-COMP-ORDER-0012'")
+    con.execute("DELETE FROM node_grade WHERE node_id='MD-TIME-0010' AND grade='2'")
     con.commit()
     con.close()
     v = V.get_sequence(ctx, "2")
     status = {k: p["status"] for k, p in v["placed_index"].items()}
-    assert status[keys["WHO-0011"]] == "orphaned" and status[keys["COM-0012"]] == "orphaned"
-    assert status[keys["TIM-0010"]] == "grade_changed" and status[keys["WHO-0010"]] == "ok"
+    assert status[keys["NS-BASE10-0011"]] == "orphaned" and status[keys["NS-COMP-ORDER-0012"]] == "orphaned"
+    assert status[keys["MD-TIME-0010"]] == "grade_changed" and status[keys["NS-BASE10-0010"]] == "ok"
     assert len(v["attention"]) == 3
-    who = [a for a in v["attention"] if a["source_key"] == keys["WHO-0011"]][0]
-    assert who["suggestions"] and who["suggestions"][0]["source_key"] == "WHO:0123456789abcdef"
+    who = [a for a in v["attention"] if a["source_key"] == keys["NS-BASE10-0011"]][0]
+    assert who["suggestions"] and who["suggestions"][0]["source_key"] == "NS-BASE10:0123456789abcdef"
     json.dumps(v)
     before = _table_hashes(ctx.seq_path)
     out = d / "rep.txt"
     assert R.main(["--db", str(mh2), "--seq-db", str(ctx.seq_path), "--out", str(out)]) == 0
     assert _table_hashes(ctx.seq_path) == before
     text = out.read_text()
-    assert "orphaned: 2    grade_changed: 1" in text and "TIM-0010 unconfirmed -> off_grade" in text
+    assert "orphaned: 2    grade_changed: 1" in text and "MD-TIME-0010 unconfirmed -> off_grade" in text
 
 
 def _main():

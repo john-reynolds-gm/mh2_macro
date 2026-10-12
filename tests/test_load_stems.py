@@ -22,7 +22,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import config  # noqa: E402
 
-from mh2.load_stems import load  # noqa: E402
+import pytest  # noqa: E402
+
+from mh2.load_stems import load, read_stems_csv  # noqa: E402
 
 
 def _fresh_db():
@@ -98,6 +100,46 @@ def test_pk5_null_band_match_still_works():
     wb_id = cur.execute(
         "SELECT workbook_stem_id FROM stem_map WHERE stem_id = 'MD_ANGLES'").fetchone()[0]
     assert wb_id == "ANG"
+
+
+def _row(stem_id, workbook_stem, ladder_file="", band="PK5"):
+    return {"stem_id": stem_id, "band": band, "stem_group": "",
+            "masterlist_name": "Comparing and Ordering", "workbook_sheet": "",
+            "workbook_stem": workbook_stem, "ladder_file": ladder_file,
+            "ladder_drafted": "0"}
+
+
+def test_one_ladder_two_workbook_stems_keeps_both_rows():
+    """
+    DEFERRED.md §10: NS-COMP-ORDER is one ladder over the 'Comparing' and
+    'Ordering' workbook stems. stem_map is keyed (stem_id, workbook_stem), so
+    neither row overwrites the other -- coverage's name lookup needs both.
+    """
+    con = _fresh_db()
+    cur = con.cursor()
+    cur.execute("INSERT INTO stems (stem_id, name) VALUES"
+                " ('NS-COMP-ORDER', 'Comparing and Ordering')")
+    load(cur, _write_stems_csv([_row("NS-COMP-ORDER", "Comparing", "c.docx"),
+                                _row("NS-COMP-ORDER", "Ordering", "c.docx")]),
+         Path(tempfile.mkdtemp()))
+    got = sorted(cur.execute("SELECT stem_id, workbook_stem FROM stem_map"))
+    assert got == [("NS-COMP-ORDER", "Comparing"), ("NS-COMP-ORDER", "Ordering")]
+
+
+@pytest.mark.parametrize("rows, why", [
+    ([_row("NS-X", "A", "x.docx"), _row("NS-X", "B", "y.docx")], "different band or ladder_file"),
+    ([_row("NS-X", "A", "x.docx"), _row("NS-X", "B", "x.docx", band="6_9")], "different band or ladder_file"),
+    ([_row("NS-X", "A"), _row("NS-X", "A")], "listed twice"),
+    ([_row("NS-X", "A", "x.docx"), _row("NS-Y", "B", "x.docx")], "claimed by both"),
+])
+def test_registry_rejects_two_stems_sharing_a_code_or_a_ladder(rows, why):
+    with pytest.raises(SystemExit, match=why):
+        read_stems_csv(_write_stems_csv(rows))
+
+
+def test_real_stems_csv_is_consistent():
+    """The checked-in stems.csv passes its own registry check."""
+    assert read_stems_csv(config.STEMS_CSV)
 
 
 if __name__ == "__main__":

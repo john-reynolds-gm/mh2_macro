@@ -27,7 +27,7 @@ PRAGMA foreign_keys = ON;
 -- ---------------------------------------------------------------- structure
 
 CREATE TABLE IF NOT EXISTS stems (
-    stem_id      TEXT PRIMARY KEY,      -- short code, e.g. 'CNT'
+    stem_id      TEXT PRIMARY KEY,      -- stems.csv code, e.g. 'NS-COUNT'
     name         TEXT NOT NULL,         -- 'Counting'
     domain       TEXT,                  -- 'Number Systems and Structures'
     band         TEXT,                  -- 'PK-2', '3-5', ...
@@ -39,15 +39,15 @@ CREATE TABLE IF NOT EXISTS stems (
 -- surfaces disagree and none of the disagreements is recoverable from string
 -- similarity.
 --
--- masterlist_name repeats by design (NSS_COM and NSS_ORD are both 'Comparing
--- and Ordering'), and so does ladder_file (one ladder, two workbook stems).
--- Any code assuming one ladder maps to one stem is wrong, which is why the
--- primary key is stem_id alone and nothing else is unique.
+-- stem_id is the shared ladder code (DEFERRED.md §10) and is the stem_id used
+-- everywhere else: stems, concepts, nodes. It repeats when one ladder covers
+-- several workbook stems -- NS-COMP-ORDER is one row for 'Comparing' and one
+-- for 'Ordering' -- so the key is (stem_id, workbook_stem). Any code assuming
+-- one stem_map row per stem_id is wrong.
 --
--- stem_id is an OPAQUE key. The slugs are provisional and may be replaced with
--- the team's own stem codes -- join on it, never pattern-match it.
+-- stem_id is an OPAQUE key -- join on it, never pattern-match it.
 CREATE TABLE IF NOT EXISTS stem_map (
-    stem_id         TEXT PRIMARY KEY,
+    stem_id         TEXT NOT NULL,
     band            TEXT NOT NULL,         -- PK5 | 6_9
     stem_group      TEXT,
     masterlist_name TEXT,
@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS stem_map (
     ladder_file     TEXT,                  -- as written in stems.csv
     ladder_drafted  INTEGER NOT NULL,
     workbook_stem_id TEXT,                 -- resolved against stems(stem_id)
-    ladder_path     TEXT                   -- resolved file on disk
+    ladder_path     TEXT,                  -- resolved file on disk
+    PRIMARY KEY (stem_id, workbook_stem)
 );
 
 -- Concept/Skill rows from H2_Stem_and_Leaf_Spreadsheet.

@@ -108,7 +108,8 @@ GitHub's runner (not your machine) and runs `flyctl deploy --remote-only`
 this step touches your laptop or its network restrictions. Watch the
 Action's log the same way you'd watch a local `fly deploy`:
 `entrypoint.sh` runs `rebuild.py` (rebuilds `mh2.db` from the committed
-`data/source`) then `render_static.py`, then starts `uvicorn`. A failure
+`data/source`, with any ladders writers have uploaded laid over it — see
+"Ladder Files" below) then `render_static.py`, then starts `uvicorn`. A failure
 here names the pipeline step, same as it would locally.
 
 ## 7. Verify the live deployment
@@ -164,6 +165,56 @@ start from the 82 computed-Green-and-flagged rows, and see whether the
 grouped node picker (§1.2) is enough to propose a tag without opening the
 ladder document.
 
+## Ladder Files (writer uploads)
+
+IT can't connect the hosted app to SharePoint, so writers upload ladders
+themselves: the **Ladder Files** link in the coverage page's header (or
+`/files`) has one slot per stem_id in `stems.csv`. Each upload is checked
+(a real `.docx`, ≤ 20 MB, parses to at least one node), previewed against
+the nodes currently live (unchanged / new / removed, plus a warning if
+review decisions are attached to nodes it removes or rewords), and only
+then committed. A commit triggers a rebuild in the background; the status
+pill on the page shows it, and a failed rebuild leaves the previous
+`mh2.db` serving and shows the failing step and its output.
+
+**Precedence — the rule to tell writers:**
+
+> For any stem that has an upload, **the uploaded file is the source of
+> truth**. The copy in the repo is only a seed for stems that have never
+> been uploaded.
+
+A newer ladder committed to the repo does **not** override an existing
+upload. To make the repo copy win again, a writer uploads it, or reverts
+to an older version from the slot's History.
+
+**Where it lives.** Every version ever committed is kept on the volume,
+under `data/build/ladder_uploads/<stem_id>/`, with its metadata
+(`ladder_upload`, `stem_registry_override`) in `mh2_seq.db`. Uploading to
+a stem whose `stems.csv` row has no `ladder_file` registers it under
+`MH2_<band>_<stem_id>.docx` — in `mh2_seq.db`, not in `stems.csv`, which is
+in the image. Each rebuild assembles what it reads into
+`data/build/_effective/` (symlinks, rebuilt from scratch every run).
+`rebuild.py --no-uploads` ignores the uploads, for a local run against the
+repo only.
+
+**What's safe to delete.** `data/build` is **no longer disposable**:
+`rm -rf data/build` would delete every uploaded ladder along with
+`mh2_seq.db`. To force a clean rebuild, delete only `mh2.db*` (and
+`_effective/` if you like — it is rebuilt every run).
+
+**Backup routine.** **Download all (zip)** on the Ladder Files page gives
+every live ladder under its canonical name plus `manifest.csv` (who
+uploaded each, when, its sha256). That zip is the team's backup and the
+hand-off back to SharePoint. Download it weekly, and after any big batch
+of uploads, and put it somewhere that isn't the Fly volume.
+
+**Volume size.** The volume is 1 GB. `mh2.db` is ~160 MB and exists twice
+during a rebuild; the repo's 17 ladders are ~130 MB in total, and every
+uploaded version is kept. A full round of replacing every ladder adds
+roughly another 130 MB. Check usage on the Fly dashboard after a few
+weeks of uploads; extend the volume (dashboard → Volumes) before it
+passes ~70%.
+
 ## Environment variables
 
 Deployment-agnostic: these mean the same thing on Fly, on Azure App
@@ -175,11 +226,12 @@ back to the behaviour this runbook already describes.
 | `MH2_DATA_DIR` | Absolute path to the `data/` tree. `data/source`, `data/build` (both databases), `data/reports` and the rerank cache all move with it. Set this when the databases must live on storage that survives a redeploy, rather than inside the deployed repo. Unset, everything stays at `<repo>/data` exactly as before. |
 | `MH2_REBUILD_ACTOR` | Name recorded in the `actor` column of `data/reports/rebuild_log.tsv`. Set it to the person who pressed the button once a rebuild can be triggered from outside a shell; unset, the log records the OS user, which is the right answer for a laptop run. |
 | `MH2_AUTH_USERS` | Covered in §2 and §4 above — not repeated here. |
+| `MH2_LADDERS_DIR`, `MH2_STEMS_CSV` | **Internal — do not set these on a host.** `rebuild.py` sets both on every pipeline step it runs, pointing them at `data/build/_effective/` (repo ladders plus uploads). Set by hand, they replace the repo seed that uploads are laid over. |
 
-`MH2_DATA_DIR` is deliberately the only path variable. `data/build` cannot
-be pointed somewhere separate from `data/source`, which keeps "which of the
-two does the rerank cache follow?" a settled question instead of a live
-one.
+`MH2_DATA_DIR` is deliberately the only path variable an operator sets.
+`data/build` cannot be pointed somewhere separate from `data/source`, which
+keeps "which of the two does the rerank cache follow?" a settled question
+instead of a live one.
 
 ## What this deliberately does not do
 
@@ -199,12 +251,17 @@ one.
 The Fly dashboard's **Logs** view for the app shows the running
 container's stdout, including `rebuild.py`'s own step-by-step output — the
 same log a local run would produce, no CLI needed to read it. The volume
-(`mh2_data`) holds the only irreplaceable state; everything else (`mh2.db`,
-`coverage.html`) regenerates from what's already committed to git. Worst
-case, delete the app from the dashboard and re-run the **Fly one-time
-setup** and **Fly deploy** workflows — that loses nothing except writer
-judgments already in `mh2_seq.db` on that volume, which is exactly why
-step 7's restart-and-check matters before handing out logins.
+(`mh2_data`) holds the only irreplaceable state — `mh2_seq.db` and every
+uploaded ladder in `ladder_uploads/`; everything else (`mh2.db`,
+`coverage.html`) regenerates. Worst case, delete the app from the
+dashboard and re-run the **Fly one-time setup** and **Fly deploy**
+workflows — that loses the writer judgments in `mh2_seq.db` **and every
+uploaded ladder** on that volume, which is exactly why step 7's
+restart-and-check matters before handing out logins, and why the Ladder
+Files zip backup above matters after it. A ladder upload whose rebuild
+failed is shown on the Ladder Files page with the failing step; the app
+keeps serving the previous database, so the fix is to correct the file and
+upload again, or revert that slot to an earlier version.
 
 If anyone on the team ever wants `flyctl` itself for something this
 runbook doesn't cover, it doesn't have to be John's laptop — a GitHub
